@@ -12,7 +12,7 @@ This milestone transforms a working but untested WoW addon into a structurally c
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 0: Repo Cleanup** - Remove NTFS junk files, stale docs, and validate folder structure against WoW addon conventions
+- [x] **Phase 0: Repo Cleanup** - Remove NTFS junk files, stale docs, and validate folder structure against WoW addon conventions (completed 2026-06-17)
 - [ ] **Phase 1: Utility Extraction and Module Encapsulation** - Extract shared utilities to Util.lua and move frame locals to Tip table fields
 - [ ] **Phase 2: Test Framework and Core Logic Tests** - Set up busted with WoW API stubs and write unit tests for all core functions
 - [ ] **Phase 3: Bug Fixes with Test Coverage** - Fix all correctness bugs under test protection and remove dead migration fallback
@@ -30,10 +30,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. `API_REFERENCES.md` and `DEVELOPMENT_NOTES.md` are absent from the repository
   3. `.gitignore` contains the `*:Zone.Identifier` pattern so these files cannot be re-committed
   4. The addon root contains `.toc` and `.lua` files, a `Modules/` directory, and a `Media/` directory — matching standard WoW addon layout
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 00-01-PLAN.md — Remove artifacts, create .gitignore, validate folder structure
+- [x] 00-01-PLAN.md — Remove artifacts, create .gitignore, validate folder structure
 
 ### Phase 1: Utility Extraction and Module Encapsulation
 **Goal**: The codebase has a clean structural foundation — shared utilities live in one place, frame references are accessible for testing, and module iteration is ordered.
@@ -94,7 +94,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 0. Repo Cleanup | 0/1 | Not started | - |
+| 0. Repo Cleanup | 1/1 | Complete   | 2026-06-17 |
 | 1. Utility Extraction and Module Encapsulation | 0/? | Not started | - |
 | 2. Test Framework and Core Logic Tests | 0/? | Not started | - |
 | 3. Bug Fixes with Test Coverage | 0/? | Not started | - |

@@ -39,11 +39,11 @@ Requirements for the polish milestone. Each maps to roadmap phases.
 
 ### Cleanup
 
-- [ ] **CLN-01**: All `:Zone.Identifier` NTFS alternate data stream files removed from the repository
-- [ ] **CLN-02**: `API_REFERENCES.md` removed from the repository
-- [ ] **CLN-03**: `DEVELOPMENT_NOTES.md` removed from the repository
-- [ ] **CLN-04**: `.gitignore` updated to prevent `:Zone.Identifier` files from being re-committed
-- [ ] **CLN-05**: Folder structure validated against standard WoW addon conventions
+- [x] **CLN-01**: All `:Zone.Identifier` NTFS alternate data stream files removed from the repository
+- [x] **CLN-02**: `API_REFERENCES.md` removed from the repository
+- [x] **CLN-03**: `DEVELOPMENT_NOTES.md` removed from the repository
+- [x] **CLN-04**: `.gitignore` updated to prevent `:Zone.Identifier` files from being re-committed
+- [x] **CLN-05**: Folder structure validated against standard WoW addon conventions
 
 ### CI/CD
 
@@ -79,11 +79,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLN-01 | Phase 0 | Pending |
-| CLN-02 | Phase 0 | Pending |
-| CLN-03 | Phase 0 | Pending |
-| CLN-04 | Phase 0 | Pending |
-| CLN-05 | Phase 0 | Pending |
+| CLN-01 | Phase 0 | Complete |
+| CLN-02 | Phase 0 | Complete |
+| CLN-03 | Phase 0 | Complete |
+| CLN-04 | Phase 0 | Complete |
+| CLN-05 | Phase 0 | Complete |
 | BUG-01 | Phase 3 | Pending |
 | BUG-02 | Phase 3 | Pending |
 | BUG-03 | Phase 3 | Pending |
