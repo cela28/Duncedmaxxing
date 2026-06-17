@@ -30,7 +30,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. `API_REFERENCES.md` and `DEVELOPMENT_NOTES.md` are absent from the repository
   3. `.gitignore` contains the `*:Zone.Identifier` pattern so these files cannot be re-committed
   4. The addon root contains `.toc` and `.lua` files, a `Modules/` directory, and a `Media/` directory — matching standard WoW addon layout
-**Plans**: TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 00-01-PLAN.md — Remove artifacts, create .gitignore, validate folder structure
 
 ### Phase 1: Utility Extraction and Module Encapsulation
 **Goal**: The codebase has a clean structural foundation — shared utilities live in one place, frame references are accessible for testing, and module iteration is ordered.
@@ -91,7 +94,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 0. Repo Cleanup | 0/? | Not started | - |
+| 0. Repo Cleanup | 0/1 | Not started | - |
 | 1. Utility Extraction and Module Encapsulation | 0/? | Not started | - |
 | 2. Test Framework and Core Logic Tests | 0/? | Not started | - |
 | 3. Bug Fixes with Test Coverage | 0/? | Not started | - |
