@@ -8,7 +8,7 @@
 ```text
 ┌─────────────────────────────────────────────────────────────┐
 │                  WoW Addon Load Sequence                     │
-│  `Duncedmaxxing.toc` — declares load order                  │
+│  `Duncedmaxxing/Duncedmaxxing.toc` — declares load order     │
 └───────────────┬────────────────────────────┬────────────────┘
                 │                            │
                 ▼                            ▼
@@ -23,7 +23,7 @@
          │ DMX:RegisterModule("tip", ...)      │
          ▼                                    │
 ┌──────────────────────────────────────────────────────────────┐
-│                    Modules/TipOfTheSpear.lua                  │
+│              Duncedmaxxing/Modules/TipOfTheSpear.lua          │
 │  Stack tracking + WoW frame rendering                        │
 │  `Tip` table, registered as module "tip"                     │
 └──────────────────────────────────────────────────────────────┘
@@ -39,9 +39,9 @@
 
 | Component | Responsibility | File |
 |-----------|----------------|------|
-| Core | Addon namespace `DMX`, module registry, DB init, settings migration, slash commands, spec-detection helpers | `Core.lua` |
-| Options | Movable settings popup UI, all input widgets, combat guard | `Options.lua` |
-| TipOfTheSpear | Stack state machine, predictive tracking, aura verification, WoW frame construction and rendering | `Modules/TipOfTheSpear.lua` |
+| Core | Addon namespace `DMX`, module registry, DB init, settings migration, slash commands, spec-detection helpers | `Duncedmaxxing/Core.lua` |
+| Options | Movable settings popup UI, all input widgets, combat guard | `Duncedmaxxing/Options.lua` |
+| TipOfTheSpear | Stack state machine, predictive tracking, aura verification, WoW frame construction and rendering | `Duncedmaxxing/Modules/TipOfTheSpear.lua` |
 | SavedVariables | Persistent user settings via WoW's `DuncedmaxxingDB` global | WoW engine |
 
 ## Pattern Overview
@@ -50,7 +50,7 @@
 
 **Key Characteristics:**
 - All files share the addon-private namespace table via the `local addonName, DMX = ...` WoW vararg idiom
-- `Core.lua` initializes the namespace and is the sole owner of `DuncedmaxxingDB`
+- `Duncedmaxxing/Core.lua` initializes the namespace and is the sole owner of `DuncedmaxxingDB`
 - Modules self-register via `DMX:RegisterModule(key, table)` after load
 - No external library dependencies — pure Lua + WoW API
 
@@ -58,48 +58,48 @@
 
 **Core / Bootstrap Layer:**
 - Purpose: Owns addon identity, saved-variable DB, settings migration, module dispatch, and slash commands
-- Location: `Core.lua`
+- Location: `Duncedmaxxing/Core.lua`
 - Contains: `DEFAULTS` table, `MergeDefaults`/`NormalizeDB` helpers, module registry methods, spec-detection helpers, `ADDON_LOADED` handler
 - Depends on: WoW globals (`CreateFrame`, `UnitClass`, `C_SpecializationInfo`, `SlashCmdList`)
-- Used by: `Options.lua`, `Modules/TipOfTheSpear.lua`
+- Used by: `Duncedmaxxing/Options.lua`, `Duncedmaxxing/Modules/TipOfTheSpear.lua`
 
 **Options Layer:**
 - Purpose: Provides a movable in-game configuration popup; reads and writes `db.tip` through `DMX:GetDB()`
-- Location: `Options.lua`
+- Location: `Duncedmaxxing/Options.lua`
 - Contains: `DMX.Options` table with `BuildWindow`, `Refresh`, `Open`, `Initialize` methods, all widget factory functions
-- Depends on: `Core.lua` (via `DMX`), WoW frame API (`CreateFrame`, `UIParent`, templates)
-- Used by: Slash command handler in `Core.lua` calls `DMX:OpenOptions()`
+- Depends on: `Duncedmaxxing/Core.lua` (via `DMX`), WoW frame API (`CreateFrame`, `UIParent`, templates)
+- Used by: Slash command handler in `Duncedmaxxing/Core.lua` calls `DMX:OpenOptions()`
 
 **Module / Feature Layer:**
 - Purpose: All gameplay logic and rendering for a specific tracking feature
-- Location: `Modules/TipOfTheSpear.lua`
+- Location: `Duncedmaxxing/Modules/TipOfTheSpear.lua`
 - Contains: Stack state machine, predictive spellcast handling, aura verification with timers, full WoW frame tree construction
-- Depends on: `Core.lua` (via `DMX`), WoW API (`C_UnitAuras`, `C_Timer`, `C_Spell`, frame events)
-- Used by: `Core.lua` calls `DMX:ForEachModule("Initialize", DMX)` on `ADDON_LOADED`
+- Depends on: `Duncedmaxxing/Core.lua` (via `DMX`), WoW API (`C_UnitAuras`, `C_Timer`, `C_Spell`, frame events)
+- Used by: `Duncedmaxxing/Core.lua` calls `DMX:ForEachModule("Initialize", DMX)` on `ADDON_LOADED`
 
 ## Data Flow
 
 ### Addon Initialization
 
-1. WoW loads files in TOC order: `Core.lua` → `Options.lua` → `Modules/TipOfTheSpear.lua` (`Duncedmaxxing.toc` lines 10–12)
+1. WoW loads files in TOC order: `Core.lua` → `Options.lua` → `Modules/TipOfTheSpear.lua` (`Duncedmaxxing/Duncedmaxxing.toc` lines 10–12)
 2. Each file captures the shared namespace via `local _, DMX = ...`
-3. `TipOfTheSpear.lua` self-registers: `DMX:RegisterModule("tip", Tip)` (`Modules/TipOfTheSpear.lua:770`)
-4. `ADDON_LOADED` fires → `Core.lua` merges defaults into `DuncedmaxxingDB`, runs `NormalizeDB`, assigns `DMX.db`, calls `DMX:InitializeOptions()` then `DMX:ForEachModule("Initialize", DMX)` (`Core.lua:358–374`)
-5. `Tip:Initialize` builds the WoW frame tree and registers all game events (`Modules/TipOfTheSpear.lua:743–768`)
+3. `TipOfTheSpear.lua` self-registers: `DMX:RegisterModule("tip", Tip)` (`Duncedmaxxing/Modules/TipOfTheSpear.lua:770`)
+4. `ADDON_LOADED` fires → `Core.lua` merges defaults into `DuncedmaxxingDB`, runs `NormalizeDB`, assigns `DMX.db`, calls `DMX:InitializeOptions()` then `DMX:ForEachModule("Initialize", DMX)` (`Duncedmaxxing/Core.lua:358–374`)
+5. `Tip:Initialize` builds the WoW frame tree and registers all game events (`Duncedmaxxing/Modules/TipOfTheSpear.lua:743–768`)
 
 ### In-Combat Stack Tracking
 
-1. `UNIT_SPELLCAST_SUCCEEDED` fires for the player (`Modules/TipOfTheSpear.lua:728`)
-2. `FindTrackedSpell` classifies the spell ID as `"generator"` (Kill Command) or `"consumer"` (`Modules/TipOfTheSpear.lua:72–79`)
-3. `Tip:ApplySpell` immediately updates `self.stacks` and `self.expiresAt`, schedules an expiry timer, calls `Tip:Update`, then schedules a delayed `SyncFromAura` sanity check (`Modules/TipOfTheSpear.lua:675–695`)
-4. `UNIT_AURA` fires → `Tip:ScheduleAuraVerify` defers a short-delay aura read to avoid lag artifacts (`Modules/TipOfTheSpear.lua:725–727`)
-5. `Tip:SyncFromAura` calls `C_UnitAuras.GetPlayerAuraBySpellID(260286)` and reconciles live aura state, with a consumer-upsync suppression window (`Modules/TipOfTheSpear.lua:332–357`)
+1. `UNIT_SPELLCAST_SUCCEEDED` fires for the player (`Duncedmaxxing/Modules/TipOfTheSpear.lua:728`)
+2. `FindTrackedSpell` classifies the spell ID as `"generator"` (Kill Command) or `"consumer"` (`Duncedmaxxing/Modules/TipOfTheSpear.lua:72–79`)
+3. `Tip:ApplySpell` immediately updates `self.stacks` and `self.expiresAt`, schedules an expiry timer, calls `Tip:Update`, then schedules a delayed `SyncFromAura` sanity check (`Duncedmaxxing/Modules/TipOfTheSpear.lua:675–695`)
+4. `UNIT_AURA` fires → `Tip:ScheduleAuraVerify` defers a short-delay aura read to avoid lag artifacts (`Duncedmaxxing/Modules/TipOfTheSpear.lua:725–727`)
+5. `Tip:SyncFromAura` calls `C_UnitAuras.GetPlayerAuraBySpellID(260286)` and reconciles live aura state, with a consumer-upsync suppression window (`Duncedmaxxing/Modules/TipOfTheSpear.lua:332–357`)
 
 ### Settings Change Path
 
 1. Player interacts with `Options` window or issues a `/dmax` command
 2. Handler reads `DMX:GetDB().tip` directly and writes updated values
-3. `DMX:RefreshTip()` → `Tip:RefreshLayout()` → rebuilds frame geometry and calls `Tip:Update()` (`Core.lua:206–208`, `Modules/TipOfTheSpear.lua:451–538`)
+3. `DMX:RefreshTip()` → `Tip:RefreshLayout()` → rebuilds frame geometry and calls `Tip:Update()` (`Duncedmaxxing/Core.lua:206–208`, `Duncedmaxxing/Modules/TipOfTheSpear.lua:451–538`)
 
 **State Management:**
 - All persistent state lives in `DuncedmaxxingDB` (WoW SavedVariables global), accessed via `DMX:GetDB()`
@@ -109,33 +109,33 @@
 
 **DMX Namespace Table:**
 - Purpose: Shared addon object — acts as both the module registry and the public API surface
-- Examples: `Core.lua:3` (`_G.Duncedmaxxing = DMX`), all files (`local _, DMX = ...`)
+- Examples: `Duncedmaxxing/Core.lua:3` (`_G.Duncedmaxxing = DMX`), all files (`local _, DMX = ...`)
 - Pattern: WoW addon private namespace passed via vararg; methods added with `function DMX:Method()`
 
 **Module Table Pattern:**
 - Purpose: Each feature is a self-contained Lua table with `Initialize`, `Update`, and lifecycle methods
-- Examples: `Tip` in `Modules/TipOfTheSpear.lua:3`, `Options` in `Options.lua:3`
+- Examples: `Tip` in `Duncedmaxxing/Modules/TipOfTheSpear.lua:3`, `Options` in `Duncedmaxxing/Options.lua:3`
 - Pattern: `local Foo = {}` → attach methods → `DMX:RegisterModule("key", Foo)` or assign to `DMX.Foo`
 
 **DEFAULTS / GetCfg Pattern:**
-- Purpose: Centralized default values in `Core.lua:11–34`; every subsystem reads live config via a local `GetCfg()` that calls `DMX:GetDB().tip`
-- Examples: `Core.lua:11`, `Options.lua:58–61`, `Modules/TipOfTheSpear.lua:120–122`
+- Purpose: Centralized default values in `Duncedmaxxing/Core.lua:11–34`; every subsystem reads live config via a local `GetCfg()` that calls `DMX:GetDB().tip`
+- Examples: `Duncedmaxxing/Core.lua:11`, `Duncedmaxxing/Options.lua:58–61`, `Duncedmaxxing/Modules/TipOfTheSpear.lua:120–122`
 - Pattern: Defaults merged once on load via `MergeDefaults`; no runtime fallback logic needed in modules
 
 ## Entry Points
 
 **ADDON_LOADED event:**
-- Location: `Core.lua:356–374`
+- Location: `Duncedmaxxing/Core.lua:356–374`
 - Triggers: WoW fires `ADDON_LOADED` after all TOC files are parsed and loaded
 - Responsibilities: DB initialization, settings migration, options initialization, module dispatch
 
 **DMX:RegisterModule:**
-- Location: `Core.lua:140–147`
+- Location: `Duncedmaxxing/Core.lua:140–147`
 - Triggers: Called at file parse time (bottom of each module file, outside any function)
 - Responsibilities: Stores module reference; calls `Initialize` immediately if addon is already `ready`
 
 **SlashCmdList.DUNCEDMAXXING:**
-- Location: `Core.lua:226–353`
+- Location: `Duncedmaxxing/Core.lua:226–353`
 - Triggers: Player types `/dmax` or `/duncedmaxxing`
 - Responsibilities: Parses command string, directly mutates `db.tip`, calls `RefreshTip` or module methods
 
@@ -151,13 +151,13 @@
 
 ### Direct db.tip mutation in slash command handler
 
-**What happens:** `Core.lua`'s slash command handler directly writes fields like `db.tip.scale = scale` instead of routing through a setter on the module or options object.
-**Why it's wrong:** The same mutation logic is partially duplicated between the slash handler and `Options.lua`; future fields need to be updated in both places.
+**What happens:** `Duncedmaxxing/Core.lua`'s slash command handler directly writes fields like `db.tip.scale = scale` instead of routing through a setter on the module or options object.
+**Why it's wrong:** The same mutation logic is partially duplicated between the slash handler and `Duncedmaxxing/Options.lua`; future fields need to be updated in both places.
 **Do this instead:** Add a thin setter method on `DMX` or `Options` (e.g., `DMX:SetTipConfig(key, value)`) and call it from both paths.
 
 ### Module-level frame locals in TipOfTheSpear
 
-**What happens:** `root`, `pips`, `borders`, `label`, `numberText` are declared as module-level upvalue locals in `Modules/TipOfTheSpear.lua:32–36`, not as fields on the `Tip` table.
+**What happens:** `root`, `pips`, `borders`, `label`, `numberText` are declared as module-level upvalue locals in `Duncedmaxxing/Modules/TipOfTheSpear.lua:32–36`, not as fields on the `Tip` table.
 **Why it's wrong:** Makes it impossible to fully reset or replace the frame from outside without reimplementing the locals; breaks the encapsulation of the `Tip` module table.
 **Do this instead:** Store all frame references as `Tip.root`, `Tip.pips`, etc., consistent with how `Tip.stacks`, `Tip.expiresAt`, etc. are stored.
 
@@ -166,15 +166,15 @@
 **Strategy:** Defensive `pcall` wrapping around WoW API calls that could fail silently on API version mismatches.
 
 **Patterns:**
-- `ReadLiveState` wraps both `GetPlayerAuraBySpellID` and field access in `pcall` to avoid nil-indexing crashes on unexpected aura shapes (`Modules/TipOfTheSpear.lua:86–117`)
-- `ClassifySpellID` wraps the lookup in `pcall` (`Modules/TipOfTheSpear.lua:57–69`)
-- `Options:CanChange()` gate prevents all settings changes in combat (`Options.lua:161–168`)
+- `ReadLiveState` wraps both `GetPlayerAuraBySpellID` and field access in `pcall` to avoid nil-indexing crashes on unexpected aura shapes (`Duncedmaxxing/Modules/TipOfTheSpear.lua:86–117`)
+- `ClassifySpellID` wraps the lookup in `pcall` (`Duncedmaxxing/Modules/TipOfTheSpear.lua:57–69`)
+- `Options:CanChange()` gate prevents all settings changes in combat (`Duncedmaxxing/Options.lua:161–168`)
 - Nil-guard checks before every frame method call (e.g., `if tip and tip.RefreshLayout then`)
 
 ## Cross-Cutting Concerns
 
-**Logging:** `DMX:Print(message)` writes prefixed messages to `DEFAULT_CHAT_FRAME`. Used for user-facing feedback only; no debug logging infrastructure. (`Core.lua:166–170`)
-**Validation:** Input parsing helpers (`Clamp`, `ParseOnOff`, `ParseHexColor`, `Trim`) defined locally in both `Core.lua` and `Options.lua` — duplicated, not shared.
+**Logging:** `DMX:Print(message)` writes prefixed messages to `DEFAULT_CHAT_FRAME`. Used for user-facing feedback only; no debug logging infrastructure. (`Duncedmaxxing/Core.lua:166–170`)
+**Validation:** Input parsing helpers (`Clamp`, `ParseOnOff`, `ParseHexColor`, `Trim`) defined locally in both `Duncedmaxxing/Core.lua` and `Duncedmaxxing/Options.lua` — duplicated, not shared.
 **Authentication:** Not applicable (WoW addon context; no network auth).
 
 ---

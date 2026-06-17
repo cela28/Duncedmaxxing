@@ -25,7 +25,7 @@ Accurate, instant stack display during combat. If the stack count is wrong or la
 
 - [ ] Fix auraVerifyPending stuck flag after serial mismatch
 - [ ] Fix stale stack display when switching modes out of combat
-- [ ] Extract duplicated utilities (Clamp, ParseHexColor) to shared Util.lua
+- [ ] Extract duplicated utilities (Clamp, ParseHexColor) to shared Duncedmaxxing/Util.lua
 - [ ] Remove dead post-migration fallback code in NormalizeDB
 - [ ] Move module-level frame locals to Tip table fields
 - [ ] Add ordered module iteration via moduleOrder array
@@ -63,7 +63,7 @@ Accurate, instant stack display during combat. If the stack count is wrong or la
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
 | Use busted for testing | Pure Lua test framework, Lua 5.1 compatible, well-established | — Pending |
-| Extract utils to Util.lua | Eliminates duplicated code between Core.lua and Options.lua | — Pending |
+| Extract utils to Duncedmaxxing/Util.lua | Eliminates duplicated code between Duncedmaxxing/Core.lua and Duncedmaxxing/Options.lua | — Pending |
 | Cache spec/texture at event boundaries | Avoid per-update WoW API calls during combat | — Pending |
 
 ## Evolution

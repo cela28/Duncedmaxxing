@@ -28,9 +28,9 @@ Runtime (event-driven after ADDON_LOADED):
 
 | Component | Responsibility | Reads From | Writes To |
 |-----------|---------------|------------|-----------|
-| Core.lua | Namespace, DB, migration, registry, slash commands | DuncedmaxxingDB global | DMX.db, DMX.modules |
-| Options.lua | Settings popup UI, all input widgets | DMX:GetDB().tip | DMX.db.tip (direct) |
-| TipOfTheSpear.lua | Stack state machine, frame rendering | DMX:GetDB().tip, WoW API events | Tip.stacks/expiresAt/etc, frame textures |
+| Duncedmaxxing/Core.lua | Namespace, DB, migration, registry, slash commands | DuncedmaxxingDB global | DMX.db, DMX.modules |
+| Duncedmaxxing/Options.lua | Settings popup UI, all input widgets | DMX:GetDB().tip | DMX.db.tip (direct) |
+| Duncedmaxxing/Modules/TipOfTheSpear.lua | Stack state machine, frame rendering | DMX:GetDB().tip, WoW API events | Tip.stacks/expiresAt/etc, frame textures |
 | Util functions (duplicated) | Clamp, ParseHexColor, Trim, ParseOnOff | -- | -- (pure functions, no state) |
 
 ### Data Flow (As-Is)
@@ -66,7 +66,7 @@ Combat stack tracking path:
 
 ### New Component: Util.lua
 
-A new `Util.lua` file inserted before `Options.lua` in the TOC declares pure utility functions on the `DMX` namespace. It has no state and no WoW API dependencies.
+A new `Duncedmaxxing/Util.lua` file inserted before `Options.lua` in the TOC declares pure utility functions on the `DMX` namespace. It has no state and no WoW API dependencies.
 
 **Functions to move:** `Clamp`, `ParseHexColor`, `Trim`, `ParseOnOff`, `ColorTuple` (from TipOfTheSpear)
 
@@ -81,14 +81,14 @@ A new `Util.lua` file inserted before `Options.lua` in the TOC declares pure uti
 
 | Component | Responsibility | Boundary Rule |
 |-----------|---------------|---------------|
-| Core.lua | Namespace, DB, migration, module registry, slash commands | No duplicate utility code; slash handler routes mutations through a setter |
-| Util.lua | Pure utility functions (Clamp, ParseHexColor, Trim, ParseOnOff) | No WoW API calls, no DMX.db access, no side effects |
-| Options.lua | Settings popup UI | Uses DMX.Util.*; settings mutations go through DMX:SetTipConfig() |
-| Modules/TipOfTheSpear.lua | Stack state machine, frame rendering | All frame refs as Tip.* fields, no module-level upvalue locals |
+| Duncedmaxxing/Core.lua | Namespace, DB, migration, module registry, slash commands | No duplicate utility code; slash handler routes mutations through a setter |
+| Duncedmaxxing/Util.lua | Pure utility functions (Clamp, ParseHexColor, Trim, ParseOnOff) | No WoW API calls, no DMX.db access, no side effects |
+| Duncedmaxxing/Options.lua | Settings popup UI | Uses DMX.Util.*; settings mutations go through DMX:SetTipConfig() |
+| Duncedmaxxing/Modules/TipOfTheSpear.lua | Stack state machine, frame rendering | All frame refs as Tip.* fields, no module-level upvalue locals |
 
 ### Encapsulation Fix: Module-Level Locals → Table Fields
 
-**Problem:** `root`, `pips`, `borders`, `label`, `numberText` are module-level upvalue locals in TipOfTheSpear.lua. This means the `Tip` table cannot be cleanly inspected or reset from outside the file — tests cannot verify frame construction state.
+**Problem:** `root`, `pips`, `borders`, `label`, `numberText` are module-level upvalue locals in `Duncedmaxxing/Modules/TipOfTheSpear.lua`. This means the `Tip` table cannot be cleanly inspected or reset from outside the file — tests cannot verify frame construction state.
 
 **Fix:** Move all frame references to `Tip.root`, `Tip.pips`, `Tip.borders`, `Tip.label`, `Tip.numberText`. This is consistent with how `Tip.stacks`, `Tip.expiresAt`, etc. are already stored.
 
@@ -96,7 +96,7 @@ A new `Util.lua` file inserted before `Options.lua` in the TOC declares pure uti
 
 ### Settings Mutation: Add Setter
 
-**Problem:** `db.tip.*` is written directly in both `Core.lua`'s slash command handler and `Options.lua`. Any new field requires updating both.
+**Problem:** `db.tip.*` is written directly in both `Duncedmaxxing/Core.lua`'s slash command handler and `Duncedmaxxing/Options.lua`. Any new field requires updating both.
 
 **Fix:** Add `DMX:SetTipConfig(key, value)` that writes to `db.tip[key]` and calls `DMX:RefreshTip()`. Both Options and the slash handler call this one function.
 
@@ -312,7 +312,7 @@ This addon is single-player, single-module, and runs in a Lua sandbox with no ne
 
 ## Sources
 
-- Current codebase: `/home/cela/random-projects/Duncedmaxxing/Core.lua`, `Options.lua`, `Modules/TipOfTheSpear.lua`
+- Current codebase: `Duncedmaxxing/Core.lua`, `Duncedmaxxing/Options.lua`, `Duncedmaxxing/Modules/TipOfTheSpear.lua`
 - Existing architecture analysis: `.planning/codebase/ARCHITECTURE.md` (2026-06-17)
 - [lunarmodules/busted — Elegant Lua unit testing](https://lunarmodules.github.io/busted/) — HIGH confidence (official docs)
 - [dolphinspired/wow-addon-container](https://github.com/dolphinspired/wow-addon-container) — MEDIUM confidence (demonstrates busted + spec/ layout for WoW addons)

@@ -48,7 +48,7 @@ Features that seem valuable but should be deliberately avoided.
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| Ace3 / LibStub dependency adoption | Reduces boilerplate for options UI and event handling; many popular addons use it | Adds an external dependency to what is intentionally dependency-free; creates upgrade coupling to a third-party library release cycle; out of scope per PROJECT.md | Keep custom implementation; extract shared utilities to Util.lua instead |
+| Ace3 / LibStub dependency adoption | Reduces boilerplate for options UI and event handling; many popular addons use it | Adds an external dependency to what is intentionally dependency-free; creates upgrade coupling to a third-party library release cycle; out of scope per PROJECT.md | Keep custom implementation; extract shared utilities to Duncedmaxxing/Util.lua instead |
 | OnUpdate polling for stack display | Seems simpler than event-driven design; some older addons use it | Runs every frame (60+/sec); generates per-frame garbage if any table allocation occurs; creates GC pressure in combat; completely unnecessary when UNIT_AURA and UNIT_SPELLCAST_SUCCEEDED already fire at the right moments | Keep the existing event-driven architecture; fix the caching gaps instead |
 | Persistent test mode across reloads | Convenient for iterative visual testing during development | Adds a saved variable that has no player-facing value; can cause confusing state for end users if test mode activates unexpectedly on login | Accept test mode as session-only; document the `/dmax test` command clearly in the options window |
 | Global variable namespace expansion | Quick way to share state between modules | Global namespace pollution; risk of collision with Blizzard or other addons; taint surface increases | Expose shared state on the `DMX` table or as explicit module function parameters |
@@ -60,12 +60,12 @@ Features that seem valuable but should be deliberately avoided.
 ## Feature Dependencies
 
 ```
-[Util.lua extraction]
+[Duncedmaxxing/Util.lua extraction]
     └──enables──> [Unit tests for ParseHexColor, Clamp]
     └──enables──> [Consistent nil-handling across Core and Options]
 
 [busted test framework + WoW API mock layer]
-    └──requires──> [Util.lua extraction] (tests need stable shared utility surface)
+    └──requires──> [Duncedmaxxing/Util.lua extraction] (tests need stable shared utility surface)
     └──enables──> [ApplySpell unit tests]
     └──enables──> [SyncFromAura unit tests]
     └──enables──> [NormalizeDB unit tests]
@@ -92,7 +92,7 @@ Features that seem valuable but should be deliberately avoided.
 
 ### Dependency Notes
 
-- **Util.lua extraction must precede unit tests:** Tests need to import utilities directly; if they live in Core.lua and Options.lua they cannot be loaded in isolation in a busted environment without pulling in the full WoW frame environment.
+- **Duncedmaxxing/Util.lua extraction must precede unit tests:** Tests need to import utilities directly; if they live in Duncedmaxxing/Core.lua and Duncedmaxxing/Options.lua they cannot be loaded in isolation in a busted environment without pulling in the full WoW frame environment.
 - **busted + mock layer must precede any test authoring:** The mock layer defines what WoW API surface the tests can call; tests written before the mock exists would require constant retrofitting.
 - **auraVerifyPending fix is independent:** It touches only TipOfTheSpear.lua and requires no other change. Fix first, validate manually, then write the regression test once the test framework exists.
 - **Spec/texture caching conflicts with calling RefreshActive from Update:** These changes must be coordinated — removing `RefreshActive()` from `Update()` requires ensuring every event that could change spec state is already registered to call `RefreshActive()` explicitly. Confirm event coverage before removing the call.
@@ -107,7 +107,7 @@ This is not a greenfield MVP — the addon already works. "MVP" here means: mini
 
 - [ ] Fix `auraVerifyPending` stuck flag — active bug that silently suppresses aura verification
 - [ ] Fix stale stack display on mode-switch out of combat — visible correctness failure
-- [ ] Extract Util.lua with `Clamp` and `ParseHexColor` — prerequisite for testable utilities
+- [ ] Extract Duncedmaxxing/Util.lua with `Clamp` and `ParseHexColor` — prerequisite for testable utilities
 - [ ] Set up busted + WoW API mock layer — prerequisite for all unit tests
 - [ ] Unit tests for `ApplySpell`, `SyncFromAura`, `NormalizeDB`, utility functions — without these, the refactor has no regression protection
 
@@ -136,7 +136,7 @@ This is not a greenfield MVP — the addon already works. "MVP" here means: mini
 | busted + mock layer setup | HIGH (enables all regression tests) | MEDIUM | P1 |
 | Unit tests for ApplySpell, SyncFromAura | HIGH (protects crown-jewel logic) | MEDIUM | P1 |
 | Unit tests for NormalizeDB, utilities | MEDIUM (protects data integrity) | LOW | P1 |
-| Extract Util.lua | MEDIUM (prerequisite; reduces bug divergence) | LOW | P1 |
+| Extract Duncedmaxxing/Util.lua | MEDIUM (prerequisite; reduces bug divergence) | LOW | P1 |
 | Cache spec state | MEDIUM (removes per-update API calls) | LOW | P2 |
 | Cache spell texture | MEDIUM (removes per-update API calls) | LOW | P2 |
 | Remove pcall from ClassifySpellID | LOW-MEDIUM (minor perf + clarity) | LOW | P2 |

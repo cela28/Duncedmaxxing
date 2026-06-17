@@ -21,7 +21,7 @@ This project uses **manual in-game testing** as its sole verification mechanism.
 
 The addon provides a built-in preview mechanism as a substitute for automated tests:
 
-**`Tip:SetTestStacks(stacks)`** — `Modules/TipOfTheSpear.lua:557`
+**`Tip:SetTestStacks(stacks)`** — `Duncedmaxxing/Modules/TipOfTheSpear.lua:557`
 
 Sets `testMode = true` and overrides the displayed stack count for 8 seconds, then restores live state. This allows visual verification of all display modes and stack counts without triggering actual spells.
 
@@ -65,15 +65,15 @@ The following behaviors require manual in-game verification:
 
 **All logic paths are untested automatically.** Specific high-risk areas:
 
-**`ReadLiveState()` — `Modules/TipOfTheSpear.lua:81`**
+**`ReadLiveState()` — `Duncedmaxxing/Modules/TipOfTheSpear.lua:81`**
 - What's not tested: All three pcall branches (API missing, pcall throws, valid aura)
 - Risk: Silent return of nil could mask stale display state
 
-**`MergeDefaults` / `NormalizeDB` — `Core.lua:84, 101`**
+**`MergeDefaults` / `NormalizeDB` — `Duncedmaxxing/Core.lua:84, 101`**
 - What's not tested: Settings migration path (`settingsMigration` mismatch branch)
 - Risk: A bad migration could corrupt saved settings across sessions
 
-**`ParseHexColor` — `Core.lua:59`, `Options.lua:25`**
+**`ParseHexColor` — `Duncedmaxxing/Core.lua:59`, `Duncedmaxxing/Options.lua:25`**
 - What's not tested: Edge cases (5-char hex, empty string, unicode input)
 - Risk: Invalid color input silently returns nil and leaves previous color unchanged
 
@@ -81,7 +81,7 @@ The following behaviors require manual in-game verification:
 - What's not tested: The timing window (`CONSUMER_UPSYNC_GRACE = 2.75`) boundary
 - Risk: Suppression fires too early or too late, causing display flicker
 
-**`ClassifySpellID` pcall — `Modules/TipOfTheSpear.lua:56`**
+**`ClassifySpellID` pcall — `Duncedmaxxing/Modules/TipOfTheSpear.lua:56`**
 - What's not tested: The pcall wrapper path (what could throw here is unclear)
 - Risk: pcall overhead is unnecessary if the inner code cannot actually throw
 

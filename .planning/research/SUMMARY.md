@@ -50,13 +50,13 @@ This is a polish milestone. "Features" are quality characteristics the addon mus
 
 ### Architecture Approach
 
-The addon uses a shared namespace table (`DMX`) passed via the WoW vararg idiom (`local addonName, DMX = ...`) across three files loaded in TOC order. There is no `require`; TOC order is the only dependency injection mechanism. The target architecture adds a fourth file (`Util.lua`, inserted before `Core.lua` in the TOC) and moves module-level upvalue locals (`root`, `pips`, `label`, `numberText`, `borders`) to `Tip.*` table fields so tests can inject mock frames. A single settings setter (`DMX:SetTipConfig`) replaces the current pattern where both Options.lua and Core.lua's slash handler directly mutate `db.tip.*` independently.
+The addon uses a shared namespace table (`DMX`) passed via the WoW vararg idiom (`local addonName, DMX = ...`) across three files loaded in TOC order. There is no `require`; TOC order is the only dependency injection mechanism. The target architecture adds a fourth file (`Duncedmaxxing/Util.lua`, inserted before `Core.lua` in the TOC) and moves module-level upvalue locals (`root`, `pips`, `label`, `numberText`, `borders`) to `Tip.*` table fields so tests can inject mock frames. A single settings setter (`DMX:SetTipConfig`) replaces the current pattern where both `Duncedmaxxing/Options.lua` and `Duncedmaxxing/Core.lua`'s slash handler directly mutate `db.tip.*` independently.
 
 **Major components (target state):**
-1. **Util.lua** — pure functions (Clamp, ParseHexColor, Trim, ParseOnOff); no WoW API calls, no state, fully testable without mocks
-2. **Core.lua** — namespace, DB/migration, module registry, slash commands; settings mutations route through `DMX:SetTipConfig`
-3. **Options.lua** — settings popup UI; uses `DMX.Util.*`; no direct `db.tip` writes
-4. **Modules/TipOfTheSpear.lua** — stack state machine, frame rendering; all frame refs as `Tip.*` fields
+1. **Duncedmaxxing/Util.lua** — pure functions (Clamp, ParseHexColor, Trim, ParseOnOff); no WoW API calls, no state, fully testable without mocks
+2. **Duncedmaxxing/Core.lua** — namespace, DB/migration, module registry, slash commands; settings mutations route through `DMX:SetTipConfig`
+3. **Duncedmaxxing/Options.lua** — settings popup UI; uses `DMX.Util.*`; no direct `db.tip` writes
+4. **Duncedmaxxing/Modules/TipOfTheSpear.lua** — stack state machine, frame rendering; all frame refs as `Tip.*` fields
 5. **spec/** — busted test suite with `spec/support/wow_stubs.lua` as shared WoW API mock table
 
 **Key data flows:**
@@ -66,7 +66,7 @@ The addon uses a shared namespace table (`DMX`) passed via the WoW vararg idiom 
 
 ### Critical Pitfalls
 
-1. **SavedVariables corruption from migration gate** — `SETTINGS_MIGRATION` constant must never change unless a destructive settings reset is intentional; the dead migration fallback block (Core.lua lines 125-133) must be removed cleanly with a NormalizeDB idempotency test in place first
+1. **SavedVariables corruption from migration gate** — `SETTINGS_MIGRATION` constant must never change unless a destructive settings reset is intentional; the dead migration fallback block (Duncedmaxxing/Core.lua lines 125-133) must be removed cleanly with a NormalizeDB idempotency test in place first
 
 2. **Incomplete WoW API mock causing false-passing tests** — every mocked WoW function must match the real API contract (correct return value count, correct table field names); `C_UnitAuras.GetPlayerAuraBySpellID` returns a table with `applications` AND `expirationTime`; `C_Spell.GetSpellTexture` returns two values; stub review against warcraft.wiki.gg must precede writing any test
 
@@ -84,7 +84,7 @@ Research establishes a clear dependency graph that should drive phase structure.
 
 **Rationale:** These are the two structural prerequisites for everything else. Util.lua extraction makes utility functions independently testable (zero mocks needed). Frame locals to Tip fields makes `ApplySpell`/`SyncFromAura` testable without a full WoW frame mock. Neither depends on the other and they can be done in parallel within the phase. Both are low-risk, self-contained changes.
 
-**Delivers:** `Util.lua` with `Clamp`, `ParseHexColor`, `Trim`, `ParseOnOff`; TOC updated; all five frame upvalues migrated to `Tip.*` fields; `DMX:SetTipConfig` setter added
+**Delivers:** `Duncedmaxxing/Util.lua` with `Clamp`, `ParseHexColor`, `Trim`, `ParseOnOff`; TOC updated; all five frame upvalues migrated to `Tip.*` fields; `DMX:SetTipConfig` setter added
 
 **Addresses:** Dead utility duplication, encapsulation prerequisite for tests, single settings mutation path
 
