@@ -54,12 +54,12 @@ Plans:
   4. `ClassifySpellID` performs a plain table lookup with no `pcall` wrapper
   5. `/reload ui` in-game produces no Lua errors and the tracker display functions normally
 
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 01-01-PLAN.md — Extract utilities to Util.lua, wire consumer aliases, add moduleOrder
+- [x] 01-01-PLAN.md — Extract utilities to Util.lua, wire consumer aliases, add moduleOrder
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -121,7 +121,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 0. Repo Cleanup | 1/1 | Complete   | 2026-06-17 |
-| 1. Utility Extraction and Module Encapsulation | 0/2 | Planned | - |
+| 1. Utility Extraction and Module Encapsulation | 1/2 | In Progress|  |
 | 2. Test Framework and Core Logic Tests | 0/? | Not started | - |
 | 3. Bug Fixes with Test Coverage | 0/? | Not started | - |
 | 4. Performance Caching and CI/CD | 0/? | Not started | - |
