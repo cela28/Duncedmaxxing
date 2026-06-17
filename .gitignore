@@ -1,0 +1,17 @@
+# NTFS Alternate Data Stream artifacts (Windows/WSL)
+*:Zone.Identifier
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+*.swp
+*~
+
+# Backups
+*.bak
+
+# WoW SavedVariables (local game data, not source)
+WTF/
