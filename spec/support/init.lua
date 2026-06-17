@@ -34,20 +34,10 @@ local function load()
 
     -- Replicate ADDON_LOADED bootstrap (Core.lua lines 338-348).
     -- coreFrame is a local inside Core.lua and cannot be reached from here.
-    -- DMX._test is added to Core.lua by Plan 01 for test-only access.
+    -- DMX._test is wired by Plan 02 for test-only access.
     _G.DuncedmaxxingDB = {}
-    if DMX._test and DMX._test.MergeDefaults then
-        DMX._test.MergeDefaults(DMX.defaults, _G.DuncedmaxxingDB)
-        DMX._test.NormalizeDB(_G.DuncedmaxxingDB)
-    else
-        -- Fallback: DMX._test not yet available (will be wired in Plan 02).
-        -- Use defaults directly as a shallow initial DB.
-        for k, v in pairs(DMX.defaults or {}) do
-            if _G.DuncedmaxxingDB[k] == nil then
-                _G.DuncedmaxxingDB[k] = v
-            end
-        end
-    end
+    DMX._test.MergeDefaults(DMX.defaults, _G.DuncedmaxxingDB)
+    DMX._test.NormalizeDB(_G.DuncedmaxxingDB)
     DMX.db    = _G.DuncedmaxxingDB
     DMX.ready = true
     DMX:ForEachModule("Initialize", DMX)

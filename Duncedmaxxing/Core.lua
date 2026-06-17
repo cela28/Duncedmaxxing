@@ -347,3 +347,12 @@ coreFrame:SetScript("OnEvent", function(_, _, loadedAddon)
     RegisterSlashCommands()
     DMX:ForEachModule("Initialize", DMX)
 end)
+
+-- Test-only escape hatch: exposes local functions for spec/core_spec.lua
+-- Do not use in production addon code.
+DMX._test = {
+    MergeDefaults      = MergeDefaults,
+    NormalizeDB        = NormalizeDB,
+    CopyDefaults       = CopyDefaults,
+    SETTINGS_MIGRATION = SETTINGS_MIGRATION,
+}
