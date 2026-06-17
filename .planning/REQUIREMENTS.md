@@ -37,6 +37,14 @@ Requirements for the polish milestone. Each maps to roadmap phases.
 - [ ] **TEST-06**: Unit tests for utility functions (Clamp, ParseHexColor, ParseOnOff, Trim) including edge cases
 - [ ] **TEST-07**: luacheck configured with std=lua51 and curated read_globals for WoW API symbols
 
+### Cleanup
+
+- [ ] **CLN-01**: All `:Zone.Identifier` NTFS alternate data stream files removed from the repository
+- [ ] **CLN-02**: `API_REFERENCES.md` removed from the repository
+- [ ] **CLN-03**: `DEVELOPMENT_NOTES.md` removed from the repository
+- [ ] **CLN-04**: `.gitignore` updated to prevent `:Zone.Identifier` files from being re-committed
+- [ ] **CLN-05**: Folder structure validated against standard WoW addon conventions
+
 ### CI/CD
 
 - [ ] **CICD-01**: GitHub Actions release workflow that packages addon files into a distributable zip on tag push (user will provide sample workflow file)
@@ -71,31 +79,36 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BUG-01 | — | Pending |
-| BUG-02 | — | Pending |
-| BUG-03 | — | Pending |
-| BUG-04 | — | Pending |
-| QUAL-01 | — | Pending |
-| QUAL-02 | — | Pending |
-| QUAL-03 | — | Pending |
-| QUAL-04 | — | Pending |
-| QUAL-05 | — | Pending |
-| PERF-01 | — | Pending |
-| PERF-02 | — | Pending |
-| TEST-01 | — | Pending |
-| TEST-02 | — | Pending |
-| TEST-03 | — | Pending |
-| TEST-04 | — | Pending |
-| TEST-05 | — | Pending |
-| TEST-06 | — | Pending |
-| TEST-07 | — | Pending |
-| CICD-01 | — | Pending |
+| CLN-01 | Phase 0 | Pending |
+| CLN-02 | Phase 0 | Pending |
+| CLN-03 | Phase 0 | Pending |
+| CLN-04 | Phase 0 | Pending |
+| CLN-05 | Phase 0 | Pending |
+| BUG-01 | Phase 3 | Pending |
+| BUG-02 | Phase 3 | Pending |
+| BUG-03 | Phase 3 | Pending |
+| BUG-04 | Phase 3 | Pending |
+| QUAL-01 | Phase 1 | Pending |
+| QUAL-02 | Phase 1 | Pending |
+| QUAL-03 | Phase 3 | Pending |
+| QUAL-04 | Phase 1 | Pending |
+| QUAL-05 | Phase 1 | Pending |
+| PERF-01 | Phase 4 | Pending |
+| PERF-02 | Phase 4 | Pending |
+| TEST-01 | Phase 2 | Pending |
+| TEST-02 | Phase 2 | Pending |
+| TEST-03 | Phase 2 | Pending |
+| TEST-04 | Phase 2 | Pending |
+| TEST-05 | Phase 2 | Pending |
+| TEST-06 | Phase 2 | Pending |
+| TEST-07 | Phase 2 | Pending |
+| CICD-01 | Phase 4 | Pending |
 
 **Coverage:**
-- v1 requirements: 19 total
-- Mapped to phases: 0
-- Unmapped: 19 ⚠️
+- v1 requirements: 24 total
+- Mapped to phases: 24
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-17*
-*Last updated: 2026-06-17 after initial definition*
+*Last updated: 2026-06-17 after roadmap creation*
