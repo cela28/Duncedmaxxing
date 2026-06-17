@@ -21,7 +21,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-17)
 
 **Core value:** Accurate, instant stack display during combat
-**Current focus:** Phase 0 — Repo Cleanup
+**Current focus:** Phase 0 complete — ready for Phase 1
 
 ## Current Position
 
