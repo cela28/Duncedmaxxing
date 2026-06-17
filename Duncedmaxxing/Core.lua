@@ -1,10 +1,17 @@
 local addonName, DMX = ...
 
+-- Util.lua is loaded first in TOC; DMX.Util is guaranteed populated here
+local Clamp        = DMX.Util.Clamp
+local ParseHexColor = DMX.Util.ParseHexColor
+local Trim         = DMX.Util.Trim
+local ParseOnOff   = DMX.Util.ParseOnOff
+
 _G.Duncedmaxxing = DMX
 
 DMX.name = addonName
 DMX.version = "0.3.2"
-DMX.modules = DMX.modules or {}
+DMX.modules     = DMX.modules     or {}
+DMX.moduleOrder = DMX.moduleOrder or {}
 
 local SETTINGS_MIGRATION = "0.3.2-fontfix"
 
@@ -34,40 +41,6 @@ local DEFAULTS = {
 }
 
 DMX.defaults = DEFAULTS
-
-local function Trim(text)
-    return (text or ""):match("^%s*(.-)%s*$")
-end
-
-local function Clamp(value, minValue, maxValue)
-    value = tonumber(value)
-    if not value then return nil end
-    if value < minValue then return minValue end
-    if value > maxValue then return maxValue end
-    return value
-end
-
-local function ParseOnOff(value)
-    value = string.lower(Trim(value))
-    if value == "on" or value == "true" or value == "1" or value == "yes" then
-        return true
-    elseif value == "off" or value == "false" or value == "0" or value == "no" then
-        return false
-    end
-end
-
-local function ParseHexColor(value)
-    value = Trim(value):gsub("^#", "")
-    if not value:match("^[0-9a-fA-F]+$") or (#value ~= 6 and #value ~= 8) then
-        return nil
-    end
-
-    local r = tonumber(value:sub(1, 2), 16) / 255
-    local g = tonumber(value:sub(3, 4), 16) / 255
-    local b = tonumber(value:sub(5, 6), 16) / 255
-    local a = (#value == 8) and (tonumber(value:sub(7, 8), 16) / 255) or 1
-    return { r = r, g = g, b = b, a = a }
-end
 
 local function CopyDefaults(defaults)
     local copy = {}
@@ -140,6 +113,7 @@ end
 function DMX:RegisterModule(key, module)
     self.modules[key] = module
     module.key = key
+    table.insert(self.moduleOrder, key)
 
     if self.ready and module.Initialize then
         module:Initialize(self)
@@ -155,8 +129,9 @@ function DMX:GetDB()
 end
 
 function DMX:ForEachModule(method, ...)
-    for _, module in pairs(self.modules) do
-        local fn = module[method]
+    for _, key in ipairs(self.moduleOrder) do
+        local module = self.modules[key]
+        local fn = module and module[method]
         if fn then
             fn(module, ...)
         end
