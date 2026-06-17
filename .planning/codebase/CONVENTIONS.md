@@ -74,7 +74,7 @@ local coreFrame = CreateFrame("Frame")
 coreFrame:RegisterEvent("ADDON_LOADED")
 ```
 
-**`Options.lua` exports back to DMX via assignment at end:**
+**`Duncedmaxxing/Options.lua` exports back to DMX via assignment at end:**
 ```lua
 function DMX:InitializeOptions()
     Options:Initialize()
@@ -86,7 +86,7 @@ end
 
 ## Indentation and Formatting
 
-**Indentation:** 4 spaces (no tabs — confirmed by byte-level inspection of `Core.lua`, `Options.lua`, `Modules/TipOfTheSpear.lua`)
+**Indentation:** 4 spaces (no tabs — confirmed by byte-level inspection of `Duncedmaxxing/Core.lua`, `Duncedmaxxing/Options.lua`, `Duncedmaxxing/Modules/TipOfTheSpear.lua`)
 
 **Line length:** No enforced limit; long lines appear in `LayoutBorders` and slash-command chains but are kept readable.
 
@@ -201,7 +201,7 @@ A `FALLBACK_ICON` constant (`132275`) is defined so icon resolution always retur
 
 Modules self-register at end of file:
 ```lua
--- End of Modules/TipOfTheSpear.lua:
+-- End of Duncedmaxxing/Modules/TipOfTheSpear.lua:
 DMX:RegisterModule("tip", Tip)
 ```
 

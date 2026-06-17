@@ -16,7 +16,7 @@ Requirements for the polish milestone. Each maps to roadmap phases.
 
 ### Code Quality
 
-- [ ] **QUAL-01**: Shared utility functions (Clamp, ParseHexColor, Trim, ParseOnOff) extracted to Util.lua loaded before Core.lua and Options.lua via TOC order
+- [ ] **QUAL-01**: Shared utility functions (Clamp, ParseHexColor, Trim, ParseOnOff) extracted to Duncedmaxxing/Util.lua loaded before Core.lua and Options.lua via TOC order
 - [ ] **QUAL-02**: Module-level frame locals (root, pips, borders, label, numberText) moved to Tip table fields (Tip.root, Tip.pips, etc.)
 - [ ] **QUAL-03**: Dead post-migration fallback block in NormalizeDB (lines 125-133) removed with settings migration version bump
 - [ ] **QUAL-04**: ForEachModule uses ordered moduleOrder array instead of unordered pairs iteration

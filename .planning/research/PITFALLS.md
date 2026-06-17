@@ -63,7 +63,7 @@ Additionally, `C_Spell.GetSpellTexture` returns two values (`iconID`, `originalI
 ### Pitfall 3: Breaking the `local _, DMX = ...` Vararg Contract During Module Extraction
 
 **What goes wrong:**
-All three files (`Core.lua`, `Options.lua`, `TipOfTheSpear.lua`) receive the addon namespace via `local addonName, DMX = ...`. When extracting utilities to a new `Util.lua`, the new file must also use this vararg pattern and be added to the TOC before its consumers. If `Util.lua` is loaded after `Core.lua`, `DMX.Util` is nil when `Core.lua` tries to use it — a silent nil table read, not an obvious load error.
+All three files (`Duncedmaxxing/Core.lua`, `Duncedmaxxing/Options.lua`, `Duncedmaxxing/Modules/TipOfTheSpear.lua`) receive the addon namespace via `local addonName, DMX = ...`. When extracting utilities to a new `Duncedmaxxing/Util.lua`, the new file must also use this vararg pattern and be added to the TOC before its consumers. If `Util.lua` is loaded after `Core.lua`, `DMX.Util` is nil when `Core.lua` tries to use it — a silent nil table read, not an obvious load error.
 
 There is no `require` in the WoW Lua sandbox. Load order is entirely determined by TOC file order. This is the only dependency injection mechanism available.
 
@@ -107,7 +107,7 @@ The `auraVerifyPending` flag is trying to do two things: rate-limit redundant au
 ### Pitfall 5: Module-Level Upvalues (`root`, `pips`, `borders`) Are Untestable
 
 **What goes wrong:**
-`root`, `pips`, `label`, `numberText`, and `borders` are module-level local upvalues in `TipOfTheSpear.lua`. There is no way to inject mock frames into these variables from a test. Any test that loads the module and calls `EnsureFrame` will need a full WoW frame API mock (`CreateFrame`, `SetSize`, `SetPoint`, `SetTexture`, etc.) — which is a very deep mock surface.
+`root`, `pips`, `label`, `numberText`, and `borders` are module-level local upvalues in `Duncedmaxxing/Modules/TipOfTheSpear.lua`. There is no way to inject mock frames into these variables from a test. Any test that loads the module and calls `EnsureFrame` will need a full WoW frame API mock (`CreateFrame`, `SetSize`, `SetPoint`, `SetTexture`, etc.) — which is a very deep mock surface.
 
 If the refactor to move these to `Tip` table fields is done correctly, tests can inject mock frames directly (`Tip.root = mockFrame`). If done partially — leaving some as upvalues and moving others to the table — test coverage becomes inconsistent and some paths remain permanently untestable without a full frame mock.
 
@@ -174,8 +174,8 @@ The refactor sounds simple ("move locals to table fields") but `EnsureFrame` is 
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **Util.lua extraction:** `Clamp` and `ParseHexColor` removed from both `Core.lua` and `Options.lua` — verify with grep that no private copies remain.
-- [ ] **Dead migration fallback removal:** Lines 125–133 of `Core.lua` removed, version comment added — verify `NormalizeDB` unit test still passes for a DB at migration version `"0.3.2-fontfix"`.
+- [ ] **Util.lua extraction:** `Clamp` and `ParseHexColor` removed from both `Duncedmaxxing/Core.lua` and `Duncedmaxxing/Options.lua` — verify with grep that no private copies remain.
+- [ ] **Dead migration fallback removal:** Lines 125–133 of `Duncedmaxxing/Core.lua` removed, version comment added — verify `NormalizeDB` unit test still passes for a DB at migration version `"0.3.2-fontfix"`.
 - [ ] **Frame upvalue migration:** All five frame variables read from `Tip` table fields — verify by grepping for bare `root`, `pips`, `label`, `numberText`, `borders` in function bodies.
 - [ ] **`auraVerifyPending` bug fix:** Flag is cleared on ALL exit paths of the timer callback — verify with a unit test that exercises the serial-mismatch early-return path.
 - [ ] **Caching spec state:** `RefreshActive` is NOT called inside `Update` — verify by reading `Update`'s body; `RefreshActive` must only appear in `OnEvent` handlers.

@@ -13,7 +13,7 @@ This milestone transforms a working but untested WoW addon into a structurally c
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 0: Repo Cleanup** - Remove NTFS junk files, stale docs, and validate folder structure against WoW addon conventions (completed 2026-06-17)
-- [ ] **Phase 1: Utility Extraction and Module Encapsulation** - Extract shared utilities to Util.lua and move frame locals to Tip table fields
+- [ ] **Phase 1: Utility Extraction and Module Encapsulation** - Extract shared utilities to Duncedmaxxing/Util.lua and move frame locals to Tip table fields
 - [ ] **Phase 2: Test Framework and Core Logic Tests** - Set up busted with WoW API stubs and write unit tests for all core functions
 - [ ] **Phase 3: Bug Fixes with Test Coverage** - Fix all correctness bugs under test protection and remove dead migration fallback
 - [ ] **Phase 4: Performance Caching and CI/CD** - Cache spec/texture state and ship the GitHub Actions release workflow
@@ -41,7 +41,7 @@ Plans:
 **Depends on**: Phase 0
 **Requirements**: QUAL-01, QUAL-02, QUAL-04, QUAL-05
 **Success Criteria** (what must be TRUE):
-  1. `DMX.Util.Clamp`, `DMX.Util.ParseHexColor`, `DMX.Util.Trim`, and `DMX.Util.ParseOnOff` exist and are callable after `/reload ui` — no duplicate definitions remain in Core.lua or Options.lua
+  1. `DMX.Util.Clamp`, `DMX.Util.ParseHexColor`, `DMX.Util.Trim`, and `DMX.Util.ParseOnOff` exist and are callable after `/reload ui` — no duplicate definitions remain in Duncedmaxxing/Core.lua or Duncedmaxxing/Options.lua
   2. All five frame references (`root`, `pips`, `label`, `numberText`, `borders`) are accessible as `Tip.root`, `Tip.pips`, etc. — no bare upvalue references remain in TipOfTheSpear.lua function bodies
   3. `ForEachModule` iterates in the order declared in `moduleOrder`, not arbitrary hash order
   4. `ClassifySpellID` performs a plain table lookup with no `pcall` wrapper
@@ -73,7 +73,7 @@ Plans:
   2. Switching display modes out of combat shows the correct current stack count immediately — no stale display from the previous mode
   3. Kill Command stack prediction reads talent state dynamically — hardcoded `+2` no longer appears in `ClassifySpellID` or `ApplySpell`
   4. Takedown grants 3 stacks when Twin Fangs talent is active — `ApplySpell` test covering the Twin Fangs branch passes
-  5. The dead migration fallback block (Core.lua lines 125-133) is removed — `NormalizeDB` idempotency test passes confirming settings are not wiped on reload
+  5. The dead migration fallback block (Duncedmaxxing/Core.lua lines 125-133) is removed — `NormalizeDB` idempotency test passes confirming settings are not wiped on reload
 **Plans**: TBD
 
 ### Phase 4: Performance Caching and CI/CD
