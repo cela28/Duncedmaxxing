@@ -131,19 +131,19 @@ local function ResolveSpellTexture()
     return FALLBACK_ICON
 end
 
-local function ApplyPosition()
-    if not root then return end
+local function ApplyPosition(tip)
+    if not tip.root then return end
 
     local cfg = GetCfg()
-    root:ClearAllPoints()
-    root:SetPoint("CENTER", UIParent, "CENTER", cfg.x or 0, cfg.y or -160)
+    tip.root:ClearAllPoints()
+    tip.root:SetPoint("CENTER", UIParent, "CENTER", cfg.x or 0, cfg.y or -160)
 end
 
-local function SavePosition()
-    if not root then return end
+local function SavePosition(tip)
+    if not tip.root then return end
 
     local cfg = GetCfg()
-    local centerX, centerY = root:GetCenter()
+    local centerX, centerY = tip.root:GetCenter()
     local parentX, parentY = UIParent:GetCenter()
 
     if centerX and centerY and parentX and parentY then
@@ -151,7 +151,7 @@ local function SavePosition()
         cfg.y = centerY - parentY
     end
 
-    ApplyPosition()
+    ApplyPosition(tip)
 end
 
 local function CreateBorder(parent)
@@ -176,15 +176,16 @@ local function CreatePip(parent)
     return pip
 end
 
-local function EnsureBorders(parent)
-    if borders.top then return end
+local function EnsureBorders(tip)
+    if tip.borders and tip.borders.top then return end
 
-    borders.top = CreateBorder(parent)
-    borders.bottom = CreateBorder(parent)
-    borders.left = CreateBorder(parent)
-    borders.right = CreateBorder(parent)
-    borders.divider1 = CreateBorder(parent)
-    borders.divider2 = CreateBorder(parent)
+    tip.borders = {}
+    tip.borders.top      = CreateBorder(tip.root)
+    tip.borders.bottom   = CreateBorder(tip.root)
+    tip.borders.left     = CreateBorder(tip.root)
+    tip.borders.right    = CreateBorder(tip.root)
+    tip.borders.divider1 = CreateBorder(tip.root)
+    tip.borders.divider2 = CreateBorder(tip.root)
 end
 
 local function PaintBorder(border)
@@ -192,45 +193,45 @@ local function PaintBorder(border)
     border:SetVertexColor(r, g, b, a)
 end
 
-local function LayoutBorders(width, height, borderSize, segmentWidths)
+local function LayoutBorders(tip, width, height, borderSize, segmentWidths)
     if borderSize <= 0 then
-        for _, border in pairs(borders) do
+        for _, border in pairs(tip.borders) do
             border:Hide()
         end
         return
     end
 
-    borders.top:ClearAllPoints()
-    borders.top:SetPoint("TOPLEFT", root, "TOPLEFT", 0, 0)
-    borders.top:SetSize(width, borderSize)
+    tip.borders.top:ClearAllPoints()
+    tip.borders.top:SetPoint("TOPLEFT", tip.root, "TOPLEFT", 0, 0)
+    tip.borders.top:SetSize(width, borderSize)
 
-    borders.bottom:ClearAllPoints()
-    borders.bottom:SetPoint("BOTTOMLEFT", root, "BOTTOMLEFT", 0, 0)
-    borders.bottom:SetSize(width, borderSize)
+    tip.borders.bottom:ClearAllPoints()
+    tip.borders.bottom:SetPoint("BOTTOMLEFT", tip.root, "BOTTOMLEFT", 0, 0)
+    tip.borders.bottom:SetSize(width, borderSize)
 
-    borders.left:ClearAllPoints()
-    borders.left:SetPoint("TOPLEFT", root, "TOPLEFT", 0, 0)
-    borders.left:SetSize(borderSize, height)
+    tip.borders.left:ClearAllPoints()
+    tip.borders.left:SetPoint("TOPLEFT", tip.root, "TOPLEFT", 0, 0)
+    tip.borders.left:SetSize(borderSize, height)
 
-    borders.right:ClearAllPoints()
-    borders.right:SetPoint("TOPRIGHT", root, "TOPRIGHT", 0, 0)
-    borders.right:SetSize(borderSize, height)
+    tip.borders.right:ClearAllPoints()
+    tip.borders.right:SetPoint("TOPRIGHT", tip.root, "TOPRIGHT", 0, 0)
+    tip.borders.right:SetSize(borderSize, height)
 
-    borders.divider1:ClearAllPoints()
-    borders.divider1:SetPoint("TOPLEFT", root, "TOPLEFT", borderSize + segmentWidths[1], 0)
-    borders.divider1:SetSize(borderSize, height)
+    tip.borders.divider1:ClearAllPoints()
+    tip.borders.divider1:SetPoint("TOPLEFT", tip.root, "TOPLEFT", borderSize + segmentWidths[1], 0)
+    tip.borders.divider1:SetSize(borderSize, height)
 
-    borders.divider2:ClearAllPoints()
-    borders.divider2:SetPoint("TOPLEFT", root, "TOPLEFT", borderSize + segmentWidths[1] + borderSize + segmentWidths[2], 0)
-    borders.divider2:SetSize(borderSize, height)
+    tip.borders.divider2:ClearAllPoints()
+    tip.borders.divider2:SetPoint("TOPLEFT", tip.root, "TOPLEFT", borderSize + segmentWidths[1] + borderSize + segmentWidths[2], 0)
+    tip.borders.divider2:SetSize(borderSize, height)
 
-    for _, border in pairs(borders) do
+    for _, border in pairs(tip.borders) do
         PaintBorder(border)
     end
 end
 
-local function SetBordersShown(shown)
-    for _, border in pairs(borders) do
+local function SetBordersShown(tip, shown)
+    for _, border in pairs(tip.borders) do
         if shown then
             border:Show()
         else
@@ -277,39 +278,41 @@ local function LayoutPipBorder(pip, size)
     pip.border.right:SetSize(size, pip:GetHeight())
 end
 
-local function EnsureFrame()
-    if root then return end
+local function EnsureFrame(tip)
+    if tip.root then return end
 
-    root = CreateFrame("Frame", "Duncedmaxxing_TipOfTheSpear", UIParent)
-    root:SetFrameStrata("MEDIUM")
-    root:SetFrameLevel(20)
-    root:SetClampedToScreen(true)
-    EnsureBorders(root)
+    tip.root = CreateFrame("Frame", "Duncedmaxxing_TipOfTheSpear", UIParent)
+    tip.root:SetFrameStrata("MEDIUM")
+    tip.root:SetFrameLevel(20)
+    tip.root:SetClampedToScreen(true)
+    tip.pips = {}
+    tip.borders = {}
+    EnsureBorders(tip)
 
     for i = 1, MAX_STACKS do
-        pips[i] = CreatePip(root)
+        tip.pips[i] = CreatePip(tip.root)
     end
 
-    label = root:CreateFontString(nil, "OVERLAY")
-    label:SetFont(STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF", 11, "OUTLINE")
-    label:SetText("|cffaad372Duncedmaxxing|r")
-    label:SetPoint("BOTTOM", root, "TOP", 0, 4)
+    tip.label = tip.root:CreateFontString(nil, "OVERLAY")
+    tip.label:SetFont(STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF", 11, "OUTLINE")
+    tip.label:SetText("|cffaad372Duncedmaxxing|r")
+    tip.label:SetPoint("BOTTOM", tip.root, "TOP", 0, 4)
 
-    numberText = root:CreateFontString(nil, "OVERLAY")
-    numberText:SetFont(STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF", 22, "OUTLINE")
-    numberText:SetPoint("CENTER", root, "CENTER", 0, 0)
-    numberText:SetText("0")
-    numberText:Hide()
+    tip.numberText = tip.root:CreateFontString(nil, "OVERLAY")
+    tip.numberText:SetFont(STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF", 22, "OUTLINE")
+    tip.numberText:SetPoint("CENTER", tip.root, "CENTER", 0, 0)
+    tip.numberText:SetText("0")
+    tip.numberText:Hide()
 
-    root:RegisterForDrag("LeftButton")
-    root:SetScript("OnDragStart", function(self)
+    tip.root:RegisterForDrag("LeftButton")
+    tip.root:SetScript("OnDragStart", function(self)
         if not DMX:GetDB().locked then
             self:StartMoving()
         end
     end)
-    root:SetScript("OnDragStop", function(self)
+    tip.root:SetScript("OnDragStop", function(self)   -- self = WoW frame here
         self:StopMovingOrSizing()
-        SavePosition()
+        SavePosition(tip)   -- tip = Tip module table, captured from outer scope
     end)
 end
 
@@ -437,7 +440,10 @@ function Tip:ScheduleAuraVerify(delay)
 end
 
 function Tip:RefreshLayout()
-    EnsureFrame()
+    EnsureFrame(self)
+    local root       = self.root       -- D-08 local alias
+    local pips       = self.pips
+    local numberText = self.numberText
 
     local cfg = GetCfg()
     local mode = cfg.displayMode or "bar"
@@ -450,7 +456,7 @@ function Tip:RefreshLayout()
         pips[i]:Hide()
         SetPipBordersShown(pips[i], false)
     end
-    SetBordersShown(false)
+    SetBordersShown(self, false)
     numberText:Hide()
 
     if mode == "icons" then
@@ -501,7 +507,7 @@ function Tip:RefreshLayout()
 
         root:SetSize(width, height)
         root:SetScale(cfg.scale or 1)
-        LayoutBorders(width, height, borderSize, segmentWidths)
+        LayoutBorders(self, width, height, borderSize, segmentWidths)
 
         local segmentHeight = height - borderSize * 2
         if segmentHeight < 1 then segmentHeight = 1 end
@@ -520,14 +526,15 @@ function Tip:RefreshLayout()
         end
     end
 
-    ApplyPosition()
+    ApplyPosition(self)
     self:ApplyLock()
     self:Update()
 end
 
 function Tip:ApplyLock()
-    if not root then return end
+    if not self.root then return end
 
+    local root, label = self.root, self.label
     local unlocked = not DMX:GetDB().locked
     root:EnableMouse(unlocked)
     root:SetMovable(unlocked)
@@ -567,7 +574,12 @@ function Tip:GetStacks()
 end
 
 function Tip:Update()
-    EnsureFrame()
+    EnsureFrame(self)
+    local root       = self.root       -- D-08 local alias
+    local pips       = self.pips
+    local label      = self.label
+    local numberText = self.numberText
+
     self:RefreshActive()
 
     local db = DMX:GetDB()
@@ -597,7 +609,7 @@ function Tip:Update()
     local emptyR, emptyG, emptyB, emptyA = ColorTuple(cfg.emptyColor, EMPTY_COLOR)
 
     if mode == "number" then
-        SetBordersShown(false)
+        SetBordersShown(self, false)
         for i = 1, MAX_STACKS do
             pips[i]:Hide()
             SetPipBordersShown(pips[i], false)
@@ -612,7 +624,7 @@ function Tip:Update()
     numberText:Hide()
 
     if mode == "icons" then
-        SetBordersShown(false)
+        SetBordersShown(self, false)
         for i = 1, MAX_STACKS do
             local pip = pips[i]
             pip:Show()
@@ -637,7 +649,7 @@ function Tip:Update()
         return
     end
 
-    SetBordersShown(drawShell and hasBorder)
+    SetBordersShown(self, drawShell and hasBorder)
 
     for i = 1, MAX_STACKS do
         local pip = pips[i]
@@ -736,7 +748,7 @@ function Tip:Initialize(core)
     end
     self.initialized = true
 
-    EnsureFrame()
+    EnsureFrame(self)
     self.inCombat = InCombatLockdown and InCombatLockdown() or false
     self:RefreshLayout()
 
