@@ -605,7 +605,7 @@ end
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should `EnsureFrame` and the other private helpers also clear the module-level upvalue declarations?**
    - What we know: The five `local` declarations at TipOfTheSpear.lua:32-36 (`local root`, `local pips = {}`, etc.) become unused after migration. They should be removed.
