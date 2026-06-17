@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-06-17)
 Phase: 0 of 5 (Repo Cleanup)
 Plan: 1 of 1 in current phase (COMPLETE)
 Status: Phase 0 complete
-Last activity: 2026-06-17 -- Phase 0 plan 1 executed
+Last activity: 2026-06-17 -- Completed quick task 260617-jee: Move addon files into nested Duncedmaxxing subdirectory
 
 Progress: [██████████] 100%
 
@@ -68,6 +68,12 @@ Recent decisions affecting current work:
 ### Pending Todos
 
 None yet.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260617-jee | Move addon files into nested Duncedmaxxing subdirectory | 2026-06-17 | ffea0ea | [260617-jee-move-addon-files-into-nested-duncedmaxxi](./quick/260617-jee-move-addon-files-into-nested-duncedmaxxi/) |
 
 ### Blockers/Concerns
 
