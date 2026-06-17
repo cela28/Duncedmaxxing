@@ -29,12 +29,6 @@ local WHITE_TEX = "Interface\\Buttons\\WHITE8X8"
 
 local GetPlayerAuraBySpellID = C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID
 
-local root
-local pips = {}
-local label
-local numberText
-local borders = {}
-
 Tip.stacks = 0
 Tip.active = false
 Tip.inCombat = false
@@ -54,18 +48,12 @@ local function ClampStacks(value)
 end
 
 local function ClassifySpellID(value)
-    local ok, kind = pcall(function()
-        if value == KILL_COMMAND then
-            return "generator"
-        end
+    if value == KILL_COMMAND then
+        return "generator"
+    end
 
-        if type(value) == "number" and CONSUMERS[value] then
-            return "consumer"
-        end
-    end)
-
-    if ok then
-        return kind
+    if type(value) == "number" and CONSUMERS[value] then
+        return "consumer"
     end
 end
 
