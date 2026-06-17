@@ -81,12 +81,12 @@ Plans:
   6. Tests for `NormalizeDB` cover migration gate, field merging, and missing/deprecated fields
   7. Tests for utility functions cover normal use and edge cases (Clamp bounds, empty string inputs, case variants for ParseOnOff)
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 02-01-PLAN.md — Install busted, create WoW API stubs and test loader, write utility function tests
+- [x] 02-01-PLAN.md — Install busted, create WoW API stubs and test loader, write utility function tests
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -135,6 +135,6 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 0. Repo Cleanup | 1/1 | Complete   | 2026-06-17 |
 | 1. Utility Extraction and Module Encapsulation | 2/2 | Complete   | 2026-06-17 |
-| 2. Test Framework and Core Logic Tests | 0/3 | Not started | - |
+| 2. Test Framework and Core Logic Tests | 1/3 | In Progress|  |
 | 3. Bug Fixes with Test Coverage | 0/? | Not started | - |
 | 4. Performance Caching and CI/CD | 0/? | Not started | - |
