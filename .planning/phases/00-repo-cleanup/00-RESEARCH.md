@@ -405,7 +405,7 @@ No missing dependencies.
 | A1 | `*:Zone.Identifier` in root `.gitignore` matches files in subdirectories (Modules/, Media/) | Common Pitfalls #4, .gitignore pattern | Zone.Identifier files in subdirs could be re-committed after cleanup; mitigation: verification command explicitly checks both git index and disk recursively |
 | A2 | `WTF/` is the correct gitignore pattern for WoW SavedVariables directories | Standard Stack (.gitignore content) | If the player's WoW installs elsewhere, the pattern may not match; low risk since the SavedVariables path is outside the addon directory when installed normally |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should `README.md` be kept or renamed?**
    - What we know: `README.md` is tracked, present, not in the delete list (only `API_REFERENCES.md` and `DEVELOPMENT_NOTES.md` are to be deleted per D-03)
