@@ -34,15 +34,17 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Inject version into TOC
+        env:
+          TAG: ${{ github.ref_name }}
         run: |
-          TAG="${{ github.ref_name }}"
           VERSION="${TAG#v}"
           echo "Injecting version: $VERSION"
           sed -i "s/^## Version: .*/## Version: $VERSION/" Duncedmaxxing/Duncedmaxxing.toc
 
       - name: Create zip
+        env:
+          TAG: ${{ github.ref_name }}
         run: |
-          TAG="${{ github.ref_name }}"
           VERSION="${TAG#v}"
           zip -r "Duncedmaxxing-$VERSION.zip" Duncedmaxxing/
 
