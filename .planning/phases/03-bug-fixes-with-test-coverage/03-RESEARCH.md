@@ -502,17 +502,13 @@ Tip.hasTwinFangs = false
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Is BUG-01 already fixed in the live file?**
-   - What we know: Live code read at line 431 shows `self.auraVerifyPending = false` BEFORE the early return at line 433.
-   - What's unclear: CONCERNS.md says the flag is not cleared on the early return path — this may describe an older file state.
-   - Recommendation: Planner must treat BUG-01 as "write the test first; if the test passes without a code change, document that the fix was already present and proceed."
+   - RESOLVED: Yes. Live code at line 431 places `self.auraVerifyPending = false` BEFORE the serial-mismatch early return at line 433. CONCERNS.md described an older file state. Plan 03-01 writes the regression test to confirm the fix is present — no code change needed.
 
 2. **Does `FindTrackedSpell` need to return the spell ID for the Takedown branch?**
-   - What we know: Current `FindTrackedSpell` returns only `kind`. The Takedown special case requires knowing the spell ID.
-   - What's unclear: Whether to extend `FindTrackedSpell` to also return the spell ID, or to use a different dispatch mechanism.
-   - Recommendation: Extend `FindTrackedSpell` to `return kind, id` (two return values). Call site in `OnEvent` becomes `local kind, spellID = FindTrackedSpell(...)`. Pass `spellID` to `ApplySpell`. This is the least invasive change.
+   - RESOLVED: Yes. Extend `FindTrackedSpell` to `return kind, id` (two return values). Call site in `OnEvent` becomes `local kind, spellID = FindTrackedSpell(...)`. Pass `spellID` to `ApplySpell`. Implemented in Plan 03-02 Task 1 step 5.
 
 ---
 
