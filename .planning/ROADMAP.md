@@ -133,7 +133,13 @@ Plans:
   2. `RefreshLayout` and `Update` contain no calls to `C_Spell.GetSpellTexture` or `ResolveSpellTexture` — texture is cached as `Tip.spellTexture` at `Initialize` time
   3. Pushing a tag matching `v*` to GitHub triggers the release workflow and produces a `.zip` artifact containing only the addon files listed in the TOC
 
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+**Wave 1** *(parallel — no file overlap)*
+
+- [ ] 04-01-PLAN.md — Implement spec cache (PERF-01) and texture cache (PERF-02) with regression tests
+- [ ] 04-02-PLAN.md — Fix luacheck warnings, create GitHub Actions release workflow (CICD-01)
 
 ## Progress
 
@@ -146,4 +152,4 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 | 1. Utility Extraction and Module Encapsulation | 2/2 | Complete   | 2026-06-17 |
 | 2. Test Framework and Core Logic Tests | 3/3 | Complete   | 2026-06-18 |
 | 3. Bug Fixes with Test Coverage | 2/2 | Complete   | 2026-06-18 |
-| 4. Performance Caching and CI/CD | 0/? | Not started | - |
+| 4. Performance Caching and CI/CD | 0/2 | In Progress | - |
