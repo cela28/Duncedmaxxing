@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Utility Extraction and Module Encapsulation** - Extract shared utilities to Util.lua and move frame locals to Tip table fields (completed 2026-06-17)
 - [x] **Phase 2: Test Framework and Core Logic Tests** - Set up busted with WoW API stubs and write unit tests for all core functions (completed 2026-06-18)
 - [x] **Phase 3: Bug Fixes with Test Coverage** - Fix all correctness bugs under test protection and remove dead migration fallback (completed 2026-06-18)
-- [ ] **Phase 4: Performance Caching and CI/CD** - Cache spec/texture state and ship the GitHub Actions release workflow
+- [x] **Phase 4: Performance Caching and CI/CD** - Cache spec/texture state and ship the GitHub Actions release workflow (completed 2026-06-18)
 
 ## Phase Details
 
@@ -133,13 +133,13 @@ Plans:
   2. `RefreshLayout` and `Update` contain no calls to `C_Spell.GetSpellTexture` or `ResolveSpellTexture` — texture is cached as `Tip.spellTexture` at `Initialize` time
   3. Pushing a tag matching `v*` to GitHub triggers the release workflow and produces a `.zip` artifact containing only the addon files listed in the TOC
 
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
 **Wave 1** *(parallel — no file overlap)*
 
-- [ ] 04-01-PLAN.md — Implement spec cache (PERF-01) and texture cache (PERF-02) with regression tests
-- [ ] 04-02-PLAN.md — Fix luacheck warnings, create GitHub Actions release workflow (CICD-01)
+- [x] 04-01-PLAN.md — Implement spec cache (PERF-01) and texture cache (PERF-02) with regression tests
+- [x] 04-02-PLAN.md — Fix luacheck warnings, create GitHub Actions release workflow (CICD-01)
 
 ## Progress
 
@@ -152,4 +152,4 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 | 1. Utility Extraction and Module Encapsulation | 2/2 | Complete   | 2026-06-17 |
 | 2. Test Framework and Core Logic Tests | 3/3 | Complete   | 2026-06-18 |
 | 3. Bug Fixes with Test Coverage | 2/2 | Complete   | 2026-06-18 |
-| 4. Performance Caching and CI/CD | 0/2 | In Progress | - |
+| 4. Performance Caching and CI/CD | 2/2 | Complete   | 2026-06-18 |
