@@ -36,7 +36,9 @@ function mockClock:advance(dt)
         local t = self.timers[idx - offset]
         table.remove(self.timers, idx - offset)
         offset = offset + 1
-        t.callback()
+        if not t.cancelled then
+            t.callback()
+        end
     end
 end
 
