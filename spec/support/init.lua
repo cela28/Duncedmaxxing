@@ -60,7 +60,9 @@ local function resetTipState(Tip, clock)
     Tip.testMode          = false
     clock:reset()
     clock.now = 100
-    _G.C_UnitAuras.GetPlayerAuraBySpellID = function() return nil end
+    -- Reset aura dispatch via mockAura.impl (not _G.C_UnitAuras field, which the
+    -- module-level local in TipOfTheSpear.lua has already captured).
+    stubs.mockAura.impl = function(_spellID) return nil end
 end
 
 return {

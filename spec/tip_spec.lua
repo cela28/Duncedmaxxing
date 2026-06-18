@@ -1,0 +1,335 @@
+-- spec/tip_spec.lua
+-- Unit tests for TipOfTheSpear.lua pure-logic methods:
+--   Tip:ApplySpell, Tip:SyncFromAura, Tip:ScheduleExpiration, Tip:ScheduleCastVerify
+--
+-- Uses loader.load() for full isolation (D-06) and mock clock for timer simulation.
+-- Aura overrides go through stubs.mockAura.impl, NOT _G.C_UnitAuras.GetPlayerAuraBySpellID,
+-- because TipOfTheSpear.lua captures the function once as a module-level local on load.
+
+local loader = require("spec.support.init")
+local stubs  = require("spec.support.wow_stubs")
+
+-- Constants mirrored from TipOfTheSpear.lua for readable assertions.
+local BUFF_DURATION          = 10
+local MAX_STACKS             = 3
+local CONSUMER_UPSYNC_GRACE  = 2.75
+local AURA_VERIFY_DELAY      = 1.25
+
+-- ---------------------------------------------------------------------------
+-- Tip:ApplySpell
+-- ---------------------------------------------------------------------------
+describe("Tip:ApplySpell", function()
+    local DMX, Tip, clock
+
+    before_each(function()
+        DMX, Tip, clock = loader.load()
+        loader.resetTipState(Tip, clock)
+    end)
+
+    -- Generator: adds 2 stacks from 0
+    it("adds 2 stacks on generator from zero", function()
+        Tip:ApplySpell("generator")
+        assert.equals(2, Tip.stacks)
+    end)
+
+    -- Generator: caps at MAX_STACKS (3) when already at 2
+    it("caps stacks at 3 when already at 2 (generator)", function()
+        Tip.stacks = 2
+        Tip:ApplySpell("generator")
+        assert.equals(MAX_STACKS, Tip.stacks)
+    end)
+
+    -- Generator: stays at MAX_STACKS when already at 3
+    it("keeps stacks at 3 when already at MAX_STACKS (generator)", function()
+        Tip.stacks = 3
+        Tip:ApplySpell("generator")
+        assert.equals(MAX_STACKS, Tip.stacks)
+    end)
+
+    -- Consumer: decrements by 1
+    it("decrements stacks by 1 on consumer", function()
+        Tip.stacks = 2
+        Tip:ApplySpell("consumer")
+        assert.equals(1, Tip.stacks)
+    end)
+
+    -- Consumer: floors at 0 (no negative stacks)
+    it("floors stacks at 0 on consumer when already empty", function()
+        Tip.stacks = 0
+        Tip:ApplySpell("consumer")
+        assert.equals(0, Tip.stacks)
+    end)
+
+    -- Generator: sets expiresAt to now + BUFF_DURATION (clock.now = 100)
+    it("sets expiresAt to now + BUFF_DURATION on generator", function()
+        Tip:ApplySpell("generator")
+        assert.equals(100 + BUFF_DURATION, Tip.expiresAt)
+    end)
+
+    -- Consumer: clears expiresAt when draining to 0
+    it("clears expiresAt when consumer drains stacks to 0", function()
+        Tip.stacks = 1
+        Tip:ApplySpell("consumer")
+        assert.equals(0, Tip.stacks)
+        assert.equals(0, Tip.expiresAt)
+    end)
+
+    -- Consumer: does NOT clear expiresAt when stacks remain above 0
+    it("does not clear expiresAt when consumer leaves stacks > 0", function()
+        Tip.stacks    = 2
+        Tip.expiresAt = 108
+        Tip:ApplySpell("consumer")
+        assert.equals(1, Tip.stacks)
+        -- expiresAt unchanged (consumer only clears when hitting 0)
+        assert.equals(108, Tip.expiresAt)
+    end)
+
+    -- Sets lastPredictAt and lastPredictKind on generator
+    it("sets lastPredictAt and lastPredictKind on generator", function()
+        Tip:ApplySpell("generator")
+        assert.equals(100,         Tip.lastPredictAt)
+        assert.equals("generator", Tip.lastPredictKind)
+    end)
+
+    -- Sets lastPredictAt and lastPredictKind on consumer
+    it("sets lastPredictAt and lastPredictKind on consumer", function()
+        Tip.stacks = 2
+        Tip:ApplySpell("consumer")
+        assert.equals(100,      Tip.lastPredictAt)
+        assert.equals("consumer", Tip.lastPredictKind)
+    end)
+
+    -- Unknown kind: no change and early return
+    it("ignores unknown kind and leaves stacks unchanged", function()
+        Tip.stacks = 1
+        Tip:ApplySpell("unknown")
+        assert.equals(1, Tip.stacks)
+    end)
+
+    -- Generator: schedules an active (non-cancelled) expireTimer
+    it("schedules a non-cancelled expireTimer on generator", function()
+        Tip:ApplySpell("generator")
+        assert.is_not_nil(Tip.expireTimer)
+        assert.is_false(Tip.expireTimer:IsCancelled())
+    end)
+
+    -- Expiry timer fires after BUFF_DURATION and zeroes stacks
+    it("expiry timer fires after BUFF_DURATION and zeroes stacks", function()
+        Tip:ApplySpell("generator")
+        assert.equals(2, Tip.stacks)
+        -- Timer scheduled at remaining(10) + 0.03 = 10.03 seconds from now=100
+        clock:advance(10.1)
+        assert.equals(0, Tip.stacks)
+        assert.equals(0, Tip.expiresAt)
+    end)
+
+    -- Twin Fangs (BUG-04, Phase 3): not yet implemented
+    pending("adds 3 stacks for Takedown with Twin Fangs talent (BUG-04)")
+end)
+
+-- ---------------------------------------------------------------------------
+-- Tip:SyncFromAura
+-- ---------------------------------------------------------------------------
+describe("Tip:SyncFromAura", function()
+    local DMX, Tip, clock
+
+    before_each(function()
+        DMX, Tip, clock = loader.load()
+        loader.resetTipState(Tip, clock)
+    end)
+
+    -- Returns false when ReadLiveState returns nil (GetPlayerAuraBySpellID errors)
+    it("returns false when GetPlayerAuraBySpellID throws (ReadLiveState nil path)", function()
+        stubs.mockAura.impl = function(_spellID)
+            error("simulated API error")
+        end
+        local result = Tip:SyncFromAura()
+        assert.is_false(result)
+    end)
+
+    -- Returns false when GetPlayerAuraBySpellID is nil (module-level guard)
+    -- This path tests the `if not GetPlayerAuraBySpellID then return nil, nil end` guard.
+    -- We cannot nil the captured local, but we can verify the error-path produces false.
+    -- (already covered above; this variant uses pcall path explicitly)
+    it("returns false when ReadLiveState returns nil via pcall error", function()
+        stubs.mockAura.impl = function(_spellID)
+            error("API unavailable")
+        end
+        assert.is_false(Tip:SyncFromAura())
+    end)
+
+    -- Syncs stacks from live aura when aura present
+    it("syncs stacks from live aura", function()
+        stubs.mockAura.impl = function(_spellID)
+            return stubs.makeAuraData({ applications = 2, expirationTime = clock.now + 8 })
+        end
+        local result = Tip:SyncFromAura()
+        assert.is_true(result)
+        assert.equals(2, Tip.stacks)
+    end)
+
+    -- Syncs expiresAt from live aura
+    it("syncs expiresAt from live aura", function()
+        stubs.mockAura.impl = function(_spellID)
+            return stubs.makeAuraData({ applications = 2, expirationTime = clock.now + 8 })
+        end
+        Tip:SyncFromAura()
+        assert.equals(clock.now + 8, Tip.expiresAt)
+    end)
+
+    -- Zeroes stacks when aura is absent (nil return)
+    it("zeroes stacks and expiresAt when aura is absent", function()
+        -- mockAura.impl already returns nil from resetTipState
+        Tip.stacks    = 2
+        Tip.expiresAt = 108
+        local result = Tip:SyncFromAura()
+        -- nil aura → ReadLiveState returns 0, 0 → SyncFromAura returns true (accepted sync)
+        assert.is_true(result)
+        assert.equals(0, Tip.stacks)
+        assert.equals(0, Tip.expiresAt)
+    end)
+
+    -- Consumer grace suppression within window: liveStacks > predicted stacks, within 2.75s
+    it("suppresses consumer up-sync within CONSUMER_UPSYNC_GRACE window", function()
+        Tip.inCombat       = true
+        Tip.lastPredictKind = "consumer"
+        Tip.stacks         = 1
+        Tip.lastPredictAt  = clock.now   -- 100
+
+        stubs.mockAura.impl = function(_spellID)
+            return stubs.makeAuraData({ applications = 3, expirationTime = clock.now + 8 })
+        end
+
+        -- Advance 1 second: clock.now = 101; 101 < 100 + 2.75 = 102.75 → within grace
+        clock:advance(1)
+        local result = Tip:SyncFromAura()
+        assert.is_false(result)
+        assert.equals(1, Tip.stacks)   -- unchanged
+    end)
+
+    -- Consumer grace suppression past window: sync should proceed
+    it("allows consumer up-sync past CONSUMER_UPSYNC_GRACE window", function()
+        Tip.inCombat        = true
+        Tip.lastPredictKind = "consumer"
+        Tip.stacks          = 1
+        Tip.lastPredictAt   = clock.now  -- 100
+
+        stubs.mockAura.impl = function(_spellID)
+            return stubs.makeAuraData({ applications = 3, expirationTime = clock.now + 8 })
+        end
+
+        -- Advance 3 seconds: clock.now = 103; 103 > 102.75 → past grace window
+        clock:advance(3)
+        local result = Tip:SyncFromAura()
+        assert.is_true(result)
+        assert.equals(3, Tip.stacks)   -- synced from aura
+    end)
+
+    -- Grace suppression does NOT fire for generators (only consumer predict)
+    it("does not suppress up-sync when lastPredictKind is generator", function()
+        Tip.inCombat        = true
+        Tip.lastPredictKind = "generator"
+        Tip.stacks          = 1
+        Tip.lastPredictAt   = clock.now  -- 100
+
+        stubs.mockAura.impl = function(_spellID)
+            return stubs.makeAuraData({ applications = 3, expirationTime = clock.now + 8 })
+        end
+
+        -- Within what would be the grace window — but kind is "generator", so no suppression
+        clock:advance(1)
+        local result = Tip:SyncFromAura()
+        assert.is_true(result)
+        assert.equals(3, Tip.stacks)
+    end)
+
+    -- Grace suppression does NOT fire when out of combat
+    it("does not suppress up-sync when out of combat", function()
+        Tip.inCombat        = false
+        Tip.lastPredictKind = "consumer"
+        Tip.stacks          = 1
+        Tip.lastPredictAt   = clock.now  -- 100
+
+        stubs.mockAura.impl = function(_spellID)
+            return stubs.makeAuraData({ applications = 3, expirationTime = clock.now + 8 })
+        end
+
+        clock:advance(1)
+        local result = Tip:SyncFromAura()
+        assert.is_true(result)
+        assert.equals(3, Tip.stacks)
+    end)
+end)
+
+-- ---------------------------------------------------------------------------
+-- Tip:ScheduleCastVerify — serial-mismatch guard
+-- ---------------------------------------------------------------------------
+describe("Tip:ScheduleCastVerify serial-mismatch", function()
+    local DMX, Tip, clock
+
+    before_each(function()
+        DMX, Tip, clock = loader.load()
+        loader.resetTipState(Tip, clock)
+    end)
+
+    -- Stale serial prevents SyncFromAura from being called
+    it("does not call SyncFromAura when castVerifySerial has changed (stale serial)", function()
+        local syncCallCount = 0
+        local originalSync  = Tip.SyncFromAura
+        Tip.SyncFromAura    = function(self)
+            syncCallCount = syncCallCount + 1
+            return originalSync(self)
+        end
+
+        -- First ApplySpell: serial increments to 1, timer fires at 100 + 1.25 = 101.25
+        Tip:ApplySpell("generator")
+        assert.equals(1, Tip.castVerifySerial)
+
+        -- Second ApplySpell: serial increments to 2, now any timer with serial=1 is stale
+        Tip:ApplySpell("generator")
+        assert.equals(2, Tip.castVerifySerial)
+
+        -- Reset spy count (ApplySpell may have triggered SyncFromAura via ScheduleExpiration
+        -- callback in test mode — start fresh)
+        syncCallCount = 0
+
+        -- Advance past the first ApplySpell timer's AURA_VERIFY_DELAY (1.25s).
+        -- The timer with serial=1 fires but sees castVerifySerial=2 → early return.
+        -- The timer with serial=2 has not yet fired (it was scheduled at a later clock.now).
+        -- We advance just enough to fire the first serial-1 timer but not the serial-2 one.
+        --
+        -- Both ApplySpell calls happened at clock.now=100; both timers fire at ~101.25 and ~102.05.
+        -- After the two ApplySpell calls the clock is still at 100 (no advance yet).
+        -- Advance to 101.3: the AURA_VERIFY_DELAY timers (fireAt=101.25) for BOTH serials fire.
+        -- We cannot selectively fire only the first without a more granular clock.
+        --
+        -- Use a simpler approach: advance past AURA_VERIFY_DELAY then count calls.
+        -- Advancing 1.3s fires the 1.25-delay timers for both ApplySpell calls (serial 1 and 2).
+        -- serial-1 timer → early return (no sync). serial-2 timer → calls SyncFromAura.
+        -- Net call count should be exactly 1 (the valid serial-2 call).
+        clock:advance(AURA_VERIFY_DELAY + 0.1)
+        assert.equals(1, syncCallCount)
+
+        -- Restore
+        Tip.SyncFromAura = originalSync
+    end)
+
+    -- Matching serial allows SyncFromAura to execute
+    it("calls SyncFromAura when castVerifySerial matches", function()
+        local syncCalled   = false
+        local originalSync = Tip.SyncFromAura
+        Tip.SyncFromAura   = function(self)
+            syncCalled = true
+            return originalSync(self)
+        end
+
+        -- Single ApplySpell: serial = 1; no subsequent change
+        Tip:ApplySpell("generator")
+
+        -- Advance past AURA_VERIFY_DELAY so the Verify closure fires
+        clock:advance(AURA_VERIFY_DELAY + 0.1)
+        assert.is_true(syncCalled)
+
+        Tip.SyncFromAura = originalSync
+    end)
+end)

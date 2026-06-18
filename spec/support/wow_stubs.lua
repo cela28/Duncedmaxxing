@@ -9,6 +9,17 @@ local mockClock = {
     timers = {},  -- list of { fireAt, callback, cancelled }
 }
 
+--- Per-test aura dispatch table.
+-- Tests override mockAura.impl to control what ReadLiveState receives.
+-- This is the only way to influence TipOfTheSpear.lua's module-level local
+--   `local GetPlayerAuraBySpellID = C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID`
+-- which captures the function once at file-load time.  By making the captured
+-- function a wrapper that reads mockAura.impl, tests can swap behaviour
+-- per-it() without re-loading the module.
+local mockAura = {
+    impl = function(_spellID) return nil end,
+}
+
 --- Advance the clock by dt seconds; auto-fires all callbacks whose fireAt <= now.
 function mockClock:advance(dt)
     self.now = self.now + dt
@@ -132,9 +143,11 @@ local function install(DMX)
         end,
     }
 
+    -- The wrapper is captured once by TipOfTheSpear.lua line 30.
+    -- Tests change behaviour by assigning to mockAura.impl, not by replacing this field.
     _G.C_UnitAuras = {
         GetPlayerAuraBySpellID = function(spellID)
-            return nil
+            return mockAura.impl(spellID)
         end,
     }
 
@@ -171,11 +184,12 @@ end
 --- Reset per-test overrides and clock state.
 local function reset()
     mockClock:reset()
-    _G.C_UnitAuras.GetPlayerAuraBySpellID = function(spellID) return nil end
+    mockAura.impl = function(_spellID) return nil end
 end
 
 return {
     mockClock    = mockClock,
+    mockAura     = mockAura,
     makeAuraData = makeAuraData,
     noopFrame    = noopFrame,
     install      = install,
