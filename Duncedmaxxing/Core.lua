@@ -95,16 +95,6 @@ local function NormalizeDB(db)
         db.settingsMigration = SETTINGS_MIGRATION
     end
 
-    if tip.barWidth then
-        tip.width = tip.barWidth
-    end
-    if tip.barHeight then
-        tip.height = tip.barHeight
-    end
-    if tip.spacing and not tip.borderSize then
-        tip.borderSize = tip.spacing
-    end
-
     if tip.displayMode ~= "bar" and tip.displayMode ~= "icons" and tip.displayMode ~= "number" then
         tip.displayMode = DEFAULTS.tip.displayMode
     end

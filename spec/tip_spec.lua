@@ -333,3 +333,37 @@ describe("Tip:ScheduleCastVerify serial-mismatch", function()
         Tip.SyncFromAura = originalSync
     end)
 end)
+
+-- ---------------------------------------------------------------------------
+-- Tip:ScheduleAuraVerify — auraVerifyPending flag (BUG-01)
+-- ---------------------------------------------------------------------------
+describe("Tip:ScheduleAuraVerify — auraVerifyPending flag (BUG-01)", function()
+    local DMX, Tip, clock
+
+    before_each(function()
+        DMX, Tip, clock = loader.load()
+        loader.resetTipState(Tip, clock)
+    end)
+
+    -- auraVerifyPending must be cleared even when serial-mismatch causes early return
+    it("clears auraVerifyPending on serial-mismatch early return", function()
+        -- Trigger ScheduleAuraVerify via ApplySpell (which calls ScheduleCastVerify ->
+        -- ScheduleAuraVerify). Set inCombat=true so the serial guard is exercised.
+        Tip.inCombat = true
+
+        -- First ApplySpell: serial=1, auraVerifyPending set to true inside timer
+        Tip:ApplySpell("generator")
+        assert.equals(1, Tip.castVerifySerial)
+
+        -- Second ApplySpell: serial=2; any pending timer with serial=1 is now stale
+        Tip:ApplySpell("generator")
+        assert.equals(2, Tip.castVerifySerial)
+
+        -- Advance past AURA_VERIFY_DELAY so the stale serial=1 timer fires.
+        -- The timer closure sets auraVerifyPending = false BEFORE the serial check,
+        -- so the flag must be false regardless of the early return.
+        clock:advance(AURA_VERIFY_DELAY + 0.1)
+
+        assert.is_false(Tip.auraVerifyPending)
+    end)
+end)
