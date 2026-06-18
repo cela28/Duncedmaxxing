@@ -25,6 +25,8 @@ read_globals = {
     "C_Spell",
     "GetSpecialization",
     "GetSpellTexture",
+    "IsPlayerSpell",
+    "C_SpellBook",
     "InCombatLockdown",
     "UnitClass",
     "GetTime",

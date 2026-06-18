@@ -14,6 +14,9 @@ local TRACKER_WIDTH = 247
 local TRACKER_HEIGHT = 10
 local BORDER_SIZE = 1
 
+local TAKEDOWN   = 1250646
+local TWIN_FANGS = 1272139
+
 local CONSUMERS = {
     [1261193] = true, -- Boomstick
     [1250646] = true, -- Takedown
@@ -29,6 +32,16 @@ local WHITE_TEX = "Interface\\Buttons\\WHITE8X8"
 
 local GetPlayerAuraBySpellID = C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID
 
+local function HasTwinFangs()
+    if C_SpellBook and C_SpellBook.IsSpellKnown then
+        return C_SpellBook.IsSpellKnown(TWIN_FANGS) and true or false
+    end
+    if IsPlayerSpell then
+        return IsPlayerSpell(TWIN_FANGS) and true or false
+    end
+    return false
+end
+
 Tip.stacks = 0
 Tip.active = false
 Tip.inCombat = false
@@ -39,6 +52,7 @@ Tip.castVerifySerial = 0
 Tip.auraVerifyPending = false
 Tip.lastPredictAt = 0
 Tip.lastPredictKind = nil
+Tip.hasTwinFangs = false
 
 local function ClampStacks(value)
     value = tonumber(value) or 0
@@ -59,9 +73,10 @@ end
 
 local function FindTrackedSpell(...)
     for i = 1, select("#", ...) do
-        local kind = ClassifySpellID(select(i, ...))
+        local id = select(i, ...)
+        local kind = ClassifySpellID(id)
         if kind then
-            return kind
+            return kind, id
         end
     end
 end
@@ -672,16 +687,24 @@ function Tip:Update()
     label:SetShown(unlocked)
 end
 
-function Tip:ApplySpell(kind)
+function Tip:ApplySpell(kind, spellID)
     local now = GetTime()
 
     if kind == "generator" then
-        self.stacks = ClampStacks(self.stacks + 2)
+        local grant = self.hasTwinFangs and 3 or 2
+        self.stacks = ClampStacks(self.stacks + grant)
         self.expiresAt = now + BUFF_DURATION
     elseif kind == "consumer" then
-        self.stacks = ClampStacks(self.stacks - 1)
-        if self.stacks == 0 then
-            self.expiresAt = 0
+        if spellID == TAKEDOWN and self.hasTwinFangs then
+            -- Takedown with Twin Fangs: grant 3 stacks first, then consume 1
+            self.stacks = ClampStacks(self.stacks + 3)
+            self.expiresAt = now + BUFF_DURATION
+            self.stacks = self.stacks - 1
+        else
+            self.stacks = ClampStacks(self.stacks - 1)
+            if self.stacks == 0 then
+                self.expiresAt = 0
+            end
         end
     else
         return
@@ -713,12 +736,14 @@ function Tip:OnEvent(event, ...)
         local unit = ...
         if unit == "player" then
             self.stacks = 0
+            self.hasTwinFangs = HasTwinFangs()
             self:RefreshActive()
             self:SyncFromAura()
             self:Update()
         end
         return
     elseif event == "PLAYER_TALENT_UPDATE" or event == "TRAIT_CONFIG_UPDATED" then
+        self.hasTwinFangs = HasTwinFangs()
         self:RefreshActive()
         self:Update()
         return
@@ -733,9 +758,9 @@ function Tip:OnEvent(event, ...)
             return
         end
 
-        local kind = FindTrackedSpell(...)
+        local kind, spellID = FindTrackedSpell(...)
         if kind then
-            self:ApplySpell(kind)
+            self:ApplySpell(kind, spellID)
         end
     end
 end
@@ -750,6 +775,7 @@ function Tip:Initialize(core)
 
     EnsureFrame(self)
     self.inCombat = InCombatLockdown and InCombatLockdown() or false
+    self.hasTwinFangs = HasTwinFangs()
     self:RefreshLayout()
 
     self.eventFrame = CreateFrame("Frame")

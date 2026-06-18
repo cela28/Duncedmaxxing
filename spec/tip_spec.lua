@@ -123,8 +123,69 @@ describe("Tip:ApplySpell", function()
         assert.equals(0, Tip.expiresAt)
     end)
 
-    -- Twin Fangs (BUG-04, Phase 3): not yet implemented
-    pending("adds 3 stacks for Takedown with Twin Fangs talent (BUG-04)")
+    -- BUG-03: Kill Command grants 2 stacks without Twin Fangs (baseline)
+    it("grants 2 stacks on generator without Twin Fangs (BUG-03 baseline)", function()
+        Tip.hasTwinFangs = false
+        Tip:ApplySpell("generator")
+        assert.equals(2, Tip.stacks)
+    end)
+
+    -- BUG-03: Kill Command grants 3 stacks with Twin Fangs active
+    it("grants 3 stacks on generator with Twin Fangs active (BUG-03)", function()
+        Tip.hasTwinFangs = true
+        Tip:ApplySpell("generator")
+        assert.equals(3, Tip.stacks)
+    end)
+
+    -- BUG-03: Kill Command with Twin Fangs from 1 stack caps at MAX_STACKS
+    it("caps at MAX_STACKS on generator with Twin Fangs from 1 stack (BUG-03)", function()
+        Tip.hasTwinFangs = true
+        Tip.stacks = 1
+        Tip:ApplySpell("generator")
+        assert.equals(MAX_STACKS, Tip.stacks)
+    end)
+
+    -- BUG-04: Takedown with Twin Fangs from 0 stacks: grant 3 then consume 1 = 2
+    it("Takedown with Twin Fangs from 0 stacks: grant 3 then consume 1 = 2 (BUG-04)", function()
+        Tip.hasTwinFangs = true
+        Tip.stacks = 0
+        Tip:ApplySpell("consumer", 1250646)
+        assert.equals(2, Tip.stacks)
+        assert.not_equals(0, Tip.expiresAt)
+    end)
+
+    -- BUG-04: Takedown with Twin Fangs from 1 stack: grant 3 then consume 1 = 2
+    -- This is the D-04 distinguishing case — wrong order would give clamp(1-1+3)=3, not 2
+    it("Takedown with Twin Fangs from 1 stack: grant 3 then consume 1 = 2 (BUG-04)", function()
+        Tip.hasTwinFangs = true
+        Tip.stacks = 1
+        Tip:ApplySpell("consumer", 1250646)
+        assert.equals(2, Tip.stacks)
+    end)
+
+    -- BUG-04: Takedown with Twin Fangs from 2 stacks: clamp(2+3)=3, 3-1=2
+    it("Takedown with Twin Fangs from 2 stacks: grant 3 then consume 1 = 2 (BUG-04)", function()
+        Tip.hasTwinFangs = true
+        Tip.stacks = 2
+        Tip:ApplySpell("consumer", 1250646)
+        assert.equals(2, Tip.stacks)
+    end)
+
+    -- BUG-04: Takedown WITHOUT Twin Fangs consumes 1 stack normally
+    it("Takedown without Twin Fangs consumes 1 stack normally (BUG-04)", function()
+        Tip.hasTwinFangs = false
+        Tip.stacks = 2
+        Tip:ApplySpell("consumer", 1250646)
+        assert.equals(1, Tip.stacks)
+    end)
+
+    -- BUG-04: Non-Takedown consumer with Twin Fangs still consumes 1 stack (Takedown-only special case)
+    it("non-Takedown consumer with Twin Fangs consumes 1 stack normally (BUG-04)", function()
+        Tip.hasTwinFangs = true
+        Tip.stacks = 2
+        Tip:ApplySpell("consumer", 186270)  -- Raptor Strike spell ID
+        assert.equals(1, Tip.stacks)
+    end)
 end)
 
 -- ---------------------------------------------------------------------------
