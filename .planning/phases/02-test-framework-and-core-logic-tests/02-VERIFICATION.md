@@ -1,7 +1,7 @@
 ---
 phase: 02-test-framework-and-core-logic-tests
 verified: 2026-06-18T09:54:08Z
-status: human_needed
+status: passed
 score: 7/7
 overrides_applied: 0
 deferred:
@@ -133,9 +133,9 @@ No orphaned requirements found -- all 7 TEST-* requirements mapped to Phase 2 in
 
 ### 1. Verify AuraData Stub Accuracy Against Wiki
 
-**Test:** Open warcraft.wiki.gg/wiki/Struct_AuraData and cross-reference the 25 fields in `spec/support/wow_stubs.lua` `makeAuraData()` function (lines 51-90) against the documented Struct_AuraData contract.
-**Expected:** All field names match exactly, default value types are appropriate (strings, numbers, booleans, tables), and no documented fields are missing.
-**Why human:** Verifying accuracy against an external wiki resource requires human cross-reference. Automated grep confirms the fields exist but cannot verify they match the external documentation.
+**Test:** Cross-reference `spec/support/wow_stubs.lua` `makeAuraData()` fields against warcraft.wiki.gg/wiki/Struct_AuraData.
+**Expected:** All field names match exactly, default value types are appropriate, and no documented fields are missing.
+**Result:** VERIFIED on 2026-06-18. Fixed 4 naming issues (`dispelType`→`dispelName`, `isFromPlayerOrPet`→`isFromPlayerOrPlayerPet`), removed 2 legacy fields (`count`, `source`), added 6 missing fields. All 108 tests pass after fixes.
 
 ### Gaps Summary
 
