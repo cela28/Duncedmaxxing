@@ -49,7 +49,7 @@ jobs:
           zip -r "Duncedmaxxing-$VERSION.zip" Duncedmaxxing/
 
       - name: Upload release asset
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@c062e08bd532815e2082a07b400ef65ab24e279c  # v2.3.2
         with:
           files: Duncedmaxxing-*.zip
           prerelease: true
