@@ -1,6 +1,6 @@
 # Coding Conventions
 
-**Analysis Date:** 2026-06-17
+**Analysis Date:** 2026-06-18
 
 ## Language
 
@@ -269,12 +269,26 @@ local CONSUMERS = {
 
 **No block comments, no function-level docstrings.** Code is intended to be self-documenting through clear naming. Design rationale lives in `DEVELOPMENT_NOTES.md`, not inline.
 
+**Test comments:** Test files use inline comments liberally to document expected behaviour and explain multi-step setups (`spec/util_spec.lua`, `spec/core_spec.lua`, `spec/tip_spec.lua`). Comments in tests clarify non-obvious test flow (e.g., "Advance 1 second: clock.now = 101; 101 < 100 + 2.75 = 102.75 → within grace").
+
 ## Logging
 
 **Single output mechanism:** `DMX:Print(message)` — writes to `DEFAULT_CHAT_FRAME` with the addon name prefix in green (`|cffaad372Duncedmaxxing|r`).
 
 All user-facing messages go through `DMX:Print`. There is no debug logging, no file logging.
 
+## Linting
+
+**Tool:** `luacheck` (via `.luacheckrc`)
+
+**Configuration:** `Duncedmaxxing/.luacheckrc`
+- Standard: `lua51` (WoW Lua 5.1 sandbox)
+- Writeable globals: `DuncedmaxxingDB`, `SLASH_DUNCEDMAXXING1`, `SLASH_DUNCEDMAXXING2`, `Duncedmaxxing`, `SlashCmdList`
+- Read-only WoW API globals: `CreateFrame`, `UIParent`, `C_UnitAuras`, `C_Timer`, `C_SpecializationInfo`, `GetSpecialization`, `InCombatLockdown`, `GetTime`, etc.
+- Excluded: `spec/**/*.lua` (test files use busted globals not addon-compatible)
+- Suppressions: W432 (shadowing upvalue argument — intentional for WoW SetScript closures)
+- Line-length warnings disabled (WoW addon frame code naturally has long lines)
+
 ---
 
-*Convention analysis: 2026-06-17*
+*Convention analysis: 2026-06-18*

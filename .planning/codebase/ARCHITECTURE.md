@@ -1,7 +1,7 @@
-<!-- refreshed: 2026-06-17 -->
+<!-- refreshed: 2026-06-18 -->
 # Architecture
 
-**Analysis Date:** 2026-06-17
+**Analysis Date:** 2026-06-18
 
 ## System Overview
 
@@ -13,15 +13,28 @@
                 │                            │
                 ▼                            ▼
 ┌──────────────────────┐      ┌──────────────────────────────┐
-│     Core.lua          │      │         Options.lua           │
-│  Addon namespace      │      │  Settings UI (popup window)   │
-│  Module registry      │      │  `DMX.Options`                │
-│  DB init & migration  │      └──────────────┬───────────────┘
-│  Slash commands       │                     │
-│  `_G.Duncedmaxxing`   │                     │ calls DMX API
-└───────────────────────┘                     │
-         │ DMX:RegisterModule("tip", ...)      │
-         ▼                                    │
+│     Util.lua         │      │     Core.lua                  │
+│  Utility functions   │      │  Addon namespace              │
+│  (Clamp, Parse*)     │      │  Module registry              │
+└──────────────┬───────┘      │  DB init & migration          │
+               │               │  Slash commands               │
+               │               │  `_G.Duncedmaxxing`           │
+               │               └──────────────┬────────────────┘
+               │                              │
+               │                              │ DMX:RegisterModule
+               │                              ▼
+               │              ┌──────────────────────────────┐
+               │              │     Options.lua               │
+               │              │  Settings UI (popup window)   │
+               │              │  `DMX.Options`                │
+               │              └──────────────┬───────────────┘
+               │                             │
+               │                             │ calls DMX API
+               │                             │
+               │                             ▼
+               └──────────────┬──────────────────────────────┐
+                              │                              │
+                              ▼                              │
 ┌──────────────────────────────────────────────────────────────┐
 │              Duncedmaxxing/Modules/TipOfTheSpear.lua          │
 │  Stack tracking + WoW frame rendering                        │
@@ -35,13 +48,39 @@
 └──────────────────────────────────────────────────────────────┘
 ```
 
+**Test Infrastructure (offline, `busted`):**
+```text
+                  Test Runner: busted
+                       │
+                       ▼
+        ┌────────────────────────────────┐
+        │  .busted (configuration)       │
+        │  .luacheckrc (linting config)  │
+        └────────────────────────────────┘
+                       │
+                       ▼
+        ┌────────────────────────────────┐
+        │  spec/support/                 │
+        │  - init.lua (loader)           │
+        │  - wow_stubs.lua (mocks)       │
+        └────────────────────────────────┘
+                       │
+         ┌─────────────┼─────────────┐
+         ▼             ▼             ▼
+    core_spec.lua  util_spec.lua  tip_spec.lua
+    (DB, settings) (validators)   (tracking)
+```
+
 ## Component Responsibilities
 
 | Component | Responsibility | File |
 |-----------|----------------|------|
+| Util | String/color parsing, numeric clamping helpers | `Duncedmaxxing/Util.lua` |
 | Core | Addon namespace `DMX`, module registry, DB init, settings migration, slash commands, spec-detection helpers | `Duncedmaxxing/Core.lua` |
 | Options | Movable settings popup UI, all input widgets, combat guard | `Duncedmaxxing/Options.lua` |
 | TipOfTheSpear | Stack state machine, predictive tracking, aura verification, WoW frame construction and rendering | `Duncedmaxxing/Modules/TipOfTheSpear.lua` |
+| Test Loader | Load addon files with WoW vararg injection for offline testing | `spec/support/init.lua` |
+| WoW Mocks | Mock implementations of WoW API globals (timers, auras, frames, etc.) | `spec/support/wow_stubs.lua` |
 | SavedVariables | Persistent user settings via WoW's `DuncedmaxxingDB` global | WoW engine |
 
 ## Pattern Overview
@@ -53,22 +92,33 @@
 - `Duncedmaxxing/Core.lua` initializes the namespace and is the sole owner of `DuncedmaxxingDB`
 - Modules self-register via `DMX:RegisterModule(key, table)` after load
 - No external library dependencies — pure Lua + WoW API
+- Test harness uses `loadfile()` to inject WoW varargs and full WoW API mock layer for offline validation
 
 ## Layers
+
+**Util Layer:**
+- Purpose: Shared validation and parsing helpers for the rest of the codebase
+- Location: `Duncedmaxxing/Util.lua`
+- Contains: `Clamp`, `Trim`, `ParseOnOff`, `ParseHexColor` functions exposed via `DMX.Util` namespace
+- Depends on: Lua standard library only (`string`, `tonumber`)
+- Used by: `Duncedmaxxing/Core.lua`, `Duncedmaxxing/Options.lua` (both call `DMX.Util.*`)
+- Tested by: `spec/util_spec.lua` (all functions fully unit-tested)
 
 **Core / Bootstrap Layer:**
 - Purpose: Owns addon identity, saved-variable DB, settings migration, module dispatch, and slash commands
 - Location: `Duncedmaxxing/Core.lua`
-- Contains: `DEFAULTS` table, `MergeDefaults`/`NormalizeDB` helpers, module registry methods, spec-detection helpers, `ADDON_LOADED` handler
-- Depends on: WoW globals (`CreateFrame`, `UnitClass`, `C_SpecializationInfo`, `SlashCmdList`)
+- Contains: `DEFAULTS` table, `MergeDefaults`/`NormalizeDB` helpers, module registry methods, spec-detection helpers, `ADDON_LOADED` handler, `DMX._test` escape hatch
+- Depends on: WoW globals (`CreateFrame`, `UnitClass`, `C_SpecializationInfo`, `SlashCmdList`), `Duncedmaxxing/Util.lua`
 - Used by: `Duncedmaxxing/Options.lua`, `Duncedmaxxing/Modules/TipOfTheSpear.lua`
+- Tested by: `spec/core_spec.lua` (DB migration, defaults merging via `DMX._test` escape hatch)
 
 **Options Layer:**
 - Purpose: Provides a movable in-game configuration popup; reads and writes `db.tip` through `DMX:GetDB()`
 - Location: `Duncedmaxxing/Options.lua`
 - Contains: `DMX.Options` table with `BuildWindow`, `Refresh`, `Open`, `Initialize` methods, all widget factory functions
-- Depends on: `Duncedmaxxing/Core.lua` (via `DMX`), WoW frame API (`CreateFrame`, `UIParent`, templates)
+- Depends on: `Duncedmaxxing/Core.lua` (via `DMX`), `Duncedmaxxing/Util.lua` (validators), WoW frame API (`CreateFrame`, `UIParent`, templates)
 - Used by: Slash command handler in `Duncedmaxxing/Core.lua` calls `DMX:OpenOptions()`
+- Tested by: Integration testing only (no unit tests; UI code is complex to mock)
 
 **Module / Feature Layer:**
 - Purpose: All gameplay logic and rendering for a specific tracking feature
@@ -76,16 +126,19 @@
 - Contains: Stack state machine, predictive spellcast handling, aura verification with timers, full WoW frame tree construction
 - Depends on: `Duncedmaxxing/Core.lua` (via `DMX`), WoW API (`C_UnitAuras`, `C_Timer`, `C_Spell`, frame events)
 - Used by: `Duncedmaxxing/Core.lua` calls `DMX:ForEachModule("Initialize", DMX)` on `ADDON_LOADED`
+- Tested by: `spec/tip_spec.lua` (pure-logic methods `ApplySpell`, `SyncFromAura`, timer scheduling with mock clock)
 
 ## Data Flow
 
 ### Addon Initialization
 
-1. WoW loads files in TOC order: `Core.lua` → `Options.lua` → `Modules/TipOfTheSpear.lua` (`Duncedmaxxing/Duncedmaxxing.toc` lines 10–12)
+1. WoW loads files in TOC order: `Util.lua` → `Core.lua` → `Options.lua` → `Modules/TipOfTheSpear.lua` (`Duncedmaxxing/Duncedmaxxing.toc` lines 10–13)
 2. Each file captures the shared namespace via `local _, DMX = ...`
-3. `TipOfTheSpear.lua` self-registers: `DMX:RegisterModule("tip", Tip)` (`Duncedmaxxing/Modules/TipOfTheSpear.lua:770`)
-4. `ADDON_LOADED` fires → `Core.lua` merges defaults into `DuncedmaxxingDB`, runs `NormalizeDB`, assigns `DMX.db`, calls `DMX:InitializeOptions()` then `DMX:ForEachModule("Initialize", DMX)` (`Duncedmaxxing/Core.lua:358–374`)
-5. `Tip:Initialize` builds the WoW frame tree and registers all game events (`Duncedmaxxing/Modules/TipOfTheSpear.lua:743–768`)
+3. `Util.lua` exports validators via `DMX.Util` table
+4. `Core.lua` initializes `DMX` namespace with defaults, module registry, slash handlers, and `DMX._test` escape hatch for testing
+5. `TipOfTheSpear.lua` self-registers: `DMX:RegisterModule("tip", Tip)` (`Duncedmaxxing/Modules/TipOfTheSpear.lua:770`)
+6. `ADDON_LOADED` fires → `Core.lua` merges defaults into `DuncedmaxxingDB`, runs `NormalizeDB`, assigns `DMX.db`, calls `DMX:InitializeOptions()` then `DMX:ForEachModule("Initialize", DMX)` (`Duncedmaxxing/Core.lua:358–374`)
+7. `Tip:Initialize` builds the WoW frame tree and registers all game events (`Duncedmaxxing/Modules/TipOfTheSpear.lua:743–768`)
 
 ### In-Combat Stack Tracking
 
@@ -105,12 +158,23 @@
 - All persistent state lives in `DuncedmaxxingDB` (WoW SavedVariables global), accessed via `DMX:GetDB()`
 - Runtime stack state (`Tip.stacks`, `Tip.expiresAt`, `Tip.inCombat`, etc.) lives as fields on the `Tip` module table
 
+### Test Initialization Flow
+
+1. Test calls `loader.load()` from `spec/support/init.lua`
+2. Loader installs WoW API mocks via `stubs.install(DMX)` from `spec/support/wow_stubs.lua`
+3. Loader calls `loadfile()` (not `dofile()`) to inject WoW varargs `(addonName, DMX)` into each source file
+4. Files load in addon order: `Util.lua` → `Core.lua` → `TipOfTheSpear.lua` (Options.lua skipped in tests)
+5. Loader manually simulates `ADDON_LOADED` bootstrap: merges defaults, runs `NormalizeDB`, calls `DMX:ForEachModule("Initialize", DMX)`
+6. Test receives `DMX`, `Tip` module reference, and `mockClock` for timer-based assertions
+7. Each test calls `loader.resetTipState(Tip, clock)` in `before_each()` for full isolation
+
 ## Key Abstractions
 
 **DMX Namespace Table:**
 - Purpose: Shared addon object — acts as both the module registry and the public API surface
 - Examples: `Duncedmaxxing/Core.lua:3` (`_G.Duncedmaxxing = DMX`), all files (`local _, DMX = ...`)
 - Pattern: WoW addon private namespace passed via vararg; methods added with `function DMX:Method()`
+- Test escape hatch: `DMX._test` exposes `SETTINGS_MIGRATION`, `MergeDefaults`, `NormalizeDB` for offline validation
 
 **Module Table Pattern:**
 - Purpose: Each feature is a self-contained Lua table with `Initialize`, `Update`, and lifecycle methods
@@ -121,6 +185,12 @@
 - Purpose: Centralized default values in `Duncedmaxxing/Core.lua:11–34`; every subsystem reads live config via a local `GetCfg()` that calls `DMX:GetDB().tip`
 - Examples: `Duncedmaxxing/Core.lua:11`, `Duncedmaxxing/Options.lua:58–61`, `Duncedmaxxing/Modules/TipOfTheSpear.lua:120–122`
 - Pattern: Defaults merged once on load via `MergeDefaults`; no runtime fallback logic needed in modules
+
+**Mock Clock Pattern (Testing):**
+- Purpose: Controllable time source for deterministic timer-based testing without real delays
+- Location: `spec/support/wow_stubs.lua:6–46` (MockClock implementation)
+- Pattern: Tests call `clock:advance(seconds)` to move time forward; all scheduled callbacks auto-fire when `fireAt <= now`
+- Used by: `spec/tip_spec.lua` to test expiry timers and aura-verify delays without blocking
 
 ## Entry Points
 
@@ -139,13 +209,19 @@
 - Triggers: Player types `/dmax` or `/duncedmaxxing`
 - Responsibilities: Parses command string, directly mutates `db.tip`, calls `RefreshTip` or module methods
 
+**Test Entry Point (spec/support/init.lua):**
+- Location: `spec/support/init.lua:19–46` (`load()` function)
+- Triggers: Each test suite calls `loader.load()` in its `before_each()` block
+- Responsibilities: Installs WoW mocks, loads addon files with vararg injection, simulates ADDON_LOADED bootstrap, returns DMX/Tip/clock for assertion use
+
 ## Architectural Constraints
 
-- **Threading:** Single-threaded Lua coroutine model (WoW standard). No worker threads. `C_Timer.After` and `C_Timer.NewTimer` are the only async primitives used.
-- **Global state:** `DuncedmaxxingDB` is a WoW SavedVariables global. `_G.Duncedmaxxing = DMX` exposes the namespace globally. `Tip` module uses module-level locals for frame references (`root`, `pips`, `borders`, `label`, `numberText`).
-- **Circular imports:** Not applicable — WoW addons do not use `require`; files share a namespace table and load sequentially per TOC order.
+- **Threading:** Single-threaded Lua coroutine model (WoW standard). No worker threads. `C_Timer.After` and `C_Timer.NewTimer` are the only async primitives used. Tests use mock clock for deterministic timer testing.
+- **Global state:** `DuncedmaxxingDB` is a WoW SavedVariables global. `_G.Duncedmaxxing = DMX` exposes the namespace globally. `Tip` module uses module-level locals for frame references (`root`, `pips`, `borders`, `label`, `numberText`). Tests isolate global state by resetting `_G.DuncedmaxxingDB` and installing fresh stubs per test.
+- **Circular imports:** Not applicable — WoW addons do not use `require`; files share a namespace table and load sequentially per TOC order. Tests use standard Lua `require()` for test infrastructure only (support modules, not addon code).
 - **Combat protection:** Options window and all settings mutations are blocked during `InCombatLockdown()`. The tracking path (event handlers, `Tip:Update`) is explicitly kept off the combat-restricted path.
 - **API compatibility:** Dual-path API calls for `GetSpecialization` / `C_SpecializationInfo` and `GetSpellTexture` / `C_Spell.GetSpellTexture` to handle WoW API surface changes across patches.
+- **Test isolation (D-06):** Each test calls `loader.load()` in `before_each()`, reloading all addon source files fresh. This prevents test pollution from timer-state, stack-state, and DB-state mutations. Clock is reset to `now = 100` (non-zero to avoid grace-period collision pitfalls).
 
 ## Anti-Patterns
 
@@ -170,13 +246,14 @@
 - `ClassifySpellID` wraps the lookup in `pcall` (`Duncedmaxxing/Modules/TipOfTheSpear.lua:57–69`)
 - `Options:CanChange()` gate prevents all settings changes in combat (`Duncedmaxxing/Options.lua:161–168`)
 - Nil-guard checks before every frame method call (e.g., `if tip and tip.RefreshLayout then`)
+- Tests use `stubs.mockAura.impl` to inject error-path testing (e.g., simulated API failures in `spec/tip_spec.lua:143–159`)
 
 ## Cross-Cutting Concerns
 
 **Logging:** `DMX:Print(message)` writes prefixed messages to `DEFAULT_CHAT_FRAME`. Used for user-facing feedback only; no debug logging infrastructure. (`Duncedmaxxing/Core.lua:166–170`)
-**Validation:** Input parsing helpers (`Clamp`, `ParseOnOff`, `ParseHexColor`, `Trim`) defined locally in both `Duncedmaxxing/Core.lua` and `Duncedmaxxing/Options.lua` — duplicated, not shared.
+**Validation:** Input parsing helpers (`Clamp`, `ParseOnOff`, `ParseHexColor`, `Trim`) defined in `Duncedmaxxing/Util.lua` and exposed via `DMX.Util` for consistent validation across `Core`, `Options`, and test suites.
 **Authentication:** Not applicable (WoW addon context; no network auth).
 
 ---
 
-*Architecture analysis: 2026-06-17*
+*Architecture analysis: 2026-06-18*

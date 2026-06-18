@@ -1,6 +1,6 @@
 # External Integrations
 
-**Analysis Date:** 2026-06-17
+**Analysis Date:** 2026-06-18
 
 ## APIs & External Services
 
@@ -103,6 +103,38 @@ The addon reacts to the following WoW client events (no external message bus):
 | `UNIT_SPELLCAST_SUCCEEDED` (player) | `Duncedmaxxing/Modules/TipOfTheSpear.lua:764` | Predict stack change immediately |
 | `PLAYER_REGEN_DISABLED` | `Duncedmaxxing/Options.lua:451` | Auto-close settings window on combat start |
 
+## Test Infrastructure (Development)
+
+**Busted Test Runner:**
+- Configuration: `.busted` — pattern `_spec`, utfTerminal output, no early-stop on failure
+- Test discovery: Scans `spec/` directory for `*_spec.lua` files
+- Execution: `busted` command runs all tests with full per-test isolation
+
+**Mock Layer (spec/support/):**
+- `spec/support/wow_stubs.lua` — Comprehensive WoW API mocking layer:
+  - Mock clock: `mockClock` with `advance(dt)` for timer simulation; used by `C_Timer.After` and `C_Timer.NewTimer` stubs
+  - Mock aura: `mockAura.impl` function (swappable per-test) that feeds into captured `C_UnitAuras.GetPlayerAuraBySpellID`
+  - Frame stubs: `noopFrame()` minimal state with `_visible`, `_text`, `_scripts` tracking for assertions
+  - Full `Struct_AuraData` builder: `makeAuraData(overrides)` for precise aura contract testing
+  - API stubs: `C_Timer`, `C_UnitAuras`, `C_SpecializationInfo`, `C_Spell`, `CreateFrame`, `UIParent`, etc.
+
+- `spec/support/init.lua` — Test loader with full addon isolation:
+  - `load()` function: Fresh namespace per-test, loads addon files in TOC order via `loadfile()` with vararg injection, replicates `ADDON_LOADED` bootstrap
+  - `resetTipState(Tip, clock)` function: Zeros `Tip.stacks`, `Tip.expiresAt`, `Tip.lastPredictAt`, `Tip.castVerifySerial`, `Tip.expireTimer`, `Tip.auraVerifyPending` and resets clock
+
+**Test Files:**
+- `spec/util_spec.lua` — Unit tests for `DMX.Util` functions: `Clamp`, `ParseHexColor`, `ParseOnOff`, `Trim`
+- `spec/core_spec.lua` — Unit tests for `Core.lua` pure-logic: `MergeDefaults` (via `DMX._test`), `NormalizeDB` (via `DMX._test`), settings migration
+- `spec/tip_spec.lua` — Unit tests for `TipOfTheSpear.lua` pure-logic: `Tip:ApplySpell`, `Tip:SyncFromAura`, `Tip:ScheduleExpiration`, `Tip:ScheduleCastVerify`
+
+**Luacheck Static Analyzer:**
+- Configuration: `.luacheckrc` — targets Lua 5.1, defines writeable globals (SavedVariable, slash commands), read-only WoW API globals
+- Addon globals defined: `DuncedmaxxingDB`, `SLASH_DUNCEDMAXXING1`, `SLASH_DUNCEDMAXXING2`, `Duncedmaxxing`, `SlashCmdList`
+- WoW API read-globals: `CreateFrame`, `UIParent`, `C_UnitAuras`, `C_Timer`, `C_SpecializationInfo`, `C_Spell`, `GetSpecialization`, `GetSpellTexture`, `InCombatLockdown`, `UnitClass`, `GetTime`, `DEFAULT_CHAT_FRAME`
+- Test exclusion: `spec/**/*.lua` excluded (tests use busted globals not part of addon)
+- Line-length limit: Disabled (addon UI code naturally has long lines)
+- Ignore rule W432: Shadowing upvalue arguments (WoW SetScript closures intentionally shadow `self`)
+
 ---
 
-*Integration audit: 2026-06-17*
+*Integration audit: 2026-06-18*

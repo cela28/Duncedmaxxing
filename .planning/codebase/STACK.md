@@ -1,6 +1,6 @@
 # Technology Stack
 
-**Analysis Date:** 2026-06-17
+**Analysis Date:** 2026-06-18
 
 ## Languages
 
@@ -28,7 +28,15 @@
 - No third-party addon framework (e.g., Ace3) is used; the addon is intentionally dependency-free
 
 **Testing:**
-- None — no test framework detected
+- **busted** - Lua unit test framework; configured in `.busted`
+  - Pattern: `_spec.lua` files in `spec/` directory
+  - Execution: Run via `busted` command
+  - Supports full test isolation via per-test module reloading
+
+**Linting:**
+- **luacheck** - Static Lua linter for code quality checks
+  - Configuration: `.luacheckrc` (Lua 5.1 std, WoW API globals, addon-specific configurations)
+  - Excludes: `spec/**/*.lua` (test files use busted globals not in addon code)
 
 **Build/Dev:**
 - No build toolchain — Lua files are loaded directly by the WoW client in the order declared in `Duncedmaxxing/Duncedmaxxing.toc`
@@ -54,11 +62,20 @@
 **Build:**
 - `Duncedmaxxing/Duncedmaxxing.toc` — TOC file controls interface version, metadata, SavedVariables declaration, and Lua file load order
 
+**Linting:**
+- `.luacheckrc` — Static analysis configuration targeting Lua 5.1; defines WoW API globals, addon writable globals, and style rules
+
+**Testing:**
+- `.busted` — Test runner configuration; pattern `_spec`, no keep-going mode, utfTerminal output
+- `spec/support/init.lua` — Addon loader with WoW vararg injection and ADDON_LOADED bootstrap for test isolation
+- `spec/support/wow_stubs.lua` — Mock WoW API layer (timers, auras, frame stubs, spec detection)
+
 ## Platform Requirements
 
 **Development:**
 - A World of Warcraft: Midnight 12.0.5 installation; no external tooling required
 - Files are dropped directly into the WoW `Interface/AddOns/Duncedmaxxing/` directory
+- **Optional dev tools:** `luacheck` (linting) and `busted` (testing) installed via local system package manager
 
 **Production:**
 - WoW client on Windows or macOS; no server-side component
@@ -66,4 +83,4 @@
 
 ---
 
-*Stack analysis: 2026-06-17*
+*Stack analysis: 2026-06-18*

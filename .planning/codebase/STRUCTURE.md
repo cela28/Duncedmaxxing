@@ -1,6 +1,6 @@
 # Codebase Structure
 
-**Analysis Date:** 2026-06-17
+**Analysis Date:** 2026-06-18
 
 ## Directory Layout
 
@@ -14,6 +14,15 @@ repo-root/
 │   │   └── TipOfTheSpear.lua   # Tip of the Spear stack tracker and renderer
 │   └── Media/                  # Static assets referenced by the TOC IconTexture
 │       └── duncedgers_pony.png # Addon icon (shown in addon list)
+├── spec/                       # busted test suite (Phase 2)
+│   ├── util_spec.lua           # Utility function tests (Clamp, ParseHexColor, ParseOnOff, Trim)
+│   ├── core_spec.lua           # Core DB tests (MergeDefaults, NormalizeDB)
+│   ├── tip_spec.lua            # Tracking logic tests (ApplySpell, SyncFromAura)
+│   └── support/                # Test infrastructure
+│       ├── init.lua            # Test bootstrap — loadfile() vararg injection, resetTipState()
+│       └── wow_stubs.lua       # WoW API mock layer (timers, auras, frames, clock)
+├── .busted                     # busted test runner config
+├── .luacheckrc                 # luacheck static analysis config (std=lua51, WoW globals)
 ├── README.md                   # User-facing feature and command documentation
 ├── CLAUDE.md                   # AI-assisted development instructions
 ├── .gitignore                  # Git ignore rules

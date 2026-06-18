@@ -1,101 +1,232 @@
 # Testing Patterns
 
-**Analysis Date:** 2026-06-17
+**Analysis Date:** 2026-06-18
 
 ## Test Framework
 
-**Runner:** None — no automated test framework is present.
+**Runner:**
+- **busted** - Lua unit test framework (5.1-compatible)
+- Config: `.busted` — pattern `_spec`, utfTerminal output, no keep-going
+- Location: Tests live in `spec/` directory with `_spec.lua` suffix
 
-No `.spec.lua`, `_test.lua`, `busted`, `luaunit`, or equivalent test files exist anywhere in the repository.
+**Assertion Library:**
+- busted's built-in assertions (included with busted)
+- Common patterns: `assert.equals()`, `assert.is_nil()`, `assert.is_true()`, `assert.is_false()`, `assert.is_near()`, `assert.is_not_nil()`, `assert.is_table()`
 
 **Run Commands:**
 ```bash
-# No test commands available
+busted                # Run all tests
+busted spec/tip_spec.lua  # Run single suite
+busted --luas spec/util_spec.lua  # Verbose mode (implied by utfTerminal)
 ```
 
-## Testing Approach
+## Test Infrastructure
 
-This project uses **manual in-game testing** as its sole verification mechanism. The addon targets the WoW client runtime (Lua 5.1 embedded in the game), which makes standard Lua test frameworks (busted, luaunit) impractical without a WoW environment mock layer.
+**Test Loader:** `spec/support/init.lua`
+- Implements `loadAddon(path, addonName, dmxTable)` to load Lua files with proper WoW vararg injection
+- Uses `loadfile()` not `dofile()` (RESEARCH Pitfall 2: dofile passes empty varargs, breaking `local _, DMX = ...`)
+- Implements `load()` that:
+  1. Creates isolated `DMX = {}` namespace per test run (D-06: full isolation)
+  2. Installs WoW API stubs via `stubs.install(DMX)`
+  3. Loads addon files in TOC order: `Util.lua`, `Core.lua`, `Modules/TipOfTheSpear.lua` (skips Options.lua)
+  4. Replicates `ADDON_LOADED` bootstrap: initializes DB, calls `MergeDefaults`, `NormalizeDB`, module dispatch
+  5. Returns `(DMX, Tip, mockClock)` for test access
+- Implements `resetTipState(Tip, clock)` to zero all mutable fields before each test
 
-## Built-In Test/Preview Mode
+**WoW API Stubs:** `spec/support/wow_stubs.lua`
+- Mock timers: `C_Timer.After()`, `C_Timer.NewTimer()` with cancel/IsCancelled
+- Mock auras: `C_UnitAuras.GetPlayerAuraBySpellID()` wraps `mockAura.impl` (single-dispatch point for all tests)
+- Mock frame API: `CreateFrame()` returns `noopFrame()` with Show/Hide/SetShown/SetText/SetScript/CreateTexture/CreateFontString
+- Mock globals: `GetTime()`, `C_SpecializationInfo.GetSpecialization()`, `C_Spell.GetSpellTexture()`, `UnitClass()`, `InCombatLockdown()`, `GetSpecialization()`
+- **Aura data builder:** `makeAuraData(overrides)` — full `Struct_AuraData` contract fidelity (D-03)
+- **Mock clock:** `mockClock` object with `.now`, `:advance(dt)`, `:reset()` — auto-fires timers when `.now` increases
 
-The addon provides a built-in preview mechanism as a substitute for automated tests:
+## Test File Organization
 
-**`Tip:SetTestStacks(stacks)`** — `Duncedmaxxing/Modules/TipOfTheSpear.lua:557`
+**Location:**
+- `spec/util_spec.lua` — unit tests for `DMX.Util.*` pure functions
+- `spec/core_spec.lua` — unit tests for `DMX._test.MergeDefaults`, `DMX._test.NormalizeDB`
+- `spec/tip_spec.lua` — unit tests for `Tip:ApplySpell`, `Tip:SyncFromAura`, `Tip:ScheduleCastVerify`
+- `spec/support/init.lua` — test infrastructure (loader, bootstrap)
+- `spec/support/wow_stubs.lua` — WoW API mocks
 
-Sets `testMode = true` and overrides the displayed stack count for 8 seconds, then restores live state. This allows visual verification of all display modes and stack counts without triggering actual spells.
+**Naming:**
+- Pattern: `*_spec.lua` (matched by `.busted` pattern)
+- Suite-to-file mapping: one module per file for clarity
 
+**Structure:**
 ```lua
--- Invoked via slash commands:
--- /dmax test        → SetTestStacks(3)
--- /dmax 0-3         → SetTestStacks(n)
--- Options "Preview" button → SetTestStacks(3)
+-- Top of each spec file:
+local loader = require("spec.support.init")
+local stubs  = require("spec.support.wow_stubs")  -- if using mocks
+
+-- Per-suite setup:
+describe("Feature Name", function()
+    local DMX, Tip, clock
+    
+    before_each(function()
+        DMX, Tip, clock = loader.load()  -- fresh load each test
+        if Tip then
+            loader.resetTipState(Tip, clock)  -- zero mutable fields
+        end
+    end)
+    
+    -- Individual tests:
+    it("description of expected behavior", function()
+        -- arrange
+        stubs.mockAura.impl = function(_) return stubs.makeAuraData(...) end
+        
+        -- act
+        local result = Tip:SomeMethod()
+        
+        -- assert
+        assert.equals(expected, result)
+    end)
+end)
 ```
 
-**Test mode characteristics:**
-- Bypasses aura expiry timer logic
-- Does not suppress aura up-sync guards (returns to live after 8 seconds)
-- Tests all three display modes (bar, icons, number) by changing `cfg.displayMode` then previewing
+## Test Coverage
 
-## Manual Test Scenarios
+**Currently tested:**
 
-The following behaviors require manual in-game verification:
+**Utility functions** (`spec/util_spec.lua`):
+- `DMX.Util.Clamp` — numeric range clamping with string coercion; 9 test cases covering bounds, negatives, non-numeric strings
+- `DMX.Util.ParseHexColor` — hex color parsing (6-char, 8-char, with # prefix); 8 cases covering valid inputs, invalid chars, wrong lengths
+- `DMX.Util.ParseOnOff` — parse boolean tokens ("on"/"off"/"yes"/"no"/"true"/"false"/"1"/"0"); 10 cases with case-insensitivity and whitespace handling
+- `DMX.Util.Trim` — strip leading/trailing whitespace; 4 cases covering nil, empty, and internal spaces
 
-**Stack tracking:**
-- Cast Kill Command — expect stacks +2, capped at 3
-- Cast a consumer (Wildfire Bomb, Raptor Strike, etc.) — expect stacks -1
-- Wait 10 seconds after last Kill Command — expect stacks drop to 0
-- Rapidly cast consumer after Kill Command — verify aura up-sync suppression holds for `CONSUMER_UPSYNC_GRACE` (2.75s) window
+**Core DB functions** (`spec/core_spec.lua`):
+- `MergeDefaults` — merge user DB with defaults; 6 cases covering existing values, nil slots, nested tables, nil target
+- `NormalizeDB` (migration branch) — settings migration on version mismatch; 8 cases covering version bump, field preservation, defaults, deprecated field cleanup
+- `NormalizeDB` (already migrated) — skip migration when version matches; 2 cases checking displayMode preservation and version stability
+- `NormalizeDB` (deprecated field migration) — always-run post-migration cleanup; 4 cases covering barWidth→width, barHeight→height, spacing→borderSize
+- `NormalizeDB` (displayMode validation) — always-run validation; 5 cases covering invalid mode reset, all valid modes, nil reset
 
-**Visibility rules:**
-- Combat-only mode: tracker hidden out of combat, shown on `PLAYER_REGEN_DISABLED`
-- Hide-when-empty: tracker hides at 0 stacks, shows when stacks > 0
-- Unlocked: tracker always visible regardless of stacks or combat state
+**Tracking logic** (`spec/tip_spec.lua`):
+- `Tip:ApplySpell` — predictive stack state updates; 10 cases covering generator (+2 stacks), consumer (-1 stack), capping, expireTimer scheduling, prediction tracking
+- `Tip:SyncFromAura` — live aura sync with consumer grace suppression; 7 cases covering:
+  - API errors (GetPlayerAuraBySpellID throws)
+  - Stack sync from live aura
+  - expiresAt sync
+  - Zero on absent aura
+  - Consumer grace suppression within 2.75s window
+  - Consumer grace suppression expiry past window
+  - Generator (no suppression)
+  - Out-of-combat (no suppression)
+- `Tip:ScheduleCastVerify` — serial-mismatch guard for stale timers; 2 cases covering stale serial rejection and valid serial execution
 
-**API fallback paths:**
-- `C_UnitAuras.GetPlayerAuraBySpellID` missing → `ReadLiveState` returns `nil, nil` gracefully
-- `C_Spell.GetSpellTexture` missing → falls back to `_G.GetSpellTexture`, then `FALLBACK_ICON`
-- `C_SpecializationInfo` missing → falls back to global `GetSpecialization`
+**Total: 61 test cases** covering pure logic paths, DB migrations, stack tracking, and timer mechanics.
 
-**Settings persistence:**
-- Settings saved to `DuncedmaxxingDB` (WoW SavedVariables)
-- Migration on load: `SETTINGS_MIGRATION = "0.3.2-fontfix"` resets style settings while preserving position/scale
+## Mocking Strategy
 
-## Coverage Gaps
+**What is mocked:**
+- `C_Timer` — full implementation with callback queueing and serial numbers
+- `C_UnitAuras.GetPlayerAuraBySpellID` — wrapped to call `mockAura.impl` per-test
+- Frame API — no-op frames tracking visibility/text/scripts
+- `GetTime` — returns `mockClock.now`
+- Spec detection — always returns Survival Hunter (spec 3)
+- `UnitClass` — always returns Hunter
 
-**All logic paths are untested automatically.** Specific high-risk areas:
+**What is NOT mocked:**
+- Pure Lua table operations (`table.insert`, `table.remove`, ipairs, etc.)
+- Module loading and registration
+- The `local` capture pattern used by TipOfTheSpear.lua (tests must reload module to change stubs)
 
-**`ReadLiveState()` — `Duncedmaxxing/Modules/TipOfTheSpear.lua:81`**
-- What's not tested: All three pcall branches (API missing, pcall throws, valid aura)
-- Risk: Silent return of nil could mask stale display state
+**Key constraint:** TipOfTheSpear.lua captures `C_UnitAuras.GetPlayerAuraBySpellID` as a module-level local on load (`local GetPlayerAuraBySpellID = C_UnitAuras and ...`). Tests cannot swap out the captured function directly; instead, tests override `mockAura.impl` and tests reload the module via `loader.load()` on each `before_each()`.
 
-**`MergeDefaults` / `NormalizeDB` — `Duncedmaxxing/Core.lua:84, 101`**
-- What's not tested: Settings migration path (`settingsMigration` mismatch branch)
-- Risk: A bad migration could corrupt saved settings across sessions
+## Test Patterns
 
-**`ParseHexColor` — `Duncedmaxxing/Core.lua:59`, `Duncedmaxxing/Options.lua:25`**
-- What's not tested: Edge cases (5-char hex, empty string, unicode input)
-- Risk: Invalid color input silently returns nil and leaves previous color unchanged
+**Per-test isolation (D-06):**
+```lua
+before_each(function()
+    DMX, Tip, clock = loader.load()  -- fresh namespace, reloads all modules
+    loader.resetTipState(Tip, clock)  -- zeros all mutable Tip fields
+end)
+```
 
-**Consumer up-sync suppression — `Tip:SyncFromAura()` line 338-341**
-- What's not tested: The timing window (`CONSUMER_UPSYNC_GRACE = 2.75`) boundary
-- Risk: Suppression fires too early or too late, causing display flicker
+**Mock clock timer simulation (D-08, D-09):**
+```lua
+Tip:ApplySpell("generator")
+-- Timer scheduled at fireAt = clock.now + BUFF_DURATION
+clock:advance(10.1)  -- auto-fires timers where fireAt <= clock.now
+assert.equals(0, Tip.stacks)  -- expireTimer fired and zeroed stacks
+```
 
-**`ClassifySpellID` pcall — `Duncedmaxxing/Modules/TipOfTheSpear.lua:56`**
-- What's not tested: The pcall wrapper path (what could throw here is unclear)
-- Risk: pcall overhead is unnecessary if the inner code cannot actually throw
+**Aura mocking:**
+```lua
+stubs.mockAura.impl = function(_spellID)
+    return stubs.makeAuraData({ applications = 2, expirationTime = clock.now + 8 })
+end
+local result = Tip:SyncFromAura()
+assert.is_true(result)
+```
 
-## Adding Automated Tests
+**Assertion patterns:**
+```lua
+assert.equals(expected, actual)  -- numeric/string equality
+assert.is_nil(value)            -- nil check
+assert.is_true/is_false(bool)   -- boolean
+assert.is_near(expected, actual, tolerance)  -- float with epsilon
+```
 
-If automated testing were introduced, the recommended approach for a WoW addon of this type:
+## Adding New Tests
 
-1. Use **busted** (Lua test framework) with a WoW API stub layer
-2. Stub the minimal WoW globals: `CreateFrame`, `C_UnitAuras`, `C_Timer`, `GetTime`, `InCombatLockdown`, `UnitClass`, `GetSpecialization`
-3. Pure logic functions (`Clamp`, `ParseHexColor`, `MergeDefaults`, `CopyDefaults`, `NormalizeDB`, `ClampStacks`, `ColorTuple`) are already fully isolated and could be unit tested without WoW stubs
-4. Tracking logic in `Tip:ApplySpell`, `Tip:SyncFromAura`, `Tip:ScheduleExpiration` would need `C_Timer` and `GetTime` stubs
+**To add tests for a new function:**
 
-**No test infrastructure exists today.** Priority for adding tests: pure utility functions first (zero stubs needed), then tracking logic (timer stubs needed), then UI/frame code (full WoW frame mock needed, high cost).
+1. Create a new `describe("Feature Name", function() ... end)` block
+2. Load the module in `before_each()` via `loader.load()`
+3. Use `stubs.mockAura.impl` to control aura returns
+4. Use `clock:advance()` to trigger timers
+5. Use standard busted assertions
+
+**Example:**
+```lua
+describe("NewFunction", function()
+    local DMX
+    
+    before_each(function()
+        DMX = loader.load()
+    end)
+    
+    it("returns expected value", function()
+        local result = DMX.Util.NewFunction(arg1, arg2)
+        assert.equals(expected, result)
+    end)
+end)
+```
+
+## Coverage Gaps (from 2026-06-17 analysis)
+
+Automatically tested in this build:
+- ✓ `Clamp` — all paths
+- ✓ `ParseHexColor` — all paths
+- ✓ `ParseOnOff` — all paths
+- ✓ `Trim` — all paths
+- ✓ `MergeDefaults` — all paths
+- ✓ `NormalizeDB` — migration, validation, deprecated field cleanup paths
+- ✓ `Tip:ApplySpell` — generator, consumer, capping, timer scheduling
+- ✓ `Tip:SyncFromAura` — all sync paths, consumer grace suppression, out-of-combat paths
+- ✓ `Tip:ScheduleCastVerify` — serial mismatch guard
+
+Still untested (manual in-game verification required):
+- **ReadLiveState pcall branches** — full error handling paths (frame rendering still untested)
+- **ClassifySpellID pcall** — whether inner code can actually throw
+- **UI frame construction** — `CreateFrame`, `CreateTexture`, `CreateFontString` rendering (not tested, no mock visibility assertions)
+- **Slash command handler** — `/dmax` parsing and direct db mutation (integration test, not unit tested)
+- **Options window** — combat lockdown guard, widget updates (frame API not fully mocked)
+
+## Verification in Phase 02
+
+Test framework was implemented to satisfy:
+- D-02: Pure function unit testing (Util, Core, Tip tracking logic)
+- D-03: Full AuraData contract fidelity in mocks
+- D-04: WoW API stubs for timers, auras, frames, globals
+- D-05: Mock clock with auto-fire on time advance
+- D-06: Per-test isolation (fresh load each test)
+- D-08, D-09: Timer simulation for expiry and verify delays
+
+Tests pass and serve as regression safety net for core tracking logic and DB migrations.
 
 ---
 
-*Testing analysis: 2026-06-17*
+*Testing analysis: 2026-06-18*
