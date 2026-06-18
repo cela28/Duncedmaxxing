@@ -31,11 +31,11 @@ Requirements for the polish milestone. Each maps to roadmap phases.
 
 - [x] **TEST-01**: busted test framework configured for Lua 5.1 with spec/ directory structure
 - [x] **TEST-02**: WoW API mock layer (spec/support/wow_stubs.lua) providing accurate stubs for C_UnitAuras, C_Timer, C_SpecializationInfo, C_Spell, UnitClass, GetTime, CreateFrame
-- [ ] **TEST-03**: Unit tests for ApplySpell covering stack add, cap at 3, expiry scheduling, and talent-specific grant amounts
-- [ ] **TEST-04**: Unit tests for SyncFromAura covering grace period suppression, serial-mismatch path, and stack reconciliation
+- [x] **TEST-03**: Unit tests for ApplySpell covering stack add, cap at 3, expiry scheduling, and talent-specific grant amounts
+- [x] **TEST-04**: Unit tests for SyncFromAura covering grace period suppression, serial-mismatch path, and stack reconciliation
 - [x] **TEST-05**: Unit tests for NormalizeDB covering migration gate, field merging, and handling of missing/deprecated fields
 - [x] **TEST-06**: Unit tests for utility functions (Clamp, ParseHexColor, ParseOnOff, Trim) including edge cases
-- [ ] **TEST-07**: luacheck configured with std=lua51 and curated read_globals for WoW API symbols
+- [x] **TEST-07**: luacheck configured with std=lua51 and curated read_globals for WoW API symbols
 
 ### Cleanup
 
@@ -97,11 +97,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERF-02 | Phase 4 | Pending |
 | TEST-01 | Phase 2 | Complete |
 | TEST-02 | Phase 2 | Complete |
-| TEST-03 | Phase 2 | Pending |
-| TEST-04 | Phase 2 | Pending |
+| TEST-03 | Phase 2 | Complete |
+| TEST-04 | Phase 2 | Complete |
 | TEST-05 | Phase 2 | Complete |
 | TEST-06 | Phase 2 | Complete |
-| TEST-07 | Phase 2 | Pending |
+| TEST-07 | Phase 2 | Complete |
 | CICD-01 | Phase 4 | Pending |
 
 **Coverage:**

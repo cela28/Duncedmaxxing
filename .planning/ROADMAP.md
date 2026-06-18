@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 0: Repo Cleanup** - Remove NTFS junk files, stale docs, and validate folder structure against WoW addon conventions (completed 2026-06-17)
 - [x] **Phase 1: Utility Extraction and Module Encapsulation** - Extract shared utilities to Util.lua and move frame locals to Tip table fields (completed 2026-06-17)
-- [ ] **Phase 2: Test Framework and Core Logic Tests** - Set up busted with WoW API stubs and write unit tests for all core functions
+- [x] **Phase 2: Test Framework and Core Logic Tests** - Set up busted with WoW API stubs and write unit tests for all core functions (completed 2026-06-18)
 - [ ] **Phase 3: Bug Fixes with Test Coverage** - Fix all correctness bugs under test protection and remove dead migration fallback
 - [ ] **Phase 4: Performance Caching and CI/CD** - Cache spec/texture state and ship the GitHub Actions release workflow
 
@@ -81,7 +81,7 @@ Plans:
   6. Tests for `NormalizeDB` cover migration gate, field merging, and missing/deprecated fields
   7. Tests for utility functions cover normal use and edge cases (Clamp bounds, empty string inputs, case variants for ParseOnOff)
 
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 **Wave 1**
@@ -94,7 +94,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 02-03-PLAN.md — Write ApplySpell and SyncFromAura tests, configure luacheck for zero warnings
+- [x] 02-03-PLAN.md — Write ApplySpell and SyncFromAura tests, configure luacheck for zero warnings
 
 ### Phase 3: Bug Fixes with Test Coverage
 
@@ -135,6 +135,6 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 0. Repo Cleanup | 1/1 | Complete   | 2026-06-17 |
 | 1. Utility Extraction and Module Encapsulation | 2/2 | Complete   | 2026-06-17 |
-| 2. Test Framework and Core Logic Tests | 2/3 | In Progress|  |
+| 2. Test Framework and Core Logic Tests | 3/3 | Complete   | 2026-06-18 |
 | 3. Bug Fixes with Test Coverage | 0/? | Not started | - |
 | 4. Performance Caching and CI/CD | 0/? | Not started | - |

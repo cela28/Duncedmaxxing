@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Phase 2 context gathered
-last_updated: "2026-06-17T14:58:00.387Z"
-last_activity: 2026-06-17
+status: verifying
+stopped_at: Completed Phase 02 Plan 03 — tip_spec.lua and luacheck
+last_updated: "2026-06-18T09:39:01.035Z"
+last_activity: 2026-06-18
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 6
-  completed_plans: 5
-  percent: 40
+  completed_plans: 6
+  percent: 60
 ---
 
 # Project State
@@ -27,10 +27,10 @@ See: .planning/PROJECT.md (updated 2026-06-17)
 
 Phase: 02 (test-framework-and-core-logic-tests) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
-Last activity: 2026-06-17
+Status: Phase complete — ready for verification
+Last activity: 2026-06-18
 
-Progress: [████████░░] 83%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Progress: [████████░░] 83%
 - Trend: N/A (first plan)
 
 *Updated after each plan completion*
+| Phase 02-test-framework-and-core-logic-tests P03 | 15min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,8 @@ Recent decisions affecting current work:
 - [Init]: Extract Util.lua before writing any tests — prerequisite for clean `dofile`-based test loading
 - [Init]: QUAL-03 (dead migration fallback removal) deferred to Phase 3 — requires NormalizeDB idempotency test to be in place first
 - [Revision]: Phase 0 (Repo Cleanup) inserted — covers CLN-01 through CLN-05, executes before all other phases
+- [Phase ?]: mockAura indirection in wow_stubs.lua: wrapper function captured at module-load time delegates to replaceable mockAura.impl, enabling per-test aura overrides without module reload
+- [Phase ?]: luacheck 1.2.0 installed via luarocks; W432 self-shadowing suppressed for WoW SetScript closures; SlashCmdList in globals not read_globals
 
 ### Pending Todos
 
@@ -94,6 +97,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-06-17T14:57:58.945Z
-Stopped at: Phase 2 context gathered
+Last session: 2026-06-18T09:39:01.020Z
+Stopped at: Completed Phase 02 Plan 03 — tip_spec.lua and luacheck
 Resume file: None
