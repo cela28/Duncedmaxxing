@@ -52,5 +52,5 @@ jobs:
         uses: softprops/action-gh-release@c062e08bd532815e2082a07b400ef65ab24e279c  # v2.3.2
         with:
           files: Duncedmaxxing-*.zip
-          prerelease: true
+          prerelease: ${{ github.event.release.prerelease }}
           generate_release_notes: true
