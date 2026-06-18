@@ -59,6 +59,8 @@ local function resetTipState(Tip, clock)
     Tip.expireTimer       = nil
     Tip.testMode          = false
     Tip.hasTwinFangs      = false
+    Tip.isSurvival        = false
+    Tip.spellTexture      = nil
     clock:reset()
     clock.now = 100
     -- Reset aura dispatch via mockAura.impl (not _G.C_UnitAuras field, which the

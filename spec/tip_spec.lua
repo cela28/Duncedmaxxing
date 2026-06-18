@@ -451,6 +451,71 @@ describe("RefreshTip — out-of-combat aura sync (BUG-02)", function()
 end)
 
 -- ---------------------------------------------------------------------------
+-- Caching -- isSurvival and spellTexture
+-- ---------------------------------------------------------------------------
+describe("Caching -- isSurvival and spellTexture", function()
+    local DMX, Tip, clock
+
+    before_each(function()
+        DMX, Tip, clock = loader.load()
+        loader.resetTipState(Tip, clock)
+    end)
+
+    -- After loader.load() the default C_SpecializationInfo stub returns 3 (Survival).
+    -- Initialize() populates isSurvival, so it should be true at this point.
+    -- Note: resetTipState sets isSurvival = false, so we only need to verify Initialize sets it.
+    it("Tip.isSurvival is true after Initialize (Survival Hunter stub)", function()
+        -- Reload to get a fresh Initialize result (not overridden by resetTipState)
+        DMX, Tip, clock = loader.load()
+        assert.is_true(Tip.isSurvival)
+    end)
+
+    -- PLAYER_SPECIALIZATION_CHANGED with non-Survival spec should update the cache.
+    it("Tip.isSurvival is false after PLAYER_SPECIALIZATION_CHANGED with non-Survival spec", function()
+        -- Override spec stub to return 1 (Beast Mastery)
+        _G.C_SpecializationInfo.GetSpecialization = function() return 1 end
+        Tip.isSurvival = true  -- set up the "before" state
+        Tip:OnEvent("PLAYER_SPECIALIZATION_CHANGED", "player")
+        assert.is_false(Tip.isSurvival)
+        -- Restore
+        _G.C_SpecializationInfo.GetSpecialization = function() return 3 end
+    end)
+
+    -- PLAYER_SPECIALIZATION_CHANGED for a non-player unit must not touch isSurvival.
+    it("Tip.isSurvival stays unchanged on PLAYER_SPECIALIZATION_CHANGED for non-player unit", function()
+        Tip.isSurvival = true  -- set a known state
+        Tip:OnEvent("PLAYER_SPECIALIZATION_CHANGED", "target")
+        assert.is_true(Tip.isSurvival)
+    end)
+
+    -- spellTexture should be populated (non-nil) after Initialize.
+    it("Tip.spellTexture is non-nil after Initialize", function()
+        DMX, Tip, clock = loader.load()
+        assert.is_not_nil(Tip.spellTexture)
+    end)
+
+    -- C_Spell.GetSpellTexture stub returns 132275; that must be stored.
+    it("Tip.spellTexture equals expected icon ID after Initialize", function()
+        DMX, Tip, clock = loader.load()
+        assert.equals(132275, Tip.spellTexture)
+    end)
+
+    -- PLAYER_TALENT_UPDATE must refresh isSurvival from the spec API.
+    it("Tip.isSurvival refreshes on PLAYER_TALENT_UPDATE", function()
+        -- Start with Survival spec (default), then swap to non-Survival and fire event
+        Tip.isSurvival = true
+        _G.C_SpecializationInfo.GetSpecialization = function() return 1 end
+        Tip:OnEvent("PLAYER_TALENT_UPDATE")
+        assert.is_false(Tip.isSurvival)
+
+        -- Restore to Survival and fire again
+        _G.C_SpecializationInfo.GetSpecialization = function() return 3 end
+        Tip:OnEvent("PLAYER_TALENT_UPDATE")
+        assert.is_true(Tip.isSurvival)
+    end)
+end)
+
+-- ---------------------------------------------------------------------------
 -- Tip:ScheduleAuraVerify — auraVerifyPending flag (BUG-01)
 -- ---------------------------------------------------------------------------
 describe("Tip:ScheduleAuraVerify — auraVerifyPending flag (BUG-01)", function()

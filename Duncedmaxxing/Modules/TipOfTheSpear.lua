@@ -43,7 +43,7 @@ local function HasTwinFangs()
 end
 
 Tip.stacks = 0
-Tip.active = false
+Tip.isSurvival = false
 Tip.inCombat = false
 Tip.testMode = false
 Tip.testStacks = MAX_STACKS
@@ -53,6 +53,7 @@ Tip.auraVerifyPending = false
 Tip.lastPredictAt = 0
 Tip.lastPredictKind = nil
 Tip.hasTwinFangs = false
+Tip.spellTexture = nil
 
 local function ClampStacks(value)
     value = tonumber(value) or 0
@@ -134,16 +135,18 @@ local function ColorTuple(color, fallback)
         color.a or color[4] or fallback.a or fallback[4] or 1
 end
 
-local function ResolveSpellTexture()
+-- Called once at Initialize and on PLAYER_LOGIN to populate tip.spellTexture.
+-- C_Spell.GetSpellTexture returns two values (iconID, originalIconID);
+-- only the first is captured — Lua discards the second implicitly.
+local function CacheSpellTexture(tip)
+    local tex
     if C_Spell and C_Spell.GetSpellTexture then
-        return C_Spell.GetSpellTexture(TIP_OF_THE_SPEAR) or FALLBACK_ICON
+        tex = C_Spell.GetSpellTexture(TIP_OF_THE_SPEAR)
     end
-
-    if _G.GetSpellTexture then
-        return _G.GetSpellTexture(TIP_OF_THE_SPEAR) or FALLBACK_ICON
+    if not tex and _G.GetSpellTexture then
+        tex = _G.GetSpellTexture(TIP_OF_THE_SPEAR)
     end
-
-    return FALLBACK_ICON
+    tip.spellTexture = tex or FALLBACK_ICON
 end
 
 local function ApplyPosition(tip)
@@ -332,7 +335,7 @@ local function EnsureFrame(tip)
 end
 
 function Tip:RefreshActive()
-    self.active = DMX:IsSurvivalHunter()
+    self.isSurvival = DMX:IsSurvivalHunter()
 end
 
 function Tip:SyncFromAura()
@@ -490,7 +493,7 @@ function Tip:RefreshLayout()
             pip.fill:ClearAllPoints()
             pip.fill:SetPoint("TOPLEFT", pip, "TOPLEFT", borderSize, -borderSize)
             pip.fill:SetPoint("BOTTOMRIGHT", pip, "BOTTOMRIGHT", -borderSize, borderSize)
-            pip.fill:SetTexture(ResolveSpellTexture())
+            pip.fill:SetTexture(self.spellTexture)
             LayoutPipBorder(pip, borderSize)
             pip:Show()
         end
@@ -595,14 +598,12 @@ function Tip:Update()
     local label      = self.label
     local numberText = self.numberText
 
-    self:RefreshActive()
-
     local db = DMX:GetDB()
     local cfg = db.tip
     local stacks = self:GetStacks()
     local unlocked = not db.locked
 
-    local shouldShow = unlocked or self.testMode or (cfg.enabled and self.active)
+    local shouldShow = unlocked or self.testMode or (cfg.enabled and self.isSurvival)
     if shouldShow and cfg.showOnlyInCombat and not self.inCombat and not self.testMode and not unlocked then
         shouldShow = false
     end
@@ -648,7 +649,7 @@ function Tip:Update()
                 pip.fill:Hide()
                 SetPipBordersShown(pip, false)
             elseif i <= stacks then
-                pip.fill:SetTexture(ResolveSpellTexture())
+                pip.fill:SetTexture(self.spellTexture)
                 pip.fill:SetVertexColor(1, 1, 1, 1)
                 pip.fill:Show()
                 SetPipBordersShown(pip, hasBorder)
@@ -728,6 +729,7 @@ function Tip:OnEvent(event, ...)
         self:Update()
         return
     elseif event == "PLAYER_LOGIN" or event == "PLAYER_ENTERING_WORLD" then
+        CacheSpellTexture(self)
         self:RefreshActive()
         self:SyncFromAura()
         self:Update()
@@ -751,10 +753,7 @@ function Tip:OnEvent(event, ...)
         self:ScheduleAuraVerify(0.05)
         return
     elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
-        if not self.active then
-            self:RefreshActive()
-        end
-        if not self.active then
+        if not self.isSurvival then
             return
         end
 
@@ -776,6 +775,8 @@ function Tip:Initialize(core)
     EnsureFrame(self)
     self.inCombat = InCombatLockdown and InCombatLockdown() or false
     self.hasTwinFangs = HasTwinFangs()
+    self.isSurvival   = DMX:IsSurvivalHunter()
+    CacheSpellTexture(self)
     self:RefreshLayout()
 
     self.eventFrame = CreateFrame("Frame")
