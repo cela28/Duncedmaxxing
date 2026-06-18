@@ -1,5 +1,6 @@
 ---
 type: quick
+status: complete
 description: Move addon files into Duncedmaxxing/ subdirectory, update all path references
 autonomous: true
 files_modified:
