@@ -110,12 +110,12 @@ Plans:
   4. Takedown grants 3 stacks when Twin Fangs talent is active — `ApplySpell` test covering the Twin Fangs branch passes
   5. The dead migration fallback block (Core.lua lines 125-133) is removed — `NormalizeDB` idempotency test passes confirming settings are not wiped on reload
 
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 03-01-PLAN.md — BUG-01 regression test, QUAL-03 dead block removal, BUG-02 mode-switch SyncFromAura fix
+- [x] 03-01-PLAN.md — BUG-01 regression test, QUAL-03 dead block removal, BUG-02 mode-switch SyncFromAura fix
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -145,5 +145,5 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 | 0. Repo Cleanup | 1/1 | Complete   | 2026-06-17 |
 | 1. Utility Extraction and Module Encapsulation | 2/2 | Complete   | 2026-06-17 |
 | 2. Test Framework and Core Logic Tests | 3/3 | Complete   | 2026-06-18 |
-| 3. Bug Fixes with Test Coverage | 0/2 | In progress | - |
+| 3. Bug Fixes with Test Coverage | 1/2 | In Progress|  |
 | 4. Performance Caching and CI/CD | 0/? | Not started | - |
