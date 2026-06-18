@@ -29,8 +29,8 @@ Accurate, instant stack display during combat. If the stack count is wrong or la
 - ✓ Remove dead post-migration fallback code in NormalizeDB — Validated in Phase 3
 - [ ] Move module-level frame locals to Tip table fields
 - [ ] Add ordered module iteration via moduleOrder array
-- [ ] Cache spell texture resolution (resolve once, not every update)
-- [ ] Cache spec state (stop calling IsSurvivalHunter on every Update)
+- ✓ Cache spell texture resolution (resolve once, not every update) — Validated in Phase 4
+- ✓ Cache spec state (stop calling IsSurvivalHunter on every Update) — Validated in Phase 4
 - [ ] Remove unnecessary pcall wrapper in ClassifySpellID
 - ✓ Set up busted test framework with WoW API mock layer — Validated in Phase 2
 - ✓ Add unit tests for ApplySpell, SyncFromAura, NormalizeDB, and utility functions — Validated in Phase 2
@@ -47,7 +47,8 @@ Accurate, instant stack display during combat. If the stack count is wrong or la
 - WoW addon running in Lua 5.1 sandbox, Midnight 12.0.5 (Interface 120005)
 - Single module currently (tip), but architecture supports multiple modules
 - No external dependencies — pure Lua + WoW API
-- Test suite: 102 busted tests (util, core, tip) + luacheck zero warnings
+- Test suite: 108 busted tests (util, core, tip, caching) + luacheck zero warnings
+- CI/CD: GitHub Actions release workflow with lint+test gate
 - Codebase map already completed (`.planning/codebase/`)
 - Concerns audit identified specific bugs, tech debt, and perf bottlenecks
 
@@ -64,7 +65,8 @@ Accurate, instant stack display during combat. If the stack count is wrong or la
 |----------|-----------|---------|
 | Use busted for testing | Pure Lua test framework, Lua 5.1 compatible, well-established | ✓ Phase 2 |
 | Extract utils to Duncedmaxxing/Util.lua | Eliminates duplicated code between Duncedmaxxing/Core.lua and Duncedmaxxing/Options.lua | — Pending |
-| Cache spec/texture at event boundaries | Avoid per-update WoW API calls during combat | — Pending |
+| Cache spec/texture at event boundaries | Avoid per-update WoW API calls during combat | ✓ Phase 4 |
+| GitHub Actions release workflow | Automate lint+test gate and zip packaging on release | ✓ Phase 4 |
 
 ## Evolution
 
@@ -84,4 +86,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-18 after Phase 3 completion*
+*Last updated: 2026-06-18 after Phase 4 completion*
