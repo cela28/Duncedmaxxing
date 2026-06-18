@@ -23,10 +23,10 @@ Accurate, instant stack display during combat. If the stack count is wrong or la
 
 ### Active
 
-- [ ] Fix auraVerifyPending stuck flag after serial mismatch
-- [ ] Fix stale stack display when switching modes out of combat
+- ✓ Fix auraVerifyPending stuck flag after serial mismatch — Validated in Phase 3
+- ✓ Fix stale stack display when switching modes out of combat — Validated in Phase 3
 - [ ] Extract duplicated utilities (Clamp, ParseHexColor) to shared Duncedmaxxing/Util.lua
-- [ ] Remove dead post-migration fallback code in NormalizeDB
+- ✓ Remove dead post-migration fallback code in NormalizeDB — Validated in Phase 3
 - [ ] Move module-level frame locals to Tip table fields
 - [ ] Add ordered module iteration via moduleOrder array
 - [ ] Cache spell texture resolution (resolve once, not every update)
@@ -47,7 +47,7 @@ Accurate, instant stack display during combat. If the stack count is wrong or la
 - WoW addon running in Lua 5.1 sandbox, Midnight 12.0.5 (Interface 120005)
 - Single module currently (tip), but architecture supports multiple modules
 - No external dependencies — pure Lua + WoW API
-- Test suite: 89 busted tests (util, core, tip) + luacheck zero warnings
+- Test suite: 102 busted tests (util, core, tip) + luacheck zero warnings
 - Codebase map already completed (`.planning/codebase/`)
 - Concerns audit identified specific bugs, tech debt, and perf bottlenecks
 
@@ -84,4 +84,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-18 after Phase 2 completion*
+*Last updated: 2026-06-18 after Phase 3 completion*
