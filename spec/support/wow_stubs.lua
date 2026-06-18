@@ -157,6 +157,12 @@ local function install(DMX)
 
     _G.GetSpecialization = function() return 3 end
 
+    _G.C_SpellBook = {
+        IsSpellKnown = function(spellID) return false end,
+    }
+
+    _G.IsPlayerSpell = function(spellID) return false end
+
     _G.C_Spell = {
         GetSpellTexture = function(id) return 132275 end,
     }
