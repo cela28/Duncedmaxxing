@@ -39,7 +39,11 @@ max_line_length = false
 -- Suppress W432: shadowing upvalue argument.
 -- WoW SetScript closures use `self` to refer to the frame; this shadows the
 -- outer `self` method argument intentionally (established WoW addon pattern).
-ignore = { "432" }
+-- Suppress W212/self: unused argument `self` in `:` method syntax.
+-- WoW addons use colon syntax for API consistency even when `self` is not
+-- referenced in the body (e.g., DMX:Print, Options:CanChange). Any other
+-- unused arguments are still flagged.
+ignore = { "432", "212/self" }
 
 -- Exclude spec files — test infrastructure uses busted globals (describe, it, etc.)
 -- that are not part of the addon and should not be linted as addon code.
