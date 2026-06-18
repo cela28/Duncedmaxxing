@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 0: Repo Cleanup** - Remove NTFS junk files, stale docs, and validate folder structure against WoW addon conventions (completed 2026-06-17)
 - [x] **Phase 1: Utility Extraction and Module Encapsulation** - Extract shared utilities to Util.lua and move frame locals to Tip table fields (completed 2026-06-17)
 - [x] **Phase 2: Test Framework and Core Logic Tests** - Set up busted with WoW API stubs and write unit tests for all core functions (completed 2026-06-18)
-- [ ] **Phase 3: Bug Fixes with Test Coverage** - Fix all correctness bugs under test protection and remove dead migration fallback
+- [x] **Phase 3: Bug Fixes with Test Coverage** - Fix all correctness bugs under test protection and remove dead migration fallback (completed 2026-06-18)
 - [ ] **Phase 4: Performance Caching and CI/CD** - Cache spec/texture state and ship the GitHub Actions release workflow
 
 ## Phase Details
@@ -110,7 +110,7 @@ Plans:
   4. Takedown grants 3 stacks when Twin Fangs talent is active — `ApplySpell` test covering the Twin Fangs branch passes
   5. The dead migration fallback block (Core.lua lines 125-133) is removed — `NormalizeDB` idempotency test passes confirming settings are not wiped on reload
 
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 **Wave 1**
@@ -119,7 +119,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 03-02-PLAN.md — BUG-03/BUG-04 Twin Fangs talent detection, talent-aware ApplySpell, regression tests
+- [x] 03-02-PLAN.md — BUG-03/BUG-04 Twin Fangs talent detection, talent-aware ApplySpell, regression tests
 
 ### Phase 4: Performance Caching and CI/CD
 
@@ -145,5 +145,5 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 | 0. Repo Cleanup | 1/1 | Complete   | 2026-06-17 |
 | 1. Utility Extraction and Module Encapsulation | 2/2 | Complete   | 2026-06-17 |
 | 2. Test Framework and Core Logic Tests | 3/3 | Complete   | 2026-06-18 |
-| 3. Bug Fixes with Test Coverage | 1/2 | In Progress|  |
+| 3. Bug Fixes with Test Coverage | 2/2 | Complete   | 2026-06-18 |
 | 4. Performance Caching and CI/CD | 0/? | Not started | - |
