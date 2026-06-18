@@ -190,7 +190,7 @@ describe("NormalizeDB — already migrated branch (settingsMigration matches)", 
     end)
 end)
 
-describe("NormalizeDB — deprecated field migration (always runs post-gate)", function()
+describe("NormalizeDB — deprecated fields ignored post-migration (QUAL-03)", function()
     local DMX
 
     before_each(function()
@@ -215,29 +215,40 @@ describe("NormalizeDB — deprecated field migration (always runs post-gate)", f
         return db
     end
 
-    it("migrates barWidth to width", function()
+    it("does not map barWidth to width when already migrated", function()
         local db = migratedDB({barWidth = 300})
         DMX._test.NormalizeDB(db)
-        assert.equals(300, db.tip.width)
+        assert.is_nil(db.tip.width)
     end)
 
-    it("migrates barHeight to height", function()
+    it("does not map barHeight to height when already migrated", function()
         local db = migratedDB({barHeight = 20})
         DMX._test.NormalizeDB(db)
-        assert.equals(20, db.tip.height)
+        assert.is_nil(db.tip.height)
     end)
 
-    it("migrates spacing to borderSize when borderSize is absent", function()
+    it("does not map spacing to borderSize when already migrated", function()
         local db = migratedDB({spacing = 3})
         db.tip.borderSize = nil
         DMX._test.NormalizeDB(db)
-        assert.equals(3, db.tip.borderSize)
+        assert.is_nil(db.tip.borderSize)
     end)
 
     it("does not overwrite existing borderSize with spacing", function()
         local db = migratedDB({spacing = 3, borderSize = 2})
         DMX._test.NormalizeDB(db)
         assert.equals(2, db.tip.borderSize)
+    end)
+
+    it("NormalizeDB idempotency — double call does not wipe settings", function()
+        local db = migratedDB()
+        DMX._test.NormalizeDB(db)
+        DMX._test.NormalizeDB(db)
+        assert.equals(true,  db.tip.enabled)
+        assert.equals("bar", db.tip.displayMode)
+        assert.equals(0,     db.tip.x)
+        assert.equals(-160,  db.tip.y)
+        assert.equals(1,     db.tip.scale)
     end)
 end)
 
