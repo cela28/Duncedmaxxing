@@ -161,6 +161,9 @@ local function PrintHelp()
 end
 
 local function RefreshTip(tip)
+    if tip and not tip.inCombat then
+        tip:SyncFromAura()
+    end
     if tip and tip.RefreshLayout then
         tip:RefreshLayout()
     elseif tip and tip.Update then

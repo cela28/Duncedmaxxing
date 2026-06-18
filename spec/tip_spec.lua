@@ -335,6 +335,61 @@ describe("Tip:ScheduleCastVerify serial-mismatch", function()
 end)
 
 -- ---------------------------------------------------------------------------
+-- RefreshTip — out-of-combat aura sync (BUG-02)
+-- ---------------------------------------------------------------------------
+describe("RefreshTip — out-of-combat aura sync (BUG-02)", function()
+    local DMX, Tip, clock
+
+    before_each(function()
+        DMX, Tip, clock = loader.load()
+        loader.resetTipState(Tip, clock)
+    end)
+
+    -- Stale stacks are zeroed when aura is absent and not in combat
+    it("syncs stale stacks to 0 on RefreshTip when out of combat and aura is absent", function()
+        Tip.stacks    = 2
+        Tip.expiresAt = clock.now + 5
+        Tip.inCombat  = false
+        -- mockAura.impl already returns nil by default (aura absent)
+        DMX:RefreshTip()
+        assert.equals(0, Tip.stacks)
+        assert.equals(0, Tip.expiresAt)
+    end)
+
+    -- Live aura data is synced to Tip.stacks when not in combat
+    it("syncs stale stacks to live aura on RefreshTip when out of combat", function()
+        Tip.stacks   = 0
+        Tip.inCombat = false
+        stubs.mockAura.impl = function(_spellID)
+            return stubs.makeAuraData({ applications = 2, expirationTime = clock.now + 8 })
+        end
+        DMX:RefreshTip()
+        assert.equals(2, Tip.stacks)
+    end)
+
+    -- SyncFromAura is NOT called during combat — prediction system must not be disrupted
+    it("does not call SyncFromAura during combat on RefreshTip", function()
+        Tip.stacks   = 2
+        Tip.inCombat = true
+        -- mockAura.impl returns nil (absent) — if SyncFromAura were called, stacks would drop to 0
+
+        local syncCalled   = false
+        local originalSync = Tip.SyncFromAura
+        Tip.SyncFromAura   = function(self)
+            syncCalled = true
+            return originalSync(self)
+        end
+
+        DMX:RefreshTip()
+
+        assert.is_false(syncCalled)
+        assert.equals(2, Tip.stacks)
+
+        Tip.SyncFromAura = originalSync
+    end)
+end)
+
+-- ---------------------------------------------------------------------------
 -- Tip:ScheduleAuraVerify — auraVerifyPending flag (BUG-01)
 -- ---------------------------------------------------------------------------
 describe("Tip:ScheduleAuraVerify — auraVerifyPending flag (BUG-01)", function()
