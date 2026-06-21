@@ -1,283 +1,192 @@
 ---
 phase: 01-utility-extraction-and-module-encapsulation
-reviewed: 2026-06-17T00:00:00Z
+reviewed: 2026-06-22T00:00:00Z
 depth: standard
-files_reviewed: 5
+files_reviewed: 3
 files_reviewed_list:
-  - Duncedmaxxing/Util.lua
-  - Duncedmaxxing/Core.lua
-  - Duncedmaxxing/Options.lua
   - Duncedmaxxing/Modules/TipOfTheSpear.lua
-  - Duncedmaxxing/Duncedmaxxing.toc
+  - spec/tip_spec.lua
+  - spec/support/init.lua
 findings:
-  critical: 3
-  warning: 5
-  info: 2
-  total: 10
+  critical: 0
+  warning: 3
+  info: 3
+  total: 6
 status: issues_found
 ---
 
-# Phase 01: Code Review Report
+# Phase 01: Code Review Report (gap-closure 01-03 / 01-04)
 
-**Reviewed:** 2026-06-17T00:00:00Z
+**Reviewed:** 2026-06-22T00:00:00Z
 **Depth:** standard
-**Files Reviewed:** 5
+**Files Reviewed:** 3
 **Status:** issues_found
+
+> Note: this report covers the gap-closure changes from plans 01-03 and 01-04
+> (diff range `f406a9d^..HEAD`). It supersedes the earlier full-phase review
+> that previously occupied this path. The CR-01..CR-03 / WR-01..WR-05 findings
+> from that earlier pass concerned `Core.lua`, `Options.lua`, and `Util.lua`,
+> which are out of scope for this gap-closure review.
 
 ## Summary
 
-Five source files reviewed covering the Util extraction, Core addon lifecycle, Options UI, TipOfTheSpear tracking module, and the TOC manifest. The Util module itself is clean. The three critical findings are all in `Core.lua` and `Util.lua`: a migration ordering bug that permanently silences legacy-field cleanup, a type-unsafe code path in `ParseOnOff` that crashes on boolean input, and a close-button combat guard that misapplies the `CanChange()` check to a UI-dismiss action. Several warnings address predictive-sync correctness, silent fallback masking in `ToByte`, and stale documentation assertions.
+Reviewed the gap-closure changes from plans 01-03 (Kill Command stack-overshoot
+fix: generator grant decoupled from Twin Fangs, new `hasPrimalSurge` field) and
+01-04 (Aspect-of-the-Eagle Raptor Strike `265189` registered as a consumer).
 
----
+The core behavioral fix is correct: the generator grant in `ApplySpell` no
+longer reads `self.hasTwinFangs` (line 700, now `local grant = 2`), so Kill
+Command can no longer overshoot to 3 stacks from 0 — the 01-03 regression is
+genuinely closed. The 265189 consumer registration is also functionally correct:
+`ClassifySpellID(265189)` now returns `"consumer"` and the plain decrement
+branch runs.
 
-## Critical Issues
+However, the change introduces a **dead state field** (`hasPrimalSurge`) that is
+initialized, reset, and asserted on, but never read by any runtime code path.
+This makes three "Primal Surge" tests **tautological** — they vary the field but
+assert the same constant (2), so they verify nothing about the named behavior
+and give false confidence. A self-contradictory comment block compounds the
+problem by documenting a "base 1, +1" model the code does not implement. The
+01-04 test exercises `ApplySpell` directly and bypasses the `ClassifySpellID`
+dispatch path that the fix actually changed, so it does not guard the regression.
 
-### CR-01: `NormalizeDB` migration wipes legacy fields before it can migrate them
+No security issues (WoW Lua sandbox, no I/O, no injection surface). No
+correctness-breaking bugs in the shipped runtime path.
 
-**File:** `Duncedmaxxing/Core.lua:91-100`
-
-**Issue:** The migration block (lines 77-96) explicitly sets `tip.barWidth = nil`, `tip.barHeight = nil`, and `tip.spacing = nil` at lines 91-93. The legacy-field migration that was meant to carry these values forward into the new field names (`tip.width`, `tip.height`, `tip.borderSize`) runs at lines 98-106 — after the nil assignments. On any first-run upgrade where `db.settingsMigration ~= SETTINGS_MIGRATION`, the checks `if tip.barWidth then` (line 98) and `if tip.barHeight then` (line 101) are always false because those fields were just cleared. Users who stored bar dimensions in the old field names lose them permanently on upgrade; the migration path is dead code.
-
-**Fix:** Move the legacy-field rescue above the migration block, or save the values alongside `x/y/scale` before overwriting:
-
-```lua
-local function NormalizeDB(db)
-    local tip = db.tip
-
-    if db.settingsMigration ~= SETTINGS_MIGRATION then
-        local x, y, scale = tip.x, tip.y, tip.scale
-        local optionsX, optionsY = tip.optionsX, tip.optionsY
-        -- Rescue legacy dimension/border names BEFORE the hard reset
-        local legacyWidth   = tip.barWidth
-        local legacyHeight  = tip.barHeight
-        local legacyBorder  = (not tip.borderSize) and tip.spacing or nil
-        local fresh = CopyDefaults(DEFAULTS.tip)
-
-        for key, value in pairs(fresh) do
-            tip[key] = value
-        end
-
-        tip.x        = x        or fresh.x
-        tip.y        = y        or fresh.y
-        tip.scale    = scale    or fresh.scale
-        tip.optionsX = optionsX or fresh.optionsX
-        tip.optionsY = optionsY or fresh.optionsY
-        -- Apply rescued legacy values on top of defaults
-        if legacyWidth   then tip.width      = legacyWidth   end
-        if legacyHeight  then tip.height     = legacyHeight  end
-        if legacyBorder  then tip.borderSize = legacyBorder  end
-        tip.barWidth  = nil
-        tip.barHeight = nil
-        tip.spacing   = nil
-        db.locked = true
-        db.settingsMigration = SETTINGS_MIGRATION
-    end
-
-    -- These now only serve sessions already past migration that somehow
-    -- still carry stale keys (safe to leave but effectively dead).
-    if tip.barWidth  then tip.width      = tip.barWidth  end
-    if tip.barHeight then tip.height     = tip.barHeight end
-    if tip.spacing and not tip.borderSize then
-        tip.borderSize = tip.spacing
-    end
-
-    if tip.displayMode ~= "bar" and tip.displayMode ~= "icons" and tip.displayMode ~= "number" then
-        tip.displayMode = DEFAULTS.tip.displayMode
-    end
-end
-```
-
----
-
-### CR-02: `ParseOnOff` crashes when passed a non-string, non-nil value
-
-**File:** `Duncedmaxxing/Util.lua:19`
-
-**Issue:** `ParseOnOff` calls `string.lower(Trim(value))`. `Trim` is defined as `(text or ""):match("^%s*(.-)%s*$")`. In Lua 5.1 the `or` guard preserves a non-nil value as-is — so if `value` is `true`, `false`, or a number, `(value or "")` evaluates to that original value (not a string), and calling `:match(...)` on a non-string value raises "attempt to index a boolean/number value". Any caller that passes a boolean (e.g., `ParseOnOff(someFlag)`) will hard-error.
-
-The risk is currently contained because all callers in `Core.lua` pass strings from user input. However, `ParseOnOff` is now a public Util function and its signature gives no indication of the type restriction. A future caller passing a boolean to toggle behavior would introduce a silent crash.
-
-**Fix:** Guard at the top of `Trim`, or at the entry of `ParseOnOff`:
-
-```lua
--- Option A: fix Trim to always coerce to string
-local function Trim(text)
-    return (tostring(text or "")):match("^%s*(.-)%s*$")
-end
-
--- Option B: guard in ParseOnOff
-local function ParseOnOff(value)
-    if value == nil then return nil end
-    value = string.lower(Trim(tostring(value)))
-    ...
-end
-```
-
-Option A is preferable since `Trim` is also called directly.
-
----
-
-### CR-03: Options close button (`X`) is blocked during combat
-
-**File:** `Duncedmaxxing/Options.lua:244-246`
-
-**Issue:** `CreateButton` wraps every `onClick` callback with `if not Options:CanChange() then return end`. This check is correct for settings-mutation buttons but is also applied to the close button:
-
-```lua
-CreateButton(window, "X", 348, -6, 24, 20, function()
-    window:Hide()   -- <-- this dismiss action is gated by CanChange()
-end)
-```
-
-`CanChange()` prints "Settings cannot be opened or changed in combat" and returns `false` during combat. If the options window is somehow visible during combat (e.g., combat starts immediately after the window opens, before the `PLAYER_REGEN_DISABLED` event fires and auto-hides it), the X button does nothing and the user sees the "cannot change in combat" message when trying to close a window they can no longer interact with.
-
-The combat frame auto-hide (lines 431-437) closes the window on `PLAYER_REGEN_DISABLED`, but the close button should always work regardless — dismissing a frame is never a protected UI action.
-
-**Fix:** Give the close button its own direct `OnClick` handler that bypasses `CanChange()`, or make `CreateButton` accept an optional `skipCombatCheck` flag:
-
-```lua
--- Simplest fix: set the close script directly instead of using CreateButton
-local closeBtn = CreateFrame("Button", nil, window, "UIPanelButtonTemplate")
-closeBtn:SetSize(24, 20)
-closeBtn:SetPoint("TOPLEFT", window, "TOPLEFT", 348, -6)
-closeBtn:SetText("X")
-closeBtn:SetScript("OnClick", function() window:Hide() end)
-```
-
----
+## Narrative Findings (AI reviewer)
 
 ## Warnings
 
-### WR-01: Consumer upsync grace suppresses valid server corrections
+### WR-01: `hasPrimalSurge` is dead state — declared, reset, and tested but never read
 
-**File:** `Duncedmaxxing/Modules/TipOfTheSpear.lua:329-332`
+**File:** `Duncedmaxxing/Modules/TipOfTheSpear.lua:57` and `:700`
+**Issue:** The 01-03 change adds `Tip.hasPrimalSurge = false` (line 57) and
+`spec/support/init.lua:62` resets it, but `ApplySpell` hardcodes
+`local grant = 2` (line 700) and never references `self.hasPrimalSurge`. No
+event handler sets it to `true` either — unlike `hasTwinFangs`, which is updated
+on `PLAYER_SPECIALIZATION_CHANGED` / `PLAYER_TALENT_UPDATE` (lines 746, 753). The
+field is unreachable in the current build. Per CLAUDE.md, dead code and unused
+state are quality defects; this one is worse than usual because it directly
+undermines the test suite (see WR-02). A maintainer reading the field and its
+tests will reasonably believe the grant varies with Primal Surge — it does not.
 
-**Issue:** `SyncFromAura` skips accepting aura data when `liveStacks > self.stacks` and we are within `CONSUMER_UPSYNC_GRACE` (2.75 s) of a predicted consume. The intent is to prevent a momentary server lag from flipping the display back up, but the same guard also blocks correction if the consume was interrupted or missed — in that case the server's higher value is the ground truth. The addon will display the lower (incorrect) stack count for up to 2.75 seconds.
-
-**Fix:** Narrow the guard. Only suppress if the aura's expiration time is consistent with a pre-consume state (i.e., the timer still has a long remaining duration), or shorten `CONSUMER_UPSYNC_GRACE` to match actual network RTT (<300 ms typical) rather than a 2.75 s window:
-
+**Fix:** Prefer removing the field (and its resets/assertions) until the Primal
+Surge spell ID is resolved. If kept as a deliberate placeholder, make its
+inertness explicit:
 ```lua
--- Example: tighten the grace window
-local CONSUMER_UPSYNC_GRACE = 0.4  -- covers network RTT, not full animation
+-- hasPrimalSurge: RESERVED, not yet wired. No event sets it and ApplySpell
+-- does not read it. Remove or wire before relying on it.
+Tip.hasPrimalSurge = false
 ```
 
----
+### WR-02: Primal Surge tests are tautological — they assert a constant, not behavior
 
-### WR-02: `ToByte` silently clamps invalid color component to 255
+**File:** `spec/tip_spec.lua:130-151`
+**Issue:** Three tests set `Tip.hasPrimalSurge` (and/or `hasTwinFangs`) to
+differing values and all assert `Tip.stacks == 2`:
+- `:139` sets `hasPrimalSurge = true` → expects 2
+- `:146` sets `hasPrimalSurge = false` → expects 2
+- `:130` sets `hasTwinFangs = true, hasPrimalSurge = false` → expects 2
 
-**File:** `Duncedmaxxing/Options.lua:21`
+Because `ApplySpell` ignores `hasPrimalSurge` entirely (WR-01), each passes for
+the trivial reason that the grant is a hardcoded `2`. Setting `hasPrimalSurge`
+has zero effect on the assertion; these tests would still pass if the field were
+deleted, and would not catch a future regression where someone wires
+`hasPrimalSurge` incorrectly. The test names ("yields 2 stacks from 0 with Primal
+Surge") assert a contract the code does not implement. The one genuinely valuable
+assertion is the Twin-Fangs-independence check at `:134`
+(`assert.not_equals(3, Tip.stacks)`) — that guards the real 01-03 regression; the
+Primal-Surge-specific tests do not.
 
-**Issue:** `ToByte(value)` calls `Clamp(value or 1, 0, 1)`. If `value` is a non-numeric type (table, boolean, or a malformed color component), `Clamp` returns `nil`, and the `or 1` fallback silently returns byte value `255`. The color channel is shown as fully opaque/saturated with no error. This masks corrupted `SavedVariables` color data and could produce unexpected UI colors that are hard to diagnose.
-
-**Fix:** Log or surface the bad value rather than silently clamping:
-
+**Fix:** Collapse the redundant Primal Surge tests, or defer them until the field
+is wired. If flat-2 is the permanent contract, name the test for what it
+verifies:
 ```lua
-local function ToByte(value)
-    local clamped = Clamp(value, 0, 1)
-    if clamped == nil then
-        -- value is non-numeric; treat as 1.0 but log to aid debugging
-        DMX:Print("Warning: invalid color component " .. tostring(value))
-        clamped = 1
-    end
-    return math.floor(clamped * 255 + 0.5)
-end
+it("generator always grants flat 2 (Primal Surge not yet wired)", function()
+    Tip:ApplySpell("generator")
+    assert.equals(2, Tip.stacks)
+end)
 ```
+Do not keep multiple tests that vary an input with no observable output.
 
----
+### WR-03: 01-04 regression test bypasses the dispatch path it claims to protect
 
-### WR-03: `GetCfg()` in TipOfTheSpear.lua panics if called before DB is ready
+**File:** `spec/tip_spec.lua:198-202`
+**Issue:** The 01-04 fix is the addition of `[265189] = true` to the `CONSUMERS`
+table (TipOfTheSpear.lua:25). That table controls `ClassifySpellID(265189)`
+returning `"consumer"` (line 72) and `FindTrackedSpell` dispatching through
+`OnEvent`/`UNIT_SPELLCAST_SUCCEEDED`. The new test instead calls
+`Tip:ApplySpell("consumer", 265189)` with the kind passed in explicitly,
+short-circuiting `ClassifySpellID`. As the test's own comment admits, it
+"exercises the same plain -1 branch as 186270" — it would pass identically even
+if `265189` were never added to `CONSUMERS`. Removing the fix does not make the
+test fail, so it is not a regression guard for 01-04.
 
-**File:** `Duncedmaxxing/Modules/TipOfTheSpear.lua:108-110`
-
-**Issue:** `GetCfg()` returns `DMX:GetDB().tip`. `DMX:GetDB()` returns `self.db`, which is `nil` until `ADDON_LOADED` fires and sets `DMX.db = DuncedmaxxingDB`. The module self-registers at line 770, which is at file load time. `DMX:RegisterModule` at Core.lua:118 calls `module:Initialize(self)` immediately if `self.ready` is already true. Under normal load order, `ready` is not set until `ADDON_LOADED`, so there is no issue. However, if another addon or reload path calls `DMX:RegisterModule("tip", Tip)` after the addon is marked ready but before the DB is set (a narrow but possible window), `GetCfg()` would crash with "attempt to index a nil value."
-
-**Fix:** Add a nil guard consistent with the pattern used in `Options.lua:39-42`:
-
+**Fix:** Assert against the classifier via the event path so the test binds to
+the actual change:
 ```lua
-local function GetCfg()
-    local db = DMX:GetDB()
-    return db and db.tip
-end
+it("classifies 265189 (Aspect-of-the-Eagle Raptor Strike) as a consumer", function()
+    Tip.isSurvival = true
+    Tip.stacks = 2
+    Tip:OnEvent("UNIT_SPELLCAST_SUCCEEDED", "player", "cast-guid", 265189)
+    assert.equals(1, Tip.stacks)   -- fails if 265189 missing from CONSUMERS
+end)
 ```
-
-All callers of `GetCfg()` in TipOfTheSpear.lua already handle nil returns from similar helpers, so this change is safe.
-
----
-
-### WR-04: `ParseHexColor` does not guard against non-string input
-
-**File:** `Duncedmaxxing/Util.lua:27-38`
-
-**Issue:** `ParseHexColor(value)` calls `Trim(value):gsub(...)`. If `value` is not a string (e.g., a saved color table accidentally passed in), `Trim` propagates the non-string value (same root cause as CR-02), and `:gsub` will crash. Currently all callers pass strings, but as a public Util export the contract is unclear.
-
-**Fix:** Apply the same `tostring` coercion recommended in CR-02's Trim fix, which resolves this by extension. Alternatively, add an explicit type guard:
-
-```lua
-local function ParseHexColor(value)
-    if type(value) ~= "string" then return nil end
-    value = Trim(value):gsub("^#", "")
-    ...
-end
-```
-
----
-
-### WR-05: `Options:CanChange()` prints a chat message on every blocked input event
-
-**File:** `Duncedmaxxing/Options.lua:142-149`
-
-**Issue:** `CanChange()` calls `DMX:Print("Settings cannot be opened or changed in combat.")` unconditionally every time it returns false. During combat, if the player clicks any button or tabs through edit boxes, each interaction prints the message to chat. With multiple checkboxes and input fields, a rapid series of clicks (or `OnEditFocusLost` fires from an already-focused field when entering combat) could flood the chat frame.
-
-**Fix:** Print the message only once per combat entry, or only when the user actively triggers a change, not on every `CanChange()` call. One approach: let the caller decide whether to print, and have `CanChange()` return false silently:
-
-```lua
-function Options:CanChange(loud)
-    if InCombat() then
-        if loud then
-            DMX:Print("Settings cannot be opened or changed in combat.")
-        end
-        return false
-    end
-    return true
-end
-```
-
-Call as `Options:CanChange(true)` in `Open()` where user feedback is appropriate, and `Options:CanChange()` (silent) in widget callbacks.
-
----
+This routes through `FindTrackedSpell` → `ClassifySpellID` → `ApplySpell`, so
+reverting the table entry makes the test fail as intended.
 
 ## Info
 
-### IN-01: ARCHITECTURE documentation incorrectly claims `ClassifySpellID` uses `pcall`
+### IN-01: Self-contradictory comment in the generator branch
 
-**File:** `Duncedmaxxing/Modules/TipOfTheSpear.lua:50-58` (documentation drift in `CLAUDE.md`)
+**File:** `Duncedmaxxing/Modules/TipOfTheSpear.lua:697-700`
+**Issue:** Line 697 states the grant "derives from Primal Surge (base 1, +1 with
+Primal Surge)" — implying base grant is 1, and 2 only when Primal Surge is known.
+Line 698 then states "grant is 2 in all cases," and line 700 hardcodes
+`grant = 2`. The "base 1" claim contradicts the implemented flat-2 behavior. A
+maintainer who later wires `hasPrimalSurge` per line 697 would change the
+no-Primal-Surge grant to 1, silently breaking the flat-2 contract the tests pin.
 
-**Issue:** The ARCHITECTURE section of `CLAUDE.md` states: "`ClassifySpellID` wraps the lookup in `pcall`." The function at line 50-58 contains no `pcall` — it is a plain conditional lookup. Only `ReadLiveState` uses `pcall`. The documentation is stale and will mislead future maintainers who expect error-capture semantics on `ClassifySpellID`.
+**Fix:** Reconcile the comment to a single intent. If flat-2 is the accepted
+fallback, drop the "base 1, +1" sentence; if the eventual model is base-1/+1,
+say so explicitly and note the current code is a deliberate over-grant fallback
+pending ID resolution.
 
-**Fix:** Update the ARCHITECTURE error-handling bullet to accurately describe what `ClassifySpellID` does (direct table lookup, no pcall needed because it performs no API calls that can fail).
+### IN-02: Takedown+Twin Fangs decrement is not re-clamped
 
----
+**File:** `Duncedmaxxing/Modules/TipOfTheSpear.lua:706-708`
+**Issue:** `self.stacks = self.stacks - 1` (line 708) operates on the result of
+`ClampStacks(self.stacks + 3)` without re-clamping. Today this is safe — the
+prior line guarantees `self.stacks >= 3` for inputs `>= 0`, so the result is
+`>= 2` and never out of range. But the raw `- 1` is latent fragility: if
+`MAX_STACKS` or the grant constant changes, or if `self.stacks` ever enters
+negative, this can produce an out-of-range value that bypasses `ClampStacks`. The
+sibling branch (line 710) correctly clamps its decrement. This branch predates
+the gap-closure work but sits in the modified function.
 
-### IN-02: Legacy field migration code (lines 98-106) is unreachable on the upgrade path
-
-**File:** `Duncedmaxxing/Core.lua:98-106`
-
-**Issue:** As described in CR-01, lines 98-106 that rescue `barWidth → width`, `barHeight → height`, and `spacing → borderSize` are never reached with non-nil values when a user upgrades (because the migration block on lines 77-96 clears those fields first). After CR-01 is fixed, these lines remain as a secondary fallback for sessions that somehow missed the migration. They should either be removed (dead code) or accompanied by a comment explaining the edge case they guard against.
-
-**Fix:** Once CR-01's rescue is applied, consider removing these lines or adding an explanatory comment:
-
+**Fix:** Route the decrement through the clamp for consistency:
 ```lua
--- These lines only fire for DBs that bypassed the migration block above.
--- In practice this should not occur after version 0.3.2-fontfix.
-if tip.barWidth  then tip.width      = tip.barWidth  end
-if tip.barHeight then tip.height     = tip.barHeight end
-if tip.spacing and not tip.borderSize then
-    tip.borderSize = tip.spacing
-end
+self.stacks = ClampStacks(ClampStacks(self.stacks + 3) - 1)
 ```
 
+### IN-03: 265189 + 186270 both consumers — verify no double-decrement in-game
+
+**File:** `Duncedmaxxing/Modules/TipOfTheSpear.lua:24-25`
+**Issue:** Both `186270` (Raptor Strike) and `265189` (Aspect-of-the-Eagle ranged
+Raptor Strike) are now consumers. `FindTrackedSpell` (line 77) returns on the
+first tracked ID found in the vararg list, so a single
+`UNIT_SPELLCAST_SUCCEEDED` produces at most one decrement — good. The residual
+risk is only if the client emits both IDs across two separate
+`UNIT_SPELLCAST_SUCCEEDED` events for one logical Raptor Strike press (melee +
+ranged variant), which would decrement twice. This cannot be verified offline
+(no game client), so it is flagged for in-game UAT, not as a code defect.
+
+**Fix:** Confirm via in-game UAT that pressing Raptor Strike under Aspect of the
+Eagle drops exactly one stack. If a double-decrement is observed, dedupe within a
+short window in `OnEvent`.
+
 ---
 
-_Reviewed: 2026-06-17T00:00:00Z_
+_Reviewed: 2026-06-22T00:00:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
