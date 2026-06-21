@@ -59,6 +59,7 @@ local function resetTipState(Tip, clock)
     Tip.expireTimer       = nil
     Tip.testMode          = false
     Tip.hasTwinFangs      = false
+    Tip.hasPrimalSurge    = false
     Tip.isSurvival        = false
     Tip.spellTexture      = nil
     clock:reset()
