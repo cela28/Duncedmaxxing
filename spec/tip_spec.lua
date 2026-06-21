@@ -191,6 +191,15 @@ describe("Tip:ApplySpell", function()
         Tip:ApplySpell("consumer", 186270)  -- Raptor Strike spell ID
         assert.equals(1, Tip.stacks)
     end)
+
+    -- Aspect-of-the-Eagle Raptor Strike (265189) decrements 1 stack instantly (plain consumer path)
+    -- Regression: 265189 must be in CONSUMERS so ClassifySpellID returns "consumer" for it;
+    -- ApplySpell with explicit kind="consumer" exercises the same plain -1 branch as 186270.
+    it("Aspect-of-the-Eagle Raptor Strike (265189) decrements 1 stack instantly", function()
+        Tip.stacks = 2
+        Tip:ApplySpell("consumer", 265189)  -- Aspect-of-the-Eagle ranged Raptor Strike
+        assert.equals(1, Tip.stacks)
+    end)
 end)
 
 -- ---------------------------------------------------------------------------
