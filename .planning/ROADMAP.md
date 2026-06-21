@@ -54,7 +54,7 @@ Plans:
   4. `ClassifySpellID` performs a plain table lookup with no `pcall` wrapper
   5. `/reload ui` in-game produces no Lua errors and the tracker display functions normally
 
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 
 Plans:
 **Wave 1**
@@ -71,7 +71,7 @@ Plans:
 
 **Gap Closure** *(from UAT Test 6 — Raptor Strike + Aspect of the Eagle stack lag)*
 
-- [ ] 01-04-PLAN.md — Register Aspect-of-the-Eagle Raptor Strike (265189) as a consumer + regression test
+- [x] 01-04-PLAN.md — Register Aspect-of-the-Eagle Raptor Strike (265189) as a consumer + regression test
 
 ### Phase 2: Test Framework and Core Logic Tests
 
@@ -157,7 +157,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 0. Repo Cleanup | 1/1 | Complete   | 2026-06-17 |
-| 1. Utility Extraction and Module Encapsulation | 3/4 | In Progress|  |
+| 1. Utility Extraction and Module Encapsulation | 4/4 | Complete   | 2026-06-21 |
 | 2. Test Framework and Core Logic Tests | 3/3 | Complete   | 2026-06-18 |
 | 3. Bug Fixes with Test Coverage | 2/2 | Complete   | 2026-06-18 |
 | 4. Performance Caching and CI/CD | 2/2 | Complete   | 2026-06-18 |
