@@ -34,11 +34,17 @@ result: pass
 expected: Switching off the Survival spec (or onto a non-Hunter character) stops stack tracking / hides the tracker as before, with no Lua errors. Confirms deterministic module iteration (moduleOrder/ipairs) and spec-detection still gate the tracker.
 result: pass
 
+### 6. Raptor Strike consumes a stack instantly with Aspect of the Eagle active
+expected: With Aspect of the Eagle active, casting Raptor Strike decrements the Tip of the Spear stack display instantly (predictive), the same as casting it without Aspect of the Eagle.
+result: issue
+reported: "When I use raptor strike with aspect of the eagle up it seems it takes a while for the stacks to update"
+severity: major
+
 ## Summary
 
-total: 5
+total: 6
 passed: 4
-issues: 1
+issues: 2
 pending: 0
 skipped: 0
 blocked: 0
@@ -62,3 +68,17 @@ blocked: 0
     - "Decouple the Kill Command (generator) grant from hasTwinFangs — keep Twin Fangs scoped to the Takedown consumer path (lines 699-703)."
     - "Derive the Kill Command grant from a Primal-Surge-aware value (base 1, +1 with Primal Surge) instead of hard-coding `3 or 2`; add Primal Surge detection analogous to HasTwinFangs()."
   debug_session: .planning/debug/kill-command-stack-overshoot.md
+
+- truth: "Casting Raptor Strike consumes a Tip of the Spear stack and the display decrements instantly, including while Aspect of the Eagle is active"
+  status: failed
+  reason: "User reported: When I use raptor strike with aspect of the eagle up it seems it takes a while for the stacks to update"
+  severity: major
+  test: 6
+  root_cause: "Spell-ID coverage gap in the CONSUMERS table (TipOfTheSpear.lua:20-26). With Aspect of the Eagle (186289) active, Raptor Strike fires UNIT_SPELLCAST_SUCCEEDED under a distinct ranged-variant spell ID, NOT the melee ID 186270. That variant ID is absent from CONSUMERS, so ClassifySpellID returns nil, FindTrackedSpell finds nothing, and ApplySpell (the only instant predictive decrement) never runs. The stack is corrected only by the slow UNIT_AURA -> ScheduleAuraVerify -> SyncFromAura path, which defers >=0.05s and stretches up to AURA_VERIFY_DELAY=1.25s in combat — the observed lag. Without Aspect of the Eagle, Raptor Strike fires under 186270 (in CONSUMERS) and predicts instantly. Note: 1262293 'Raptor Swipe' already in CONSUMERS is the frontal-cone apex talent, NOT the Aspect variant, so it does not close this gap."
+  artifacts:
+    - path: "Duncedmaxxing/Modules/TipOfTheSpear.lua:20-26"
+      issue: "CONSUMERS table missing the Aspect-of-the-Eagle ranged Raptor Strike spell ID."
+  missing:
+    - "Make the Aspect-of-the-Eagle Raptor Strike variant classify as a consumer so it decrements instantly via ApplySpell."
+    - "EXACT spell ID for the 12.0.5 ranged Raptor Strike variant is not published; needs in-game capture (/etrace or a spell-ID addon) OR a generic override-mapping approach (e.g. FindBaseSpellByID / C_Spell.GetOverrideSpell back to 186270). Historical lineage: 259271 / 265189."
+  debug_session: .planning/debug/raptor-strike-aspect-eagle-stack-lag.md
