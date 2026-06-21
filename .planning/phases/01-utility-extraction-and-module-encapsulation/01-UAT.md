@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 01-utility-extraction-and-module-encapsulation
 source: [01-01-SUMMARY.md, 01-02-SUMMARY.md]
 started: 2026-06-21T21:11:37Z
@@ -50,7 +50,15 @@ blocked: 0
   reason: "User reported: when I press Kill command the stacks go to 3 for one instant before dropping back to 2"
   severity: major
   test: 3
-  root_cause: ""     # Filled by diagnosis
-  artifacts: []      # Filled by diagnosis
-  missing: []        # Filled by diagnosis
-  debug_session: ""  # Filled by diagnosis
+  root_cause: "ApplySpell generator branch predicts the Kill Command grant as `self.hasTwinFangs and 3 or 2` (TipOfTheSpear.lua:695). Twin Fangs is a Takedown (consumer) modifier, NOT a Kill Command modifier — so when hasTwinFangs is true the predictive path over-predicts +3 while the real grant is 2. The display jumps to 3, then SyncFromAura reads the true aura (2 applications) and snaps back to 2, producing the '3 for an instant then 2' flicker. Introduced in commit 0cf4776 (Phase 03-02), surfaced by Phase 01 UAT."
+  artifacts:
+    - path: "Duncedmaxxing/Modules/TipOfTheSpear.lua:694-697"
+      issue: "Generator (Kill Command) grant formula `self.hasTwinFangs and 3 or 2` incorrectly tied to Twin Fangs, which is a Takedown modifier."
+    - path: "Duncedmaxxing/Modules/TipOfTheSpear.lua:35-43"
+      issue: "HasTwinFangs() — Twin Fangs detection used in the wrong (generator) path; belongs only to the Takedown consumer path."
+    - path: "Duncedmaxxing/Modules/TipOfTheSpear.lua:341-366"
+      issue: "SyncFromAura corrects the over-prediction on the next aura read, making it a visible flicker rather than a stuck value."
+  missing:
+    - "Decouple the Kill Command (generator) grant from hasTwinFangs — keep Twin Fangs scoped to the Takedown consumer path (lines 699-703)."
+    - "Derive the Kill Command grant from a Primal-Surge-aware value (base 1, +1 with Primal Surge) instead of hard-coding `3 or 2`; add Primal Surge detection analogous to HasTwinFangs()."
+  debug_session: .planning/debug/kill-command-stack-overshoot.md
