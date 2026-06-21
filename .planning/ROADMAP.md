@@ -54,7 +54,7 @@ Plans:
   4. `ClassifySpellID` performs a plain table lookup with no `pcall` wrapper
   5. `/reload ui` in-game produces no Lua errors and the tracker display functions normally
 
-**Plans:** 2/2 plans complete
+**Plans:** 2/2 plans complete (+1 gap closure)
 
 Plans:
 **Wave 1**
@@ -64,6 +64,10 @@ Plans:
 **Wave 2** *(blocked on Wave 1 completion)*
 
 - [x] 01-02-PLAN.md — Migrate frame references to Tip table fields, remove ClassifySpellID pcall
+
+**Gap Closure** *(from UAT Test 3 — Kill Command stack overshoot)*
+
+- [ ] 01-03-PLAN.md — Decouple Kill Command generator grant from Twin Fangs; Primal-Surge-aware grant + regression tests
 
 ### Phase 2: Test Framework and Core Logic Tests
 
