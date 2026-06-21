@@ -2,15 +2,18 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: milestone_complete
-stopped_at: Milestone complete (Phase 04 was final phase)
-last_updated: 2026-06-18T12:58:32.633Z
-last_activity: 2026-06-21 -- Completed quick task 260621-x8n: fix release workflow action SHA
+current_phase: 01
+current_phase_name: utility-extraction-and-module-encapsulation
+status: executing
+stopped_at: "Completed 01-03 plan: Kill Command stack-overshoot fix"
+last_updated: "2026-06-21T22:51:45.131Z"
+last_activity: 2026-06-21
+last_activity_desc: Phase 01 execution started
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 10
-  completed_plans: 10
+  total_plans: 12
+  completed_plans: 11
   percent: 80
 ---
 
@@ -21,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-17)
 
 **Core value:** Accurate, instant stack display during combat
-**Current focus:** Milestone complete
+**Current focus:** Phase 01 — utility-extraction-and-module-encapsulation
 
 ## Current Position
 
-Phase: 04
-Plan: Not started
-Status: Milestone complete
-Last activity: 2026-06-18
+Phase: 01 (utility-extraction-and-module-encapsulation) — EXECUTING
+Plan: 2 of 4
+Status: Ready to execute
+Last activity: 2026-06-21 — Phase 01 execution started
 
 Progress: [██████████] 100%
 
@@ -57,6 +60,7 @@ Progress: [██████████] 100%
 
 *Updated after each plan completion*
 | Phase 02-test-framework-and-core-logic-tests P03 | 15min | 2 tasks | 4 files |
+| Phase 01 P03 | 3min | - tasks | - files |
 
 ## Accumulated Context
 
@@ -71,6 +75,9 @@ Recent decisions affecting current work:
 - [Revision]: Phase 0 (Repo Cleanup) inserted — covers CLN-01 through CLN-05, executes before all other phases
 - [Phase ?]: mockAura indirection in wow_stubs.lua: wrapper function captured at module-load time delegates to replaceable mockAura.impl, enabling per-test aura overrides without module reload
 - [Phase ?]: luacheck 1.2.0 installed via luarocks; W432 self-shadowing suppressed for WoW SetScript closures; SlashCmdList in globals not read_globals
+- [Phase ?]: Primal Surge spell ID unverifiable offline; flat-2 fallback used for Kill Command generator grant
+- [Phase ?]: Generator grant decoupled from hasTwinFangs; Twin Fangs now scoped exclusively to Takedown consumer path
+- [Phase ?]: hasPrimalSurge field added to Tip module table; reserved for future HasPrimalSurge() wiring when ID is confirmed
 
 ### Pending Todos
 
@@ -101,6 +108,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-06-18T12:01:43.496Z
-Stopped at: Phase 4 context gathered
+Last session: 2026-06-21T22:51:45.126Z
+Stopped at: Completed 01-03 plan: Kill Command stack-overshoot fix
 Resume file: .planning/phases/04-performance-caching-and-ci-cd/04-CONTEXT.md
