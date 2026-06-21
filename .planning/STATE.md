@@ -5,7 +5,7 @@ milestone_name: milestone
 status: milestone_complete
 stopped_at: Milestone complete (Phase 04 was final phase)
 last_updated: 2026-06-18T12:58:32.633Z
-last_activity: 2026-06-18 -- Phase 04 execution started
+last_activity: 2026-06-21 -- Completed quick task 260621-x8n: fix release workflow action SHA
 progress:
   total_phases: 5
   completed_phases: 4
@@ -81,6 +81,7 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260617-jee | Move addon files into nested Duncedmaxxing subdirectory | 2026-06-17 | ffea0ea | [260617-jee-move-addon-files-into-nested-duncedmaxxi](./quick/260617-jee-move-addon-files-into-nested-duncedmaxxi/) |
+| 260621-x8n | Fix release workflow action SHA so the v1.0.0 zip asset builds and uploads | 2026-06-21 | f1e6e4d | [260621-x8n-fix-release-workflow-action-sha-so-the-v](./quick/260621-x8n-fix-release-workflow-action-sha-so-the-v/) |
 
 ### Blockers/Concerns
 
