@@ -26,8 +26,9 @@ describe("Tip:ApplySpell", function()
         loader.resetTipState(Tip, clock)
     end)
 
-    -- Generator: adds 2 stacks from 0
-    it("adds 2 stacks on generator from zero", function()
+    -- Generator: adds BASE (2) stacks from 0 (flat-2 fallback path; Primal Surge ID unverifiable offline)
+    it("adds BASE stacks on generator from zero (flat-2 fallback: BASE=2)", function()
+        Tip.hasPrimalSurge = false
         Tip:ApplySpell("generator")
         assert.equals(2, Tip.stacks)
     end)
@@ -116,33 +117,37 @@ describe("Tip:ApplySpell", function()
     -- Expiry timer fires after BUFF_DURATION and zeroes stacks
     it("expiry timer fires after BUFF_DURATION and zeroes stacks", function()
         Tip:ApplySpell("generator")
-        assert.equals(2, Tip.stacks)
+        assert.equals(2, Tip.stacks)   -- BASE = 2 on flat-2 fallback path (hasPrimalSurge=false default)
         -- Timer scheduled at remaining(10) + 0.03 = 10.03 seconds from now=100
         clock:advance(10.1)
         assert.equals(0, Tip.stacks)
         assert.equals(0, Tip.expiresAt)
     end)
 
-    -- BUG-03: Kill Command grants 2 stacks without Twin Fangs (baseline)
-    it("grants 2 stacks on generator without Twin Fangs (BUG-03 baseline)", function()
-        Tip.hasTwinFangs = false
+    -- Generator grant is independent of Twin Fangs (regression for kill-command-stack-overshoot)
+    -- With hasTwinFangs=true and hasPrimalSurge=false, the grant must NOT reach 3 from 0 stacks.
+    -- BASE = 2 (flat-2 fallback path; Primal Surge ID unverifiable offline).
+    it("generator grant is independent of Twin Fangs: hasTwinFangs=true yields BASE (not 3) from 0 stacks", function()
+        Tip.hasTwinFangs  = true
+        Tip.hasPrimalSurge = false
+        Tip:ApplySpell("generator")
+        assert.not_equals(3, Tip.stacks)
+        assert.equals(2, Tip.stacks)   -- BASE = 2 on flat-2 fallback path
+    end)
+
+    -- Generator grant with Primal Surge: hasPrimalSurge=true yields 2 stacks from 0
+    it("generator grant with Primal Surge yields 2 stacks from 0", function()
+        Tip.hasPrimalSurge = true
         Tip:ApplySpell("generator")
         assert.equals(2, Tip.stacks)
     end)
 
-    -- BUG-03: Kill Command grants 3 stacks with Twin Fangs active
-    it("grants 3 stacks on generator with Twin Fangs active (BUG-03)", function()
-        Tip.hasTwinFangs = true
+    -- Generator grant without Primal Surge: hasPrimalSurge=false yields BASE (2) stacks from 0
+    it("generator grant without Primal Surge yields BASE stacks from 0", function()
+        Tip.hasPrimalSurge = false
+        Tip.hasTwinFangs   = false
         Tip:ApplySpell("generator")
-        assert.equals(3, Tip.stacks)
-    end)
-
-    -- BUG-03: Kill Command with Twin Fangs from 1 stack caps at MAX_STACKS
-    it("caps at MAX_STACKS on generator with Twin Fangs from 1 stack (BUG-03)", function()
-        Tip.hasTwinFangs = true
-        Tip.stacks = 1
-        Tip:ApplySpell("generator")
-        assert.equals(MAX_STACKS, Tip.stacks)
+        assert.equals(2, Tip.stacks)   -- BASE = 2 on flat-2 fallback path
     end)
 
     -- BUG-04: Takedown with Twin Fangs from 0 stacks: grant 3 then consume 1 = 2
