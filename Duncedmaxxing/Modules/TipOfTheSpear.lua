@@ -22,6 +22,7 @@ local CONSUMERS = {
     [1250646] = true, -- Takedown
     [259495] = true,  -- Wildfire Bomb
     [186270] = true,  -- Raptor Strike
+    [265189] = true,  -- Raptor Strike (Aspect of the Eagle ranged variant)
     [1262293] = true, -- Raptor Swipe
 }
 
