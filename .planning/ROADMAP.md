@@ -54,7 +54,7 @@ Plans:
   4. `ClassifySpellID` performs a plain table lookup with no `pcall` wrapper
   5. `/reload ui` in-game produces no Lua errors and the tracker display functions normally
 
-**Plans:** 2/2 plans complete (+1 gap closure)
+**Plans:** 2/2 plans complete (+2 gap closure)
 
 Plans:
 **Wave 1**
@@ -68,6 +68,10 @@ Plans:
 **Gap Closure** *(from UAT Test 3 — Kill Command stack overshoot)*
 
 - [ ] 01-03-PLAN.md — Decouple Kill Command generator grant from Twin Fangs; Primal-Surge-aware grant + regression tests
+
+**Gap Closure** *(from UAT Test 6 — Raptor Strike + Aspect of the Eagle stack lag)*
+
+- [ ] 01-04-PLAN.md — Register Aspect-of-the-Eagle Raptor Strike (265189) as a consumer + regression test
 
 ### Phase 2: Test Framework and Core Logic Tests
 
