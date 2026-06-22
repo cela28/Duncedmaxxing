@@ -692,8 +692,7 @@ function Tip:ApplySpell(kind, spellID)
     local now = GetTime()
 
     if kind == "generator" then
-        local grant = self.hasTwinFangs and 3 or 2
-        self.stacks = ClampStacks(self.stacks + grant)
+        self.stacks = ClampStacks(self.stacks + 2)
         self.expiresAt = now + BUFF_DURATION
     elseif kind == "consumer" then
         if spellID == TAKEDOWN and self.hasTwinFangs then

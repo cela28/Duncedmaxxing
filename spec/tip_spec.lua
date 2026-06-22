@@ -123,24 +123,23 @@ describe("Tip:ApplySpell", function()
         assert.equals(0, Tip.expiresAt)
     end)
 
-    -- BUG-03: Kill Command grants 2 stacks without Twin Fangs (baseline)
+    -- BUG-03: Kill Command always grants 2 stacks regardless of Twin Fangs
     it("grants 2 stacks on generator without Twin Fangs (BUG-03 baseline)", function()
         Tip.hasTwinFangs = false
         Tip:ApplySpell("generator")
         assert.equals(2, Tip.stacks)
     end)
 
-    -- BUG-03: Kill Command grants 3 stacks with Twin Fangs active
-    it("grants 3 stacks on generator with Twin Fangs active (BUG-03)", function()
+    -- BUG-03: Twin Fangs does NOT change generator grant amount
+    it("grants 2 stacks on generator with Twin Fangs active (BUG-03)", function()
         Tip.hasTwinFangs = true
         Tip:ApplySpell("generator")
-        assert.equals(3, Tip.stacks)
+        assert.equals(2, Tip.stacks)
     end)
 
-    -- BUG-03: Kill Command with Twin Fangs from 1 stack caps at MAX_STACKS
-    it("caps at MAX_STACKS on generator with Twin Fangs from 1 stack (BUG-03)", function()
-        Tip.hasTwinFangs = true
-        Tip.stacks = 1
+    -- BUG-03: Generator from 2 stacks caps at MAX_STACKS
+    it("caps at MAX_STACKS on generator from 2 stacks (BUG-03)", function()
+        Tip.stacks = 2
         Tip:ApplySpell("generator")
         assert.equals(MAX_STACKS, Tip.stacks)
     end)

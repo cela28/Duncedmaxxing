@@ -17,16 +17,16 @@ scope: full-milestone smoke test (phases 01-04)
 expected: `/reload ui` with Duncedmaxxing enabled — no Lua errors in chat. Tracker frame appears at screen center (bar or icon mode depending on saved settings).
 result: [pending]
 
-### 2. Kill Command grants stacks (no Twin Fangs)
-expected: Without Twin Fangs talented, cast Kill Command on a target dummy. Tracker updates from 0→2 stacks instantly (before server aura confirmation). Bar fills 2 of 5 segments or 2 icon pips light up.
+### 2. Kill Command grants +2 stacks
+expected: Cast Kill Command on a target dummy. Tracker updates from 0→2 stacks instantly (before server aura confirmation). Bar fills 2 of 3 segments or 2 icon pips light up. Twin Fangs does NOT change this — KC always grants +2.
 result: [pending]
 
-### 3. Kill Command grants stacks (with Twin Fangs)
-expected: With Twin Fangs talented, cast Kill Command. Tracker updates from 0→3 stacks instantly. Subsequent Kill Command caps at 5 (not 6). Respec away from Twin Fangs, `/reload ui`, Kill Command grants +2 again.
+### 3. Takedown with Twin Fangs grants stacks
+expected: With Twin Fangs talented, cast Takedown. It grants +3 stacks then consumes 1 (net +2). Without Twin Fangs, Takedown only consumes 1 stack.
 result: [pending]
 
-### 4. Takedown consume-after-grant order
-expected: At 2+ stacks, cast a spender (Raptor Strike/Mongoose Bite). One stack consumed. If Twin Fangs active AND Takedown procs, the Takedown cast should grant before consuming (net +2 with Twin Fangs, net +1 without).
+### 4. Spender consumes stacks
+expected: At 2+ stacks, cast Raptor Strike or Mongoose Bite. One stack consumed. Tracker updates instantly. At 0 stacks, tracker resets.
 result: [pending]
 
 ### 5. Stack expiry and aura reconciliation
