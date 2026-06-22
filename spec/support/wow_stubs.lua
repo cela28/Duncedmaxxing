@@ -105,15 +105,18 @@ local function noopFrame()
             return function(...) return t end
         end
     })
-    frame._visible  = true
-    frame._text     = ""
-    frame._scripts  = {}
+    frame._visible    = true
+    frame._text       = ""
+    frame._textColor  = nil
+    frame._scripts    = {}
     frame.Show      = function(self) self._visible = true end
     frame.Hide      = function(self) self._visible = false end
     frame.SetShown  = function(self, v) self._visible = v end
     frame.IsShown   = function(self) return self._visible end
     frame.SetText   = function(self, t) self._text = tostring(t or "") end
     frame.GetText   = function(self) return self._text end
+    frame.SetTextColor = function(self, r, g, b, a) self._textColor = { r, g, b, a } end
+    frame.GetTextColor = function(self) return self._textColor end
     frame.SetScript = function(self, event, fn) self._scripts[event] = fn end
     frame.GetCenter = function(self) return 0, 0 end
     frame.CreateTexture    = function(self) return noopFrame() end
