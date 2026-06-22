@@ -161,3 +161,25 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 | 2. Test Framework and Core Logic Tests | 3/3 | Complete   | 2026-06-18 |
 | 3. Bug Fixes with Test Coverage | 2/2 | Complete   | 2026-06-18 |
 | 4. Performance Caching and CI/CD | 2/2 | Complete   | 2026-06-18 |
+
+### Phase 5: Refactor display modes: remove icon mode and add a bar + text mode
+
+**Goal:** Simplify the display-mode set. Remove the `icons` display mode entirely (rendering path, option, slash-command token, and migration alias). Add a new combined `bar + text` mode that renders the stack bar with the numeric stack count overlaid as text. Net mode set after this phase: `bar`, `bar+text`, `number`.
+
+**Scope notes (current state, pre-refactor):**
+- Three modes exist today: `bar`, `icons`, `number` (NOT just bar/icon). The legacy `icon` token is already migrated to `icons` in `Core.lua`.
+- Rendering branches on `cfg.displayMode` in `Duncedmaxxing/Modules/TipOfTheSpear.lua` (~lines 476, 630).
+- Default + validation + slash-command parsing live in `Duncedmaxxing/Core.lua` (`DEFAULTS.tip.displayMode` ~line 30; NormalizeDB validation ~line 98; slash parser ~lines 251-255).
+- Mode selector UI + `MODE_LABELS` in `Duncedmaxxing/Options.lua` (~lines 11, 176, 249, 289, 411).
+- **Migration required:** users currently persisted on `icons` (or legacy `icon`) must be remapped on load to a sensible surviving mode (decide target during planning — likely `bar+text`).
+- Tests in `spec/` must be updated (remove icon-mode assertions, add bar+text assertions). No native Lua/busted toolchain in this env — regression runs go through the fengari (Lua-VM-in-JS) harness.
+
+**Open question for planning:** exact mode key string (`"bar+text"` vs `"bartext"` vs `"bar_text"`) and the migration target for existing `icons` users.
+
+**Requirements**: TBD (resolve in /gsd-plan-phase)
+**Depends on:** Phase 4
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 5 to break down)

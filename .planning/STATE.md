@@ -79,6 +79,10 @@ Recent decisions affecting current work:
 - [Phase ?]: Generator grant decoupled from hasTwinFangs; Twin Fangs now scoped exclusively to Takedown consumer path
 - [Phase ?]: hasPrimalSurge field added to Tip module table; reserved for future HasPrimalSurge() wiring when ID is confirmed
 
+### Roadmap Evolution
+
+- Phase 5 added: Refactor display modes — remove icon mode and add a bar + text mode
+
 ### Pending Todos
 
 None yet.
