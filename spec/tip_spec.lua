@@ -547,3 +547,72 @@ describe("Tip:ScheduleAuraVerify — auraVerifyPending flag (BUG-01)", function(
         assert.is_false(Tip.auraVerifyPending)
     end)
 end)
+
+-- ---------------------------------------------------------------------------
+-- Tip:Update number mode color coding
+-- ---------------------------------------------------------------------------
+describe("Tip:Update number mode color coding", function()
+    local DMX, Tip, clock
+
+    before_each(function()
+        DMX, Tip, clock = loader.load()
+        loader.resetTipState(Tip, clock)
+        local db = DMX:GetDB()
+        db.tip.displayMode = "number"
+        db.tip.enabled = true
+        db.locked = true
+        Tip.isSurvival = true
+        Tip:RefreshLayout()
+    end)
+
+    -- Helper: assert RGBA components within tolerance
+    local function assertColor(actual, expected, msg)
+        assert.is_not_nil(actual, msg .. " (_textColor is nil)")
+        for i = 1, 4 do
+            assert.near(expected[i], actual[i], 0.001,
+                msg .. " component " .. i)
+        end
+    end
+
+    it("sets white text color at 0 stacks", function()
+        Tip.stacks = 0
+        Tip:Update()
+        assertColor(Tip.numberText._textColor, { 1, 1, 1, 1 },
+            "0 stacks should be white")
+    end)
+
+    it("sets green text color at 1 stack", function()
+        Tip.stacks = 1
+        Tip:Update()
+        assertColor(Tip.numberText._textColor, { 0.18039, 0.80000, 0.44314, 1 },
+            "1 stack should be green")
+    end)
+
+    it("sets yellow text color at 2 stacks", function()
+        Tip.stacks = 2
+        Tip:Update()
+        assertColor(Tip.numberText._textColor, { 1, 0.94118, 0, 1 },
+            "2 stacks should be yellow")
+    end)
+
+    it("sets red/orange text color at 3 stacks", function()
+        Tip.stacks = 3
+        Tip:Update()
+        assertColor(Tip.numberText._textColor, { 1, 0.29804, 0.18824, 1 },
+            "3 stacks should be red/orange")
+    end)
+
+    it("does not set numberText color in bar mode", function()
+        local db = DMX:GetDB()
+        db.tip.displayMode = "bar"
+        Tip:RefreshLayout()
+        -- Reset _textColor to nil after RefreshLayout to isolate Update() behavior.
+        -- Use rawset to clear so rawget can detect absence (metatable __index returns
+        -- a noop function for missing keys, so normal nil access is intercepted).
+        rawset(Tip.numberText, "_textColor", nil)
+        Tip.stacks = 2
+        Tip:Update()
+        assert.is_nil(rawget(Tip.numberText, "_textColor"),
+            "bar mode should not set numberText color")
+    end)
+end)
