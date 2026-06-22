@@ -560,6 +560,7 @@ describe("Tip:Update number mode color coding", function()
         local db = DMX:GetDB()
         db.tip.displayMode = "number"
         db.tip.enabled = true
+        db.tip.showOnlyInCombat = false
         db.locked = true
         Tip.isSurvival = true
         Tip:RefreshLayout()

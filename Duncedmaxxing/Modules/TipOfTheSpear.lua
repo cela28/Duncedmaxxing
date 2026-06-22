@@ -28,6 +28,12 @@ local CONSUMERS = {
 local TIP_COLOR = { 0.72, 0.55, 0.02, 1 }
 local EMPTY_COLOR = { 0, 0, 0, 0.5 }
 local BORDER_COLOR = { 0, 0, 0, 1 }
+local STACK_COLORS = {
+    [0] = { 1, 1, 1, 1 },
+    [1] = { 0.18039, 0.80000, 0.44314, 1 },
+    [2] = { 1, 0.94118, 0, 1 },
+    [3] = { 1, 0.29804, 0.18824, 1 },
+}
 local WHITE_TEX = "Interface\\Buttons\\WHITE8X8"
 
 local GetPlayerAuraBySpellID = C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID
@@ -632,6 +638,8 @@ function Tip:Update()
         end
 
         numberText:SetText(stacks)
+        local sc = STACK_COLORS[stacks] or STACK_COLORS[0]
+        numberText:SetTextColor(sc[1], sc[2], sc[3], sc[4])
         numberText:Show()
         label:SetShown(unlocked)
         return
