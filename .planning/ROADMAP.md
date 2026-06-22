@@ -164,17 +164,19 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 
 ### Phase 5: Refactor display modes: remove icon mode and add a bar + text mode
 
-**Goal:** Simplify the display-mode set. Remove the `icons` display mode entirely (rendering path, option, slash-command token, and migration alias). Add a new combined `bar + text` mode that renders the stack bar with the numeric stack count overlaid as text. Net mode set after this phase: `bar`, `bar+text`, `number`.
+**Goal:** Simplify the display-mode set. Remove the `icons` display mode entirely (rendering path, option, slash-command token, and migration alias). Add a new combined `bartext` mode that renders the stack bar with the numeric stack count overlaid as text. Net mode set after this phase: `bar`, `bartext`, `number`.
+
+**LOCKED decisions (user-confirmed 2026-06-22):**
+- Mode key string is `"bartext"` (one word, no separator).
+- **No migration logic.** There are only 2 users and neither uses icon mode — do NOT write a remap for persisted `icons`/`icon` values. Validation can simply fall back to the default (`bar`) for any now-unknown stored mode, but a dedicated icon→x migration path is explicitly out of scope. Also drop the existing legacy `icon`→`icons` alias in Core.lua since `icons` is being removed.
 
 **Scope notes (current state, pre-refactor):**
 - Three modes exist today: `bar`, `icons`, `number` (NOT just bar/icon). The legacy `icon` token is already migrated to `icons` in `Core.lua`.
 - Rendering branches on `cfg.displayMode` in `Duncedmaxxing/Modules/TipOfTheSpear.lua` (~lines 476, 630).
 - Default + validation + slash-command parsing live in `Duncedmaxxing/Core.lua` (`DEFAULTS.tip.displayMode` ~line 30; NormalizeDB validation ~line 98; slash parser ~lines 251-255).
 - Mode selector UI + `MODE_LABELS` in `Duncedmaxxing/Options.lua` (~lines 11, 176, 249, 289, 411).
-- **Migration required:** users currently persisted on `icons` (or legacy `icon`) must be remapped on load to a sensible surviving mode (decide target during planning — likely `bar+text`).
-- Tests in `spec/` must be updated (remove icon-mode assertions, add bar+text assertions). No native Lua/busted toolchain in this env — regression runs go through the fengari (Lua-VM-in-JS) harness.
-
-**Open question for planning:** exact mode key string (`"bar+text"` vs `"bartext"` vs `"bar_text"`) and the migration target for existing `icons` users.
+- **No migration** (see LOCKED decisions). Validation falls back to default `bar` for unknown stored modes; remove the legacy `icon`→`icons` alias.
+- Tests in `spec/` must be updated (remove icon-mode assertions, add `bartext` assertions). No native Lua/busted toolchain in this env — regression runs go through the fengari (Lua-VM-in-JS) harness.
 
 **Requirements**: TBD (resolve in /gsd-plan-phase)
 **Depends on:** Phase 4
