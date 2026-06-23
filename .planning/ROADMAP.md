@@ -191,7 +191,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
   5. `iconSize`/`iconSpacing` are absent from `DEFAULTS` and from the Options window
   6. The test suite passes via the fengari harness with all icon-mode assertions removed and bar/number coverage intact
 
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 **Wave 1**
@@ -200,4 +200,4 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 05-02-PLAN.md — Update core_spec.lua display-mode assertions for the two-mode world (icons→bar fallback) and add a fengari (Lua-VM-in-JS) node harness so the suite runs locally without busted
+- [x] 05-02-PLAN.md — Update core_spec.lua display-mode assertions for the two-mode world (icons→bar fallback) and add a fengari (Lua-VM-in-JS) node harness so the suite runs locally without busted

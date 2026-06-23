@@ -54,7 +54,7 @@ Requirements for the polish milestone. Each maps to roadmap phases.
 - [x] **DISP-01**: The `icons` display mode is removed entirely — both rendering branches in TipOfTheSpear.lua (`RefreshLayout` and `Update`), the Options "Icons" button and `MODE_LABELS` entry, the slash-command `icons` token, the legacy `icon`→`icons` alias, and validation acceptance of `icons`. Final mode set is exactly `bar` and `number`.
 - [x] **DISP-02**: `NormalizeDB` validation falls back to the default (`bar`) for any unknown/now-invalid stored `displayMode`; no dedicated `icon`/`icons`→x migration path is added (only 2 users, neither on icon mode).
 - [x] **DISP-03**: The now-orphaned `iconSize`/`iconSpacing` settings are removed from `DEFAULTS` and from the Options window — no display mode reads them after icon removal.
-- [ ] **DISP-04**: Test suite updated — icon-mode assertions removed; `bar` and `number` display-mode coverage retained and passing via the fengari (Lua-VM-in-JS) harness.
+- [x] **DISP-04**: Test suite updated — icon-mode assertions removed; `bar` and `number` display-mode coverage retained and passing via the fengari (Lua-VM-in-JS) harness.
 
 ## v2 Requirements
 
@@ -113,7 +113,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DISP-01 | Phase 5 | Complete |
 | DISP-02 | Phase 5 | Complete |
 | DISP-03 | Phase 5 | Complete |
-| DISP-04 | Phase 5 | Pending |
+| DISP-04 | Phase 5 | Complete |
 
 **Coverage:**
 
