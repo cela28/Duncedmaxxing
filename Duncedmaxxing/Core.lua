@@ -19,7 +19,6 @@ local DEFAULTS = {
     locked = true,
     tip = {
         enabled = true,
-        showOnlyInCombat = true,
         hideWhenEmpty = false,
         x = 0,
         y = -160,
@@ -155,7 +154,7 @@ end
 local function PrintHelp()
     DMX:Print("/dmax opens settings. /dmax help shows commands.")
     DMX:Print("/dmax lock, unlock, reset, show, hide, test, 0-3, scale <0.5-2>")
-    DMX:Print("/dmax mode bar|number, size 247 10, border 1, combat on|off")
+    DMX:Print("/dmax mode bar|number, size 247 10, border 1")
 end
 
 local function RefreshTip(tip)
@@ -293,15 +292,6 @@ local function RegisterSlashCommands()
                 DMX:Print("Empty segment opacity set to " .. alpha .. "%.")
             else
                 DMX:Print("Usage: /dmax empty 50")
-            end
-        elseif command == "combat" or command == "combatonly" then
-            local enabled = ParseOnOff(rest)
-            if enabled ~= nil then
-                db.tip.showOnlyInCombat = enabled
-                RefreshTip(tip)
-                DMX:Print("Combat-only display " .. (enabled and "enabled." or "disabled."))
-            else
-                DMX:Print("Usage: /dmax combat on|off")
             end
         elseif command == "resetstyle" or command == "defaultstyle" then
             DMX:ResetTipStyle()
