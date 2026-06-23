@@ -4,17 +4,17 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 05
 current_phase_name: refactor-display-modes-remove-icon-mode-and-add-a-bar-text-m
-status: planned
-stopped_at: "Phase 05 planned — 2 plans verified by plan-checker, ready to execute"
-last_updated: "2026-06-23T00:00:00.000Z"
+status: executing
+stopped_at: Phase 05 planned — 2 plans verified by plan-checker, ready to execute
+last_updated: "2026-06-23T19:36:02.781Z"
 last_activity: 2026-06-23
-last_activity_desc: "Planned Phase 05: remove icons display mode (bar+number only), DISP-01..04"
+last_activity_desc: Phase 05 execution started
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 14
-  completed_plans: 12
-  percent: 86
+  completed_plans: 13
+  percent: 83
 ---
 
 # Project State
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-17)
 
 **Core value:** Accurate, instant stack display during combat
-**Current focus:** Phase 01 — utility-extraction-and-module-encapsulation
+**Current focus:** Phase 05 — refactor-display-modes-remove-icon-mode-and-add-a-bar-text-m
 
 ## Current Position
 
-Phase: 01 (utility-extraction-and-module-encapsulation) — EXECUTING
-Plan: 3 of 4
+Phase: 05 (refactor-display-modes-remove-icon-mode-and-add-a-bar-text-m) — EXECUTING
+Plan: 2 of 2
 Status: Ready to execute
-Last activity: 2026-06-21 — Phase 01 execution started
+Last activity: 2026-06-23 — Phase 05 execution started
 
 Progress: [██████████] 100%
 
@@ -61,6 +61,7 @@ Progress: [██████████] 100%
 *Updated after each plan completion*
 | Phase 02-test-framework-and-core-logic-tests P03 | 15min | 2 tasks | 4 files |
 | Phase 01 P03 | 3min | - tasks | - files |
+| Phase 05 P01 | 12 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,8 @@ Recent decisions affecting current work:
 - [Phase ?]: Primal Surge spell ID unverifiable offline; flat-2 fallback used for Kill Command generator grant
 - [Phase ?]: Generator grant decoupled from hasTwinFangs; Twin Fangs now scoped exclusively to Takedown consumer path
 - [Phase ?]: hasPrimalSurge field added to Tip module table; reserved for future HasPrimalSurge() wiring when ID is confirmed
+- [Phase ?]: Remove icons mode entirely — persisted icons/icon values normalize to bar via NormalizeDB
+- [Phase ?]: Bar else-branch is the catch-all in RefreshLayout and Update for any unknown displayMode value
 
 ### Roadmap Evolution
 
@@ -114,6 +117,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-06-21T22:54:41.207Z
+Last session: 2026-06-23T19:36:02.774Z
 Stopped at: Completed 01-03 plan: Kill Command stack-overshoot fix
 Resume file: .planning/phases/04-performance-caching-and-ci-cd/04-CONTEXT.md

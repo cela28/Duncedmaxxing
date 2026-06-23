@@ -167,10 +167,12 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 **Goal:** Simplify the display-mode set down to two modes. Remove the `icons` display mode entirely (rendering path, option, slash-command token, and legacy alias). Net mode set after this phase: `bar`, `number`.
 
 **LOCKED decisions (user-confirmed 2026-06-23):**
+
 - Final mode set is exactly two: `bar` and `number`. **No `bartext` mode** — the earlier 2026-06-22 decision to add a combined `bartext` mode is REVERSED; it will not be added.
 - **No migration logic.** There are only 2 users and neither uses icon mode — do NOT write a remap for persisted `icons`/`icon` values. Validation simply falls back to the default (`bar`) for any now-unknown stored mode. A dedicated icon→x migration path is explicitly out of scope. Also drop the existing legacy `icon`→`icons` alias in Core.lua since `icons` is being removed.
 
 **Scope notes (current state, pre-refactor):**
+
 - Three modes exist today: `bar`, `icons`, `number` (NOT just bar/icon). The legacy `icon` token is already migrated to `icons` in `Core.lua`.
 - Rendering branches on `cfg.displayMode` in `Duncedmaxxing/Modules/TipOfTheSpear.lua` (~lines 476, 630).
 - Default + validation + slash-command parsing live in `Duncedmaxxing/Core.lua` (`DEFAULTS.tip.displayMode` ~line 30; NormalizeDB validation ~line 98; slash parser ~lines 251-255).
@@ -189,12 +191,12 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
   5. `iconSize`/`iconSpacing` are absent from `DEFAULTS` and from the Options window
   6. The test suite passes via the fengari harness with all icon-mode assertions removed and bar/number coverage intact
 
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 05-01-PLAN.md — Remove the `icons` mode from all three source files (Core/Options/TipOfTheSpear): validation, slash token + legacy alias, help text, mode button, MODE_LABELS, orphaned iconSize/iconSpacing defaults + sliders, and both rendering branches
+- [x] 05-01-PLAN.md — Remove the `icons` mode from all three source files (Core/Options/TipOfTheSpear): validation, slash token + legacy alias, help text, mode button, MODE_LABELS, orphaned iconSize/iconSpacing defaults + sliders, and both rendering branches
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
