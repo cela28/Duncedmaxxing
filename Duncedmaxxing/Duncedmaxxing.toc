@@ -1,6 +1,6 @@
 ## Interface: 120005
 ## Title: |cffaad372Duncedmaxxing|r
-## Notes: Lightweight Survival Hunter combat helpers.
+## Notes: Survival Hunter Tip of the Spear Tracker
 ## Author: Dunced
 ## Version: 0.3.2
 ## Category: Hunter
