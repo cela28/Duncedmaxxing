@@ -1,8 +1,8 @@
 ---
-status: diagnosed
+status: resolved
 trigger: "On a Survival Hunter, when Aspect of the Eagle is active, casting Raptor Strike causes the Tip of the Spear stack display to update only after a noticeable delay, instead of decrementing instantly like a normal consumer cast. Without Aspect of the Eagle, Raptor Strike updates the stacks instantly."
 created: 2026-06-21T22:33:44Z
-updated: 2026-06-21T22:40:00Z
+updated: 2026-06-23T00:00:00Z
 ---
 
 ## Current Focus
@@ -80,6 +80,19 @@ fix: |
   in-game first (e.g. /etrace or a spell-ID display addon while Aspect of the Eagle is active and
   casting Raptor Strike) — public databases do not publish the current-build ID (historical lineage:
   259271 / 265189). Consider also covering the Mongoose Bite Aspect variant if Mongoose Bite is the
-  active talent, since it has the same structure. NOTE: diagnose-only mode — fix not applied.
-verification: Not applied (goal: find_root_cause_only). Verification will occur after the fix adds the captured ID and the user confirms instant decrement with Aspect of the Eagle active.
-files_changed: []
+  active talent, since it has the same structure.
+
+  APPLIED: the Aspect-of-the-Eagle ranged Raptor Strike ID 265189 was added to CONSUMERS in
+  commit 304d591 (Phase 01-04), restoring the instant predictive decrement. The Raptor Swipe
+  Aspect-of-the-Eagle variant 1262343 was additionally registered in commit f775876
+  (quick task 260622-tyy) to cover the AoE-upgrade case under Aspect of the Eagle.
+verification: |
+  Code verified 2026-06-23 during /gsd-audit-uat: CONSUMERS in TipOfTheSpear.lua now contains
+  `[265189] = true, -- Raptor Strike (Aspect of the Eagle ranged variant)` and
+  `[1262343] = true, -- Raptor Swipe (Aspect of the Eagle ranged variant)`, so ClassifySpellID
+  returns "consumer" for the ranged variant and ApplySpell fires the instant decrement.
+  CAVEAT: 265189 is the historical-lineage ID (the exact 12.0.5 ranged Raptor Strike ID could
+  not be confirmed offline); final confirmation that the lag is gone requires the in-game check
+  folded into 01-HUMAN-UAT.md test 4. If the lag persists in-game, capture the live spell ID via
+  /etrace and update CONSUMERS.
+files_changed: [Duncedmaxxing/Modules/TipOfTheSpear.lua]

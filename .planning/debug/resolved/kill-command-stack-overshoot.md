@@ -1,8 +1,8 @@
 ---
-status: diagnosed
+status: resolved
 trigger: "When the Survival Hunter casts Kill Command, the Tip of the Spear stack display briefly shows 3 for one instant, then drops back to 2 (the correct value)."
 created: 2026-06-22T00:00:00Z
-updated: 2026-06-22T00:00:00Z
+updated: 2026-06-23T00:00:00Z
 ---
 
 ## Current Focus
@@ -79,6 +79,17 @@ root_cause: |
 
   Root cause is over-prediction in the generator grant formula, compounded by the addon never
   detecting Primal Surge (so it cannot distinguish the base-1 vs +1 Kill Command cases).
-fix: ""   # diagnose-only mode; not applied
-verification: ""
-files_changed: []
+fix: |
+  Decoupled the Kill Command generator grant from Twin Fangs in
+  Duncedmaxxing/Modules/TipOfTheSpear.lua (ApplySpell generator branch). The grant is now a
+  flat `local grant = 2` regardless of hasTwinFangs; Twin Fangs is scoped exclusively to the
+  Takedown consumer path (`if spellID == TAKEDOWN and self.hasTwinFangs`). A `hasPrimalSurge`
+  field was reserved for a future base-1/+1 split once the Primal Surge spell ID is confirmed
+  in-game (it was unverifiable offline, so flat-2 is the fallback). Applied in commit 975cb6e
+  (Phase 01-03). Covered by the predictive-grant unit tests in spec/core_spec.lua (116/116 pass).
+verification: |
+  Code verified 2026-06-23 during /gsd-audit-uat: TipOfTheSpear.lua line 663 reads
+  `local grant = 2  -- flat-2 fallback`, and the hasTwinFangs reference at line 667 is gated on
+  `spellID == TAKEDOWN`. The over-prediction path that produced the transient 3 no longer exists.
+  Final in-game confirmation (no flicker on Kill Command) is folded into 01-HUMAN-UAT.md test 2.
+files_changed: [Duncedmaxxing/Modules/TipOfTheSpear.lua]

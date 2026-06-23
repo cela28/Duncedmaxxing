@@ -3,8 +3,8 @@ status: partial
 phase: 01-utility-extraction-and-module-encapsulation
 source: [01-VERIFICATION.md, 03-02-SUMMARY.md, 04-01-SUMMARY.md]
 started: 2026-06-17T15:45:00Z
-updated: 2026-06-22T00:00:00Z
-scope: full-milestone smoke test (phases 01-04)
+updated: 2026-06-23T00:00:00Z
+scope: full-milestone smoke test (phases 01-05)
 ---
 
 ## Current Test
@@ -14,11 +14,11 @@ scope: full-milestone smoke test (phases 01-04)
 ## Tests
 
 ### 1. Addon loads without errors
-expected: `/reload ui` with Duncedmaxxing enabled — no Lua errors in chat. Tracker frame appears at screen center (bar or icon mode depending on saved settings).
+expected: `/reload ui` with Duncedmaxxing enabled — no Lua errors in chat. Tracker frame appears at screen center (bar or number mode depending on saved settings).
 result: [pending]
 
 ### 2. Kill Command grants +2 stacks
-expected: Cast Kill Command on a target dummy. Tracker updates from 0→2 stacks instantly (before server aura confirmation). Bar fills 2 of 3 segments or 2 icon pips light up. Twin Fangs does NOT change this — KC always grants +2.
+expected: Cast Kill Command on a target dummy. Tracker updates from 0→2 stacks instantly (before server aura confirmation). Bar fills 2 of 3 segments, or the number shows 2. Twin Fangs does NOT change this — KC always grants +2.
 result: [pending]
 
 ### 3. Takedown with Twin Fangs grants stacks
@@ -38,7 +38,7 @@ expected: With `showOnlyInCombat` enabled, tracker is hidden out of combat. Pull
 result: [pending]
 
 ### 7. Settings persistence across reload
-expected: Open settings (`/dmax`), change display mode (bar↔icon), adjust scale, toggle border. `/reload ui` — all changes preserved. Settings popup blocks during combat (`InCombatLockdown` guard).
+expected: Open settings (`/dmax`), change display mode (bar↔number), adjust scale, toggle border. `/reload ui` — all changes preserved. Settings popup blocks during combat (`InCombatLockdown` guard).
 result: [pending]
 
 ### 8. Performance — no per-frame API spam
