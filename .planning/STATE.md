@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 01
-current_phase_name: utility-extraction-and-module-encapsulation
-status: executing
-stopped_at: "Completed 01-03 plan: Kill Command stack-overshoot fix"
-last_updated: "2026-06-22T00:00:00.000Z"
-last_activity: 2026-06-22
-last_activity_desc: "Completed quick task 260622-tyy: register 1262343 (Raptor Swipe Aspect-of-the-Eagle ranged variant) as a consumer"
+current_phase: 05
+current_phase_name: refactor-display-modes-remove-icon-mode-and-add-a-bar-text-m
+status: planned
+stopped_at: "Phase 05 planned — 2 plans verified by plan-checker, ready to execute"
+last_updated: "2026-06-23T00:00:00.000Z"
+last_activity: 2026-06-23
+last_activity_desc: "Planned Phase 05: remove icons display mode (bar+number only), DISP-01..04"
 progress:
-  total_phases: 5
+  total_phases: 6
   completed_phases: 5
-  total_plans: 12
+  total_plans: 14
   completed_plans: 12
-  percent: 100
+  percent: 86
 ---
 
 # Project State
