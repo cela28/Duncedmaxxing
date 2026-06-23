@@ -1,0 +1,13 @@
+## Interface: 120005
+## Title: |cffaad372Duncedmaxxing|r
+## Notes: Lightweight Survival Hunter combat helpers.
+## Author: Dunced
+## Version: 0.3.2
+## Category: Hunter
+## SavedVariables: DuncedmaxxingDB
+## IconTexture: Interface\AddOns\Duncedmaxxing\Media\duncedgers_pony.png
+
+Util.lua
+Core.lua
+Options.lua
+Modules\TipOfTheSpear.lua
