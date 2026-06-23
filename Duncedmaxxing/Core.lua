@@ -28,8 +28,6 @@ local DEFAULTS = {
         height = 10,
         borderSize = 1,
         displayMode = "bar",
-        iconSize = 28,
-        iconSpacing = 4,
         numberFontSize = 22,
         fillColor = { r = 0.72, g = 0.55, b = 0.02, a = 1 },
         emptyColor = { r = 0, g = 0, b = 0, a = 0.5 },
@@ -95,7 +93,7 @@ local function NormalizeDB(db)
         db.settingsMigration = SETTINGS_MIGRATION
     end
 
-    if tip.displayMode ~= "bar" and tip.displayMode ~= "icons" and tip.displayMode ~= "number" then
+    if tip.displayMode ~= "bar" and tip.displayMode ~= "number" then
         tip.displayMode = DEFAULTS.tip.displayMode
     end
 end
@@ -157,7 +155,7 @@ end
 local function PrintHelp()
     DMX:Print("/dmax opens settings. /dmax help shows commands.")
     DMX:Print("/dmax lock, unlock, reset, show, hide, test, 0-3, scale <0.5-2>")
-    DMX:Print("/dmax mode bar|icons|number, size 247 10, border 1, combat on|off")
+    DMX:Print("/dmax mode bar|number, size 247 10, border 1, combat on|off")
 end
 
 local function RefreshTip(tip)
@@ -248,15 +246,14 @@ local function RegisterSlashCommands()
             end
         elseif command == "mode" then
             local mode = string.lower(rest)
-            if mode == "icon" then mode = "icons" end
             if mode == "text" then mode = "number" end
 
-            if mode == "bar" or mode == "icons" or mode == "number" then
+            if mode == "bar" or mode == "number" then
                 db.tip.displayMode = mode
                 RefreshTip(tip)
                 DMX:Print("Display mode set to " .. mode .. ".")
             else
-                DMX:Print("Usage: /dmax mode bar|icons|number")
+                DMX:Print("Usage: /dmax mode bar|number")
             end
         elseif command == "size" or command == "barsize" then
             local width, height = rest:match("^(%S+)%s*(%S*)")
