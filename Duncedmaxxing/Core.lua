@@ -1,11 +1,5 @@
 local addonName, DMX = ...
 
--- Util.lua is loaded first in TOC; DMX.Util is guaranteed populated here
-local Clamp        = DMX.Util.Clamp
-local ParseHexColor = DMX.Util.ParseHexColor
-local Trim         = DMX.Util.Trim
-local ParseOnOff   = DMX.Util.ParseOnOff
-
 _G.Duncedmaxxing = DMX
 
 DMX.name = addonName
@@ -151,12 +145,6 @@ function DMX:IsSurvivalHunter()
     return spec == 3
 end
 
-local function PrintHelp()
-    DMX:Print("/dmax opens settings. /dmax help shows commands.")
-    DMX:Print("/dmax lock, unlock, reset, show, hide, test, 0-3, scale <0.5-2>")
-    DMX:Print("/dmax mode bar|number, size 247 10, border 1")
-end
-
 local function RefreshTip(tip)
     if tip and not tip.inCombat then
         tip:SyncFromAura()
@@ -188,122 +176,11 @@ local function RegisterSlashCommands()
     SLASH_DUNCEDMAXXING1 = "/duncedmaxxing"
     SLASH_DUNCEDMAXXING2 = "/dmax"
 
-    SlashCmdList.DUNCEDMAXXING = function(input)
-        input = Trim(input)
-
-        local command, rest = input:match("^(%S*)%s*(.-)$")
-        command = string.lower(command or "")
-        rest = Trim(rest)
-
-        local db = DMX:GetDB()
-        local tip = DMX:GetModule("tip")
-
-        if command == "" or command == "options" or command == "config" then
-            if DMX.OpenOptions then
-                DMX:OpenOptions()
-            else
-                PrintHelp()
-            end
-        elseif command == "help" or command == "commands" then
-            PrintHelp()
-        elseif command == "lock" then
-            db.locked = true
-            DMX:ForEachModule("ApplyLock")
-            DMX:Print("Locked.")
-        elseif command == "unlock" or command == "move" then
-            db.locked = false
-            DMX:ForEachModule("ApplyLock")
-            DMX:Print("Unlocked. Drag the tracker, then use /dmax lock.")
-        elseif command == "reset" then
-            if tip and tip.ResetPosition then
-                tip:ResetPosition()
-                DMX:Print("Tip tracker position reset.")
-            end
-        elseif command == "show" then
-            db.tip.enabled = true
-            RefreshTip(tip)
-            DMX:Print("Tip tracker enabled.")
-        elseif command == "hide" then
-            db.tip.enabled = false
-            RefreshTip(tip)
-            DMX:Print("Tip tracker disabled.")
-        elseif command == "test" then
-            if tip and tip.SetTestStacks then
-                tip:SetTestStacks(3)
-                DMX:Print("Showing a short 3-stack preview.")
-            end
-        elseif command == "scale" then
-            local scale = tonumber(rest)
-            if scale then
-                if scale < 0.5 then scale = 0.5 end
-                if scale > 2 then scale = 2 end
-                db.tip.scale = scale
-                RefreshTip(tip)
-                DMX:Print("Scale set to " .. scale .. ".")
-            else
-                DMX:Print("Usage: /dmax scale 1.2")
-            end
-        elseif command == "mode" then
-            local mode = string.lower(rest)
-            if mode == "text" then mode = "number" end
-
-            if mode == "bar" or mode == "number" then
-                db.tip.displayMode = mode
-                RefreshTip(tip)
-                DMX:Print("Display mode set to " .. mode .. ".")
-            else
-                DMX:Print("Usage: /dmax mode bar|number")
-            end
-        elseif command == "size" or command == "barsize" then
-            local width, height = rest:match("^(%S+)%s*(%S*)")
-            width = Clamp(width, 20, 2000)
-            height = Clamp(height, 4, 200)
-            if width and height then
-                db.tip.width = width
-                db.tip.height = height
-                RefreshTip(tip)
-                DMX:Print("Bar size set to " .. width .. "x" .. height .. ".")
-            else
-                DMX:Print("Usage: /dmax size 247 10")
-            end
-        elseif command == "border" then
-            local size = Clamp(rest, 0, 10)
-            if size then
-                db.tip.borderSize = size
-                RefreshTip(tip)
-                DMX:Print("Border set to " .. size .. "px.")
-            else
-                DMX:Print("Usage: /dmax border 1")
-            end
-        elseif command == "color" or command == "fill" then
-            local color = ParseHexColor(rest)
-            if color then
-                db.tip.fillColor = color
-                RefreshTip(tip)
-                DMX:Print("Fill color updated.")
-            else
-                DMX:Print("Usage: /dmax color b88c03")
-            end
-        elseif command == "empty" or command == "emptyalpha" then
-            local alpha = Clamp(rest, 0, 100)
-            if alpha then
-                db.tip.emptyColor.a = alpha / 100
-                RefreshTip(tip)
-                DMX:Print("Empty segment opacity set to " .. alpha .. "%.")
-            else
-                DMX:Print("Usage: /dmax empty 50")
-            end
-        elseif command == "resetstyle" or command == "defaultstyle" then
-            DMX:ResetTipStyle()
-            DMX:Print("Tip tracker style reset.")
+    SlashCmdList.DUNCEDMAXXING = function()
+        if DMX.OpenOptions then
+            DMX:OpenOptions()
         else
-            local stacks = tonumber(command)
-            if stacks and tip and tip.SetTestStacks then
-                tip:SetTestStacks(stacks)
-                DMX:Print("Previewing " .. stacks .. " stack(s).")
-            else
-                PrintHelp()
-            end
+            DMX:Print("Settings window unavailable — try reloading the UI.")
         end
     end
 end
