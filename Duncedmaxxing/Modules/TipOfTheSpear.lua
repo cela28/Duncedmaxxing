@@ -486,27 +486,7 @@ function Tip:RefreshLayout()
     SetBordersShown(self, false)
     numberText:Hide()
 
-    if mode == "icons" then
-        local iconSize = tonumber(cfg.iconSize) or 28
-        local spacing = tonumber(cfg.iconSpacing) or 4
-        local totalWidth = iconSize * MAX_STACKS + spacing * (MAX_STACKS - 1)
-
-        root:SetSize(totalWidth, iconSize)
-        root:SetScale(cfg.scale or 1)
-
-        for i = 1, MAX_STACKS do
-            local pip = pips[i]
-            pip:SetSize(iconSize, iconSize)
-            pip:ClearAllPoints()
-            pip:SetPoint("LEFT", root, "LEFT", (i - 1) * (iconSize + spacing), 0)
-            pip.fill:ClearAllPoints()
-            pip.fill:SetPoint("TOPLEFT", pip, "TOPLEFT", borderSize, -borderSize)
-            pip.fill:SetPoint("BOTTOMRIGHT", pip, "BOTTOMRIGHT", -borderSize, borderSize)
-            pip.fill:SetTexture(self.spellTexture)
-            LayoutPipBorder(pip, borderSize)
-            pip:Show()
-        end
-    elseif mode == "number" then
+    if mode == "number" then
         local fontSize = tonumber(cfg.numberFontSize) or 22
         root:SetSize(fontSize * 2, fontSize + 4)
         root:SetScale(cfg.scale or 1)
@@ -649,32 +629,6 @@ function Tip:Update()
     end
 
     numberText:Hide()
-
-    if mode == "icons" then
-        SetBordersShown(self, false)
-        for i = 1, MAX_STACKS do
-            local pip = pips[i]
-            pip:Show()
-
-            if not drawShell then
-                pip.fill:Hide()
-                SetPipBordersShown(pip, false)
-            elseif i <= stacks then
-                pip.fill:SetTexture(self.spellTexture)
-                pip.fill:SetVertexColor(1, 1, 1, 1)
-                pip.fill:Show()
-                SetPipBordersShown(pip, hasBorder)
-            else
-                pip.fill:SetTexture(WHITE_TEX)
-                pip.fill:SetVertexColor(emptyR, emptyG, emptyB, emptyA)
-                pip.fill:Show()
-                SetPipBordersShown(pip, hasBorder)
-            end
-        end
-
-        label:SetShown(unlocked)
-        return
-    end
 
     SetBordersShown(self, drawShell and hasBorder)
 
