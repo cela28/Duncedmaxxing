@@ -162,8 +162,6 @@ describe("NormalizeDB — already migrated branch (settingsMigration matches)", 
                 width            = 247,
                 height           = 10,
                 borderSize       = 1,
-                iconSize         = 28,
-                iconSpacing      = 4,
                 numberFontSize   = 22,
                 optionsX         = 360,
                 optionsY         = 170,
@@ -177,10 +175,10 @@ describe("NormalizeDB — already migrated branch (settingsMigration matches)", 
         return db
     end
 
-    it("skips migration: existing displayMode='icons' is preserved when already migrated", function()
+    it("skips migration: stored displayMode='icons' normalizes to 'bar' (icons removed in DISP-02)", function()
         local db = migratedDB({displayMode = "icons"})
         DMX._test.NormalizeDB(db)
-        assert.equals("icons", db.tip.displayMode)
+        assert.equals("bar", db.tip.displayMode)
     end)
 
     it("skips migration: settingsMigration remains unchanged", function()
@@ -283,10 +281,10 @@ describe("NormalizeDB — displayMode validation (always runs)", function()
         assert.equals("bar", db.tip.displayMode)
     end)
 
-    it("preserves valid displayMode 'icons'", function()
+    it("resets stored displayMode 'icons' to default 'bar' (icons removed in DISP-02)", function()
         local db = migratedDB("icons")
         DMX._test.NormalizeDB(db)
-        assert.equals("icons", db.tip.displayMode)
+        assert.equals("bar", db.tip.displayMode)
     end)
 
     it("preserves valid displayMode 'number'", function()
