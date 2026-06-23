@@ -37,6 +37,6 @@ jobs:
           else
             gh release create "$GITHUB_REF_NAME" "$ASSET" \
               --repo "$GITHUB_REPOSITORY" \
-              --title "Duncedmaxxing ${VERSION}" \
+              --title "$GITHUB_REF_NAME" \
               --generate-notes
           fi
