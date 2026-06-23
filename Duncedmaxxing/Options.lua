@@ -9,7 +9,6 @@ local ParseHexColor = DMX.Util.ParseHexColor
 local WHITE_TEX = "Interface\\Buttons\\WHITE8X8"
 local MODE_LABELS = {
     bar = "Bar",
-    icons = "Icons",
     number = "Number",
 }
 
@@ -247,7 +246,6 @@ function Options:BuildWindow()
 
     self.modeText = CreateText(window, "Display: Bar", 16, -48, "GameFontNormal")
     CreateButton(window, "Bar", 108, -43, 62, 22, function() self:SetMode("bar") end)
-    CreateButton(window, "Icons", 176, -43, 62, 22, function() self:SetMode("icons") end)
     CreateButton(window, "Number", 244, -43, 72, 22, function() self:SetMode("number") end)
 
     CreateCheckbox(window, "Enabled", 14, -80,
@@ -313,23 +311,7 @@ function Options:BuildWindow()
         end)
 
     CreateText(window, "Other Modes", 204, -120, "GameFontNormal")
-    CreateInput(window, "Icon size", 204, -148, 62,
-        function() return GetCfg().iconSize end,
-        function(value)
-            local size = Clamp(value, 8, 128)
-            if not size then return false end
-            GetCfg().iconSize = size
-            return true
-        end)
-    CreateInput(window, "Icon gap", 204, -178, 62,
-        function() return GetCfg().iconSpacing end,
-        function(value)
-            local spacing = Clamp(value, 0, 64)
-            if not spacing then return false end
-            GetCfg().iconSpacing = spacing
-            return true
-        end)
-    CreateInput(window, "Text size", 204, -208, 62,
+    CreateInput(window, "Text size", 204, -148, 62,
         function() return GetCfg().numberFontSize end,
         function(value)
             local size = Clamp(value, 8, 96)
