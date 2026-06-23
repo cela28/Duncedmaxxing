@@ -162,13 +162,13 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 | 3. Bug Fixes with Test Coverage | 2/2 | Complete   | 2026-06-18 |
 | 4. Performance Caching and CI/CD | 2/2 | Complete   | 2026-06-18 |
 
-### Phase 5: Refactor display modes: remove icon mode and add a bar + text mode
+### Phase 5: Refactor display modes: remove icon mode, keep only bar + number
 
-**Goal:** Simplify the display-mode set. Remove the `icons` display mode entirely (rendering path, option, slash-command token, and migration alias). Add a new combined `bartext` mode that renders the stack bar with the numeric stack count overlaid as text. Net mode set after this phase: `bar`, `bartext`, `number`.
+**Goal:** Simplify the display-mode set down to two modes. Remove the `icons` display mode entirely (rendering path, option, slash-command token, and legacy alias). Net mode set after this phase: `bar`, `number`.
 
-**LOCKED decisions (user-confirmed 2026-06-22):**
-- Mode key string is `"bartext"` (one word, no separator).
-- **No migration logic.** There are only 2 users and neither uses icon mode — do NOT write a remap for persisted `icons`/`icon` values. Validation can simply fall back to the default (`bar`) for any now-unknown stored mode, but a dedicated icon→x migration path is explicitly out of scope. Also drop the existing legacy `icon`→`icons` alias in Core.lua since `icons` is being removed.
+**LOCKED decisions (user-confirmed 2026-06-23):**
+- Final mode set is exactly two: `bar` and `number`. **No `bartext` mode** — the earlier 2026-06-22 decision to add a combined `bartext` mode is REVERSED; it will not be added.
+- **No migration logic.** There are only 2 users and neither uses icon mode — do NOT write a remap for persisted `icons`/`icon` values. Validation simply falls back to the default (`bar`) for any now-unknown stored mode. A dedicated icon→x migration path is explicitly out of scope. Also drop the existing legacy `icon`→`icons` alias in Core.lua since `icons` is being removed.
 
 **Scope notes (current state, pre-refactor):**
 - Three modes exist today: `bar`, `icons`, `number` (NOT just bar/icon). The legacy `icon` token is already migrated to `icons` in `Core.lua`.
@@ -176,10 +176,19 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 - Default + validation + slash-command parsing live in `Duncedmaxxing/Core.lua` (`DEFAULTS.tip.displayMode` ~line 30; NormalizeDB validation ~line 98; slash parser ~lines 251-255).
 - Mode selector UI + `MODE_LABELS` in `Duncedmaxxing/Options.lua` (~lines 11, 176, 249, 289, 411).
 - **No migration** (see LOCKED decisions). Validation falls back to default `bar` for unknown stored modes; remove the legacy `icon`→`icons` alias.
-- Tests in `spec/` must be updated (remove icon-mode assertions, add `bartext` assertions). No native Lua/busted toolchain in this env — regression runs go through the fengari (Lua-VM-in-JS) harness.
+- Tests in `spec/` must be updated (remove icon-mode assertions). No native Lua/busted toolchain in this env — regression runs go through the fengari (Lua-VM-in-JS) harness.
 
-**Requirements**: TBD (resolve in /gsd-plan-phase)
+**Requirements**: DISP-01, DISP-02, DISP-03, DISP-04
 **Depends on:** Phase 4
+**Success Criteria** (what must be TRUE):
+
+  1. The string `"icons"` no longer appears as a display-mode branch, option, validation token, or label anywhere in `Duncedmaxxing/` — `grep -rn icons Duncedmaxxing/` returns no display-mode hits
+  2. The legacy `icon`→`icons` slash alias is gone; `/dmax mode icons` and `/dmax mode icon` are rejected with the usage hint
+  3. `/dmax mode bar` and `/dmax mode number` both work; the Options window offers exactly two mode buttons (Bar, Number)
+  4. A persisted `displayMode` of `"icons"` (or any unknown value) normalizes to `"bar"` on load with no error and no settings wipe
+  5. `iconSize`/`iconSpacing` are absent from `DEFAULTS` and from the Options window
+  6. The test suite passes via the fengari harness with all icon-mode assertions removed and bar/number coverage intact
+
 **Plans:** 0 plans
 
 Plans:
