@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-06-17)
 Phase: 05
 Plan: Not started
 Status: Phase complete — ready for verification
-Last activity: 2026-06-23 — Phase 05 complete
+Last activity: 2026-06-23 — Completed quick task 260623-x5d: remove showOnlyInCombat (tracker always shows)
 
 Progress: [██████████] 100%
 
@@ -99,6 +99,7 @@ None yet.
 | 260621-x8n | Fix release workflow action SHA so the v1.0.0 zip asset builds and uploads | 2026-06-21 | f1e6e4d | [260621-x8n-fix-release-workflow-action-sha-so-the-v](./quick/260621-x8n-fix-release-workflow-action-sha-so-the-v/) |
 | 260622-hmo | Add per-stack color coding for number display mode | 2026-06-22 | 329a69d | [260622-hmo-add-per-stack-color-coding-for-number-di](./quick/260622-hmo-add-per-stack-color-coding-for-number-di/) |
 | 260622-tyy | Add spell ID 1262343 (Raptor Swipe — Aspect of the Eagle ranged variant) as a consumer | 2026-06-22 | 8b7ab8a | [260622-tyy-add-spell-id-1262343-raptor-swipe-aspect](./quick/260622-tyy-add-spell-id-1262343-raptor-swipe-aspect/) |
+| 260623-x5d | Remove the showOnlyInCombat display feature so the tracker always shows regardless of combat state | 2026-06-23 | 7243c0c | [260623-x5d-remove-the-showonlyincombat-display-feat](./quick/260623-x5d-remove-the-showonlyincombat-display-feat/) |
 
 ### Blockers/Concerns
 
