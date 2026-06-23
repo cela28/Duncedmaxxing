@@ -61,7 +61,6 @@ describe("NormalizeDB — migration branch (settingsMigration does not match)", 
             settingsMigration = "old-version",
             tip = {
                 enabled          = true,
-                showOnlyInCombat = true,
                 hideWhenEmpty    = false,
                 x                = 0,
                 y                = -160,
@@ -153,7 +152,6 @@ describe("NormalizeDB — already migrated branch (settingsMigration matches)", 
             settingsMigration = "0.3.2-fontfix",
             tip = {
                 enabled          = true,
-                showOnlyInCombat = true,
                 hideWhenEmpty    = false,
                 x                = 0,
                 y                = -160,
@@ -247,6 +245,14 @@ describe("NormalizeDB — deprecated fields ignored post-migration (QUAL-03)", f
         assert.equals(0,     db.tip.x)
         assert.equals(-160,  db.tip.y)
         assert.equals(1,     db.tip.scale)
+    end)
+
+    it("persisted showOnlyInCombat key is left inert (NormalizeDB does not strip unknown keys when already migrated)", function()
+        local db = migratedDB({ showOnlyInCombat = true })
+        DMX._test.NormalizeDB(db)
+        -- NormalizeDB only validates displayMode in the already-migrated branch;
+        -- arbitrary leftover keys are preserved untouched (harmless inert field).
+        assert.is_true(db.tip.showOnlyInCombat)
     end)
 end)
 
