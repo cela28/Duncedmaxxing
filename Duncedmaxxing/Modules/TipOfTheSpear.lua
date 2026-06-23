@@ -593,9 +593,6 @@ function Tip:Update()
     local unlocked = not db.locked
 
     local shouldShow = unlocked or self.testMode or (cfg.enabled and self.isSurvival)
-    if shouldShow and cfg.showOnlyInCombat and not self.inCombat and not self.testMode and not unlocked then
-        shouldShow = false
-    end
     if shouldShow and cfg.hideWhenEmpty and stacks == 0 and not self.testMode and not unlocked then
         shouldShow = false
     end

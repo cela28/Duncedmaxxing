@@ -251,9 +251,6 @@ function Options:BuildWindow()
     CreateCheckbox(window, "Enabled", 14, -80,
         function() return GetCfg().enabled end,
         function(value) GetCfg().enabled = value end)
-    CreateCheckbox(window, "Combat only", 126, -80,
-        function() return GetCfg().showOnlyInCombat end,
-        function(value) GetCfg().showOnlyInCombat = value end)
     CreateCheckbox(window, "Hide empty", 260, -80,
         function() return GetCfg().hideWhenEmpty end,
         function(value) GetCfg().hideWhenEmpty = value end)
