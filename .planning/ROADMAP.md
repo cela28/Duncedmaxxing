@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Bug Fixes with Test Coverage** - Fix all correctness bugs under test protection and remove dead migration fallback (completed 2026-06-18)
 - [x] **Phase 4: Performance Caching and CI/CD** - Cache spec/texture state and ship the GitHub Actions release workflow (completed 2026-06-18)
 - [x] **Phase 5: Refactor Display Modes** - Remove icon mode, keep only bar + number (completed 2026-06-23)
-- [ ] **Phase 6: Options UI Overhaul** - Mode-specific settings, remove dead controls, per-stack color customization for number mode
+- [x] **Phase 6: Options UI Overhaul** - Mode-specific settings, remove dead controls, per-stack color customization for number mode (completed 2026-06-29)
 - [ ] **Phase 7: Spell Coverage — Add Missing Consumers** - Add Flamefang Pitch, Moonlight Chakram, and Hatchet Toss as consumers
 
 ## Phase Details
@@ -165,7 +165,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6/7 (6 and 
 | 3. Bug Fixes with Test Coverage | 2/2 | Complete   | 2026-06-18 |
 | 4. Performance Caching and CI/CD | 2/2 | Complete   | 2026-06-18 |
 | 5. Refactor Display Modes | 2/2 | Complete   | 2026-06-23 |
-| 6. Options UI Overhaul | 1/2 | In Progress|  |
+| 6. Options UI Overhaul | 2/2 | Complete   | 2026-06-29 |
 | 7. Spell Coverage — Add Missing Consumers | 0/0 | Not started | — |
 
 ### Phase 5: Refactor display modes: remove icon mode, keep only bar + number
@@ -225,7 +225,7 @@ Plans:
   7. The options window height adjusts to fit the active mode's controls without dead space
   8. The test suite passes with updated assertions for the new settings structure
 
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 **Wave 1**
@@ -234,7 +234,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 06-02-PLAN.md — Options.lua restructure: mode-conditional sections, dead control removal, stack color inputs, lock toggle, Reset Colors confirm
+- [x] 06-02-PLAN.md — Options.lua restructure: mode-conditional sections, dead control removal, stack color inputs, lock toggle, Reset Colors confirm
 
 ### Phase 7: Spell Coverage — Add Missing Consumers
 

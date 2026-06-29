@@ -6,15 +6,15 @@ current_phase: 06
 current_phase_name: options-ui-overhaul
 status: verifying
 stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-06-29T12:01:08.116Z"
+last_updated: "2026-06-29T12:04:53.747Z"
 last_activity: 2026-06-29
 last_activity_desc: Phase 06 execution started
 progress:
   total_phases: 8
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 16
-  completed_plans: 15
-  percent: 75
+  completed_plans: 16
+  percent: 88
 ---
 
 # Project State
@@ -65,6 +65,7 @@ Progress: [██████░░░░] 75%
 | Phase 05 P01 | 12 | 3 tasks | 3 files |
 | Phase 06 P01 | 3min | 2 tasks | 4 files |
 | Phase 06 P01 | 3min | 2 tasks | 4 files |
+| Phase 06 P02 | 8min | - tasks | - files |
 
 ## Accumulated Context
 
@@ -89,6 +90,9 @@ Recent decisions affecting current work:
 - [Phase ?]: stackColors added to DEFAULTS.tip replacing hardcoded STACK_COLORS in rendering
 - [Phase ?]: enabled field removed from DEFAULTS.tip; tracker always on for Survival spec
 - [Phase ?]: SETTINGS_MIGRATION bumped to 0.3.2-stackcolors to propagate DB schema to existing saves
+- [Phase ?]: barSection and numberSection both anchored TOPLEFT (0,-248); they overlap but only one is visible at a time per Refresh() show/hide logic
+- [Phase ?]: Reset Colors uses raw CreateFrame not factory; factory auto-calls Refresh() after onClick which would revert Confirm Reset text on first click
+- [Phase ?]: Lock toggle text sync done in Refresh(); CreateButton factory calls Refresh() after onClick so text update is automatic
 
 ### Roadmap Evolution
 
@@ -127,6 +131,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-06-29T12:01:08.112Z
+Last session: 2026-06-29T12:04:14.022Z
 Stopped at: Completed 06-01-PLAN.md
 Resume file: None
