@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 05
-status: verifying
-stopped_at: "Completed 01-03 plan: Kill Command stack-overshoot fix"
-last_updated: "2026-06-23T19:50:04.496Z"
-last_activity: 2026-06-23
-last_activity_desc: Phase 05 complete
+current_phase: 06
+current_phase_name: independent, can execute in either order
+status: discussing
+stopped_at: Phase 06 context gathered
+last_updated: "2026-06-29T09:05:40.373Z"
+last_activity: 2026-06-29
+last_activity_desc: Added Phase 6 (Options UI Overhaul) and Phase 7 (Spell Coverage) to roadmap
 progress:
-  total_phases: 6
+  total_phases: 8
   completed_phases: 6
   total_plans: 14
   completed_plans: 14
-  percent: 100
-current_phase_name: refactor-display-modes-remove-icon-mode-and-add-a-bar-text-m
+  percent: 75
 ---
 
 # Project State
@@ -24,16 +24,16 @@ current_phase_name: refactor-display-modes-remove-icon-mode-and-add-a-bar-text-m
 See: .planning/PROJECT.md (updated 2026-06-17)
 
 **Core value:** Accurate, instant stack display during combat
-**Current focus:** Phase 05 — refactor-display-modes-remove-icon-mode-and-add-a-bar-text-m
+**Current focus:** Phase 06 — Options UI Overhaul, Phase 07 — Spell Coverage
 
 ## Current Position
 
-Phase: 05
+Phase: 06 / 07 (independent, can execute in either order)
 Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-06-24 — Completed quick task 260624-0hx: slash interface settings-only + README de-bloat
+Status: Phases scoped, ready for planning
+Last activity: 2026-06-29 — Added Phase 6 (Options UI Overhaul) and Phase 7 (Spell Coverage) to roadmap
 
-Progress: [██████████] 100%
+Progress: [██████░░░░] 75%
 
 ## Performance Metrics
 
@@ -120,6 +120,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-06-23T19:45:26.916Z
-Stopped at: Completed 01-03 plan: Kill Command stack-overshoot fix
-Resume file: .planning/phases/04-performance-caching-and-ci-cd/04-CONTEXT.md
+Last session: 2026-06-29T09:05:40.368Z
+Stopped at: Phase 06 context gathered
+Resume file: .planning/phases/06-options-ui-overhaul/06-CONTEXT.md
