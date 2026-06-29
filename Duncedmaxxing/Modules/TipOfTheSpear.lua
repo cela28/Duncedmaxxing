@@ -592,7 +592,7 @@ function Tip:Update()
     local stacks = self:GetStacks()
     local unlocked = not db.locked
 
-    local shouldShow = unlocked or self.testMode or (cfg.enabled and self.isSurvival)
+    local shouldShow = unlocked or self.testMode or self.isSurvival
     if shouldShow and cfg.hideWhenEmpty and stacks == 0 and not self.testMode and not unlocked then
         shouldShow = false
     end
@@ -618,8 +618,12 @@ function Tip:Update()
         end
 
         numberText:SetText(stacks)
-        local sc = STACK_COLORS[stacks] or STACK_COLORS[0]
-        numberText:SetTextColor(sc[1], sc[2], sc[3], sc[4])
+        local cfgColors = GetCfg().stackColors
+        local sc = (cfgColors and cfgColors[stacks])
+            or (cfgColors and cfgColors[0])
+            or STACK_COLORS[stacks]
+            or STACK_COLORS[0]
+        numberText:SetTextColor(ColorTuple(sc, STACK_COLORS[0]))
         numberText:Show()
         label:SetShown(unlocked)
         return

@@ -70,7 +70,6 @@ describe("NormalizeDB — migration branch (settingsMigration does not match)", 
         local db = {
             settingsMigration = "old-version",
             tip = {
-                enabled          = true,
                 hideWhenEmpty    = false,
                 x                = 0,
                 y                = -160,
@@ -168,9 +167,8 @@ describe("NormalizeDB — already migrated branch (settingsMigration matches)", 
 
     local function migratedDB(tipOverrides)
         local db = {
-            settingsMigration = "0.3.2-fontfix",
+            settingsMigration = "0.3.2-stackcolors",
             tip = {
-                enabled          = true,
                 hideWhenEmpty    = false,
                 x                = 0,
                 y                = -160,
@@ -201,7 +199,7 @@ describe("NormalizeDB — already migrated branch (settingsMigration matches)", 
     it("skips migration: settingsMigration remains unchanged", function()
         local db = migratedDB()
         DMX._test.NormalizeDB(db)
-        assert.equals("0.3.2-fontfix", db.settingsMigration)
+        assert.equals("0.3.2-stackcolors", db.settingsMigration)
     end)
 end)
 
@@ -214,9 +212,8 @@ describe("NormalizeDB — deprecated fields ignored post-migration (QUAL-03)", f
 
     local function migratedDB(tipOverrides)
         local db = {
-            settingsMigration = "0.3.2-fontfix",
+            settingsMigration = "0.3.2-stackcolors",
             tip = {
-                enabled    = true,
                 displayMode = "bar",
                 x = 0, y = -160, scale = 1,
                 optionsX = 360, optionsY = 170,
@@ -259,7 +256,6 @@ describe("NormalizeDB — deprecated fields ignored post-migration (QUAL-03)", f
         local db = migratedDB()
         DMX._test.NormalizeDB(db)
         DMX._test.NormalizeDB(db)
-        assert.equals(true,  db.tip.enabled)
         assert.equals("bar", db.tip.displayMode)
         assert.equals(0,     db.tip.x)
         assert.equals(-160,  db.tip.y)
@@ -284,9 +280,8 @@ describe("NormalizeDB — displayMode validation (always runs)", function()
 
     local function migratedDB(displayMode)
         return {
-            settingsMigration = "0.3.2-fontfix",
+            settingsMigration = "0.3.2-stackcolors",
             tip = {
-                enabled    = true,
                 displayMode = displayMode,
                 x = 0, y = -160, scale = 1,
                 optionsX = 360, optionsY = 170,

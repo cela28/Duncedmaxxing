@@ -7,12 +7,11 @@ DMX.version = "0.3.2"
 DMX.modules     = DMX.modules     or {}
 DMX.moduleOrder = DMX.moduleOrder or {}
 
-local SETTINGS_MIGRATION = "0.3.2-fontfix"
+local SETTINGS_MIGRATION = "0.3.2-stackcolors"
 
 local DEFAULTS = {
     locked = true,
     tip = {
-        enabled = true,
         hideWhenEmpty = false,
         x = 0,
         y = -160,
@@ -26,6 +25,12 @@ local DEFAULTS = {
         emptyColor = { r = 0, g = 0, b = 0, a = 0.5 },
         borderColor = { r = 0, g = 0, b = 0, a = 1 },
         textColor = { r = 1, g = 1, b = 1, a = 1 },
+        stackColors = {
+            [0] = { r = 1,       g = 1,       b = 1,       a = 1 },
+            [1] = { r = 0.18039, g = 0.80000, b = 0.44314, a = 1 },
+            [2] = { r = 1,       g = 0.94118, b = 0,       a = 1 },
+            [3] = { r = 1,       g = 0.29804, b = 0.18824, a = 1 },
+        },
         optionsX = 360,
         optionsY = 170,
     },
