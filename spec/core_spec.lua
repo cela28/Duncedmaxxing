@@ -47,6 +47,16 @@ describe("MergeDefaults", function()
         assert.is_table(result)
         assert.equals(1, result.a)
     end)
+
+    it("populates stackColors[0] through stackColors[3] from defaults on fresh DB", function()
+        local db = { tip = {} }
+        DMX._test.MergeDefaults(DMX.defaults, db)
+        assert.is_table(db.tip.stackColors,    "stackColors must be a table")
+        assert.is_table(db.tip.stackColors[0], "stackColors[0] must be a table")
+        assert.is_table(db.tip.stackColors[3], "stackColors[3] must be a table")
+        assert.equals(1, db.tip.stackColors[0].r, "stackColors[0].r must be 1 (white)")
+        assert.near(0.18039, db.tip.stackColors[1].r, 0.001, "stackColors[1].r near 0.18039 (green)")
+    end)
 end)
 
 describe("NormalizeDB — migration branch (settingsMigration does not match)", function()
@@ -137,6 +147,15 @@ describe("NormalizeDB — migration branch (settingsMigration does not match)", 
         local db = migrationDB({spacing = 2})
         DMX._test.NormalizeDB(db)
         assert.is_nil(db.tip.spacing)
+    end)
+
+    it("populates stackColors after migration runs", function()
+        local db = migrationDB()
+        DMX._test.NormalizeDB(db)
+        assert.equals(DMX._test.SETTINGS_MIGRATION, db.settingsMigration)
+        assert.is_table(db.tip.stackColors,    "stackColors must be a table after migration")
+        assert.is_table(db.tip.stackColors[0], "stackColors[0] must be a table after migration")
+        assert.is_table(db.tip.stackColors[3], "stackColors[3] must be a table after migration")
     end)
 end)
 

@@ -590,7 +590,6 @@ describe("Tip:Update number mode color coding", function()
         loader.resetTipState(Tip, clock)
         local db = DMX:GetDB()
         db.tip.displayMode = "number"
-        db.tip.enabled = true
         db.locked = true
         Tip.isSurvival = true
         Tip:RefreshLayout()
@@ -631,6 +630,29 @@ describe("Tip:Update number mode color coding", function()
         Tip:Update()
         assertColor(Tip.numberText._textColor, { 1, 0.29804, 0.18824, 1 },
             "3 stacks should be red/orange")
+    end)
+
+    it("reads stack color from db.tip.stackColors when set", function()
+        local db = DMX:GetDB()
+        db.tip.stackColors = {
+            [0] = { r = 1, g = 0, b = 0, a = 1 },  -- custom red for 0 stacks
+            [1] = { r = 0, g = 1, b = 0, a = 1 },
+            [2] = { r = 0, g = 0, b = 1, a = 1 },
+            [3] = { r = 1, g = 1, b = 0, a = 1 },
+        }
+        Tip.stacks = 0
+        Tip:Update()
+        assertColor(Tip.numberText._textColor, { 1, 0, 0, 1 },
+            "0 stacks with custom stackColors[0] should be red")
+    end)
+
+    it("falls back to STACK_COLORS when db.tip.stackColors is nil", function()
+        local db = DMX:GetDB()
+        db.tip.stackColors = nil
+        Tip.stacks = 1
+        Tip:Update()
+        assertColor(Tip.numberText._textColor, { 0.18039, 0.80000, 0.44314, 1 },
+            "1 stack with nil stackColors should fall back to hardcoded green")
     end)
 
     it("does not set numberText color in bar mode", function()
