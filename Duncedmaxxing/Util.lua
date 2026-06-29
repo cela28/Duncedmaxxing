@@ -37,7 +37,20 @@ local function ParseHexColor(value)
     return { r = r, g = g, b = b, a = a }
 end
 
-Util.Trim         = Trim
-Util.Clamp        = Clamp
-Util.ParseOnOff   = ParseOnOff
+local function CopyDefaults(defaults)
+    local copy = {}
+    for key, value in pairs(defaults) do
+        if type(value) == "table" then
+            copy[key] = CopyDefaults(value)
+        else
+            copy[key] = value
+        end
+    end
+    return copy
+end
+
+Util.Trim          = Trim
+Util.Clamp         = Clamp
+Util.ParseOnOff    = ParseOnOff
 Util.ParseHexColor = ParseHexColor
+Util.CopyDefaults  = CopyDefaults
