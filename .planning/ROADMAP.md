@@ -18,6 +18,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Test Framework and Core Logic Tests** - Set up busted with WoW API stubs and write unit tests for all core functions (completed 2026-06-18)
 - [x] **Phase 3: Bug Fixes with Test Coverage** - Fix all correctness bugs under test protection and remove dead migration fallback (completed 2026-06-18)
 - [x] **Phase 4: Performance Caching and CI/CD** - Cache spec/texture state and ship the GitHub Actions release workflow (completed 2026-06-18)
+- [x] **Phase 5: Refactor Display Modes** - Remove icon mode, keep only bar + number (completed 2026-06-23)
+- [ ] **Phase 6: Options UI Overhaul** - Mode-specific settings, remove dead controls, per-stack color customization for number mode
+- [ ] **Phase 7: Spell Coverage — Add Missing Consumers** - Add Flamefang Pitch, Moonlight Chakram, and Hatchet Toss as consumers
 
 ## Phase Details
 
@@ -152,7 +155,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
+Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6/7 (6 and 7 are independent)
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -161,6 +164,9 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4
 | 2. Test Framework and Core Logic Tests | 3/3 | Complete   | 2026-06-18 |
 | 3. Bug Fixes with Test Coverage | 2/2 | Complete   | 2026-06-18 |
 | 4. Performance Caching and CI/CD | 2/2 | Complete   | 2026-06-18 |
+| 5. Refactor Display Modes | 2/2 | Complete   | 2026-06-23 |
+| 6. Options UI Overhaul | 0/2 | In progress | — |
+| 7. Spell Coverage — Add Missing Consumers | 0/0 | Not started | — |
 
 ### Phase 5: Refactor display modes: remove icon mode, keep only bar + number
 
@@ -201,3 +207,44 @@ Plans:
 **Wave 2** *(blocked on Wave 1 completion)*
 
 - [x] 05-02-PLAN.md — Update core_spec.lua display-mode assertions for the two-mode world (icons→bar fallback) and add a fengari (Lua-VM-in-JS) node harness so the suite runs locally without busted
+
+### Phase 6: Options UI Overhaul
+
+**Goal:** The options window shows only mode-relevant settings, removes dead controls, and adds per-stack color customization for number mode.
+
+**Depends on:** Phase 5
+**Requirements**: PHASE-06-GOAL
+**Success Criteria** (what must be TRUE):
+
+  1. In bar mode, the options panel shows: width, height, border, scale, fill color, border color, empty%. In number mode: text size and 4 stack color inputs (0/1/2/3). Shared across both: position (x, y), hide empty
+  2. The `enabled` checkbox is removed from Options.lua and `cfg.enabled` is no longer checked in visibility logic — tracker is always active when survival spec
+  3. A single "Lock" toggle button replaces the separate Unlock/Lock buttons — visually highlighted when unlocked
+  4. Reset and Reset Style buttons are removed
+  5. Number mode stack colors are stored in `db.tip.stackColors` (table of 4 color entries) and read by `Tip:Update()` instead of the hardcoded `STACK_COLORS` table
+  6. A "Reset Colors" button in number mode prompts for confirmation before restoring stack colors to defaults
+  7. The options window height adjusts to fit the active mode's controls without dead space
+  8. The test suite passes with updated assertions for the new settings structure
+
+**Plans:** 2 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 06-01-PLAN.md — Data layer: stackColors in DEFAULTS, enabled removal, migration bump, config-driven color read, test updates
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 06-02-PLAN.md — Options.lua restructure: mode-conditional sections, dead control removal, stack color inputs, lock toggle, Reset Colors confirm
+
+### Phase 7: Spell Coverage — Add Missing Consumers
+
+**Goal:** All Survival Hunter abilities that consume Tip of the Spear stacks are tracked by the addon, closing gaps found in the spell audit.
+
+**Depends on:** Phase 5
+**Success Criteria** (what must be TRUE):
+
+  1. `CONSUMERS` table in TipOfTheSpear.lua includes Flamefang Pitch (1251592), Moonlight Chakram (1264902), and Hatchet Toss (193265)
+  2. Unit tests verify that `ClassifySpellID` returns `"consumer"` for all three new spell IDs
+  3. Unit tests verify that `ApplySpell("consumer", spellID)` correctly decrements stacks for each new consumer
+  4. In-game verification of all three spells is flagged in the UAT checklist (consumption behavior unconfirmed live)
+  5. The test suite passes via the fengari harness
