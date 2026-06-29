@@ -4,9 +4,9 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 06
 current_phase_name: options-ui-overhaul
-status: executing
+status: verifying
 stopped_at: Phase 06 UI-SPEC approved
-last_updated: "2026-06-29T11:59:16.224Z"
+last_updated: "2026-06-29T11:59:51.377Z"
 last_activity: 2026-06-29
 last_activity_desc: Phase 06 execution started
 progress:
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-06-17)
 
 Phase: 06 (options-ui-overhaul) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-06-29 — Phase 06 execution started
 
 Progress: [██████░░░░] 75%
@@ -63,6 +63,7 @@ Progress: [██████░░░░] 75%
 | Phase 02-test-framework-and-core-logic-tests P03 | 15min | 2 tasks | 4 files |
 | Phase 01 P03 | 3min | - tasks | - files |
 | Phase 05 P01 | 12 | 3 tasks | 3 files |
+| Phase 06 P01 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,8 @@ Recent decisions affecting current work:
 - [Phase ?]: hasPrimalSurge field added to Tip module table; reserved for future HasPrimalSurge() wiring when ID is confirmed
 - [Phase ?]: Remove icons mode entirely — persisted icons/icon values normalize to bar via NormalizeDB
 - [Phase ?]: Bar else-branch is the catch-all in RefreshLayout and Update for any unknown displayMode value
+- [Phase ?]: stackColors added to DEFAULTS.tip; enabled removed from DEFAULTS.tip; SETTINGS_MIGRATION bumped to 0.3.2-stackcolors
+- [Phase ?]: Tip:Update() reads config-driven stack colors via GetCfg().stackColors with STACK_COLORS constant as nil-safety fallback
 
 ### Roadmap Evolution
 
@@ -120,6 +123,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-06-29T11:14:16.643Z
+Last session: 2026-06-29T11:59:37.116Z
 Stopped at: Phase 06 UI-SPEC approved
 Resume file: .planning/phases/06-options-ui-overhaul/06-UI-SPEC.md
