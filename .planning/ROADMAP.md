@@ -165,7 +165,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6/7 (6 and 
 | 3. Bug Fixes with Test Coverage | 2/2 | Complete   | 2026-06-18 |
 | 4. Performance Caching and CI/CD | 2/2 | Complete   | 2026-06-18 |
 | 5. Refactor Display Modes | 2/2 | Complete   | 2026-06-23 |
-| 6. Options UI Overhaul | 0/2 | In progress | — |
+| 6. Options UI Overhaul | 1/2 | In Progress|  |
 | 7. Spell Coverage — Add Missing Consumers | 0/0 | Not started | — |
 
 ### Phase 5: Refactor display modes: remove icon mode, keep only bar + number
@@ -225,12 +225,12 @@ Plans:
   7. The options window height adjusts to fit the active mode's controls without dead space
   8. The test suite passes with updated assertions for the new settings structure
 
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 06-01-PLAN.md — Data layer: stackColors in DEFAULTS, enabled removal, migration bump, config-driven color read, test updates
+- [x] 06-01-PLAN.md — Data layer: stackColors in DEFAULTS, enabled removal, migration bump, config-driven color read, test updates
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
