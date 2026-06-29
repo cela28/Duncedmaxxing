@@ -248,15 +248,9 @@ function Options:BuildWindow()
     CreateButton(window, "Bar", 108, -43, 62, 22, function() self:SetMode("bar") end)
     CreateButton(window, "Number", 244, -43, 72, 22, function() self:SetMode("number") end)
 
-    CreateCheckbox(window, "Enabled", 14, -80,
-        function() return GetCfg().enabled end,
-        function(value) GetCfg().enabled = value end)
-    CreateCheckbox(window, "Hide empty", 260, -80,
-        function() return GetCfg().hideWhenEmpty end,
-        function(value) GetCfg().hideWhenEmpty = value end)
-
-    CreateText(window, "Position", 16, -120, "GameFontNormal")
-    CreateInput(window, "X", 16, -148, 62,
+    -- Shared controls section (visible in both modes)
+    CreateText(window, "Position", 16, -80, "GameFontNormal")
+    CreateInput(window, "X", 16, -108, 62,
         function() return GetCfg().x end,
         function(value)
             local x = Clamp(value, -4000, 4000)
@@ -264,7 +258,7 @@ function Options:BuildWindow()
             GetCfg().x = x
             return true
         end)
-    CreateInput(window, "Y", 16, -178, 62,
+    CreateInput(window, "Y", 16, -138, 62,
         function() return GetCfg().y end,
         function(value)
             local y = Clamp(value, -4000, 4000)
@@ -272,7 +266,7 @@ function Options:BuildWindow()
             GetCfg().y = y
             return true
         end)
-    CreateInput(window, "Scale", 16, -208, 62,
+    CreateInput(window, "Scale", 16, -168, 62,
         function() return GetCfg().scale end,
         function(value)
             local scale = Clamp(value, 0.5, 2)
@@ -281,8 +275,38 @@ function Options:BuildWindow()
             return true
         end)
 
-    CreateText(window, "Bar", 16, -248, "GameFontNormal")
-    CreateInput(window, "Width", 16, -276, 62,
+    CreateCheckbox(window, "Hide empty", 16, -208,
+        function() return GetCfg().hideWhenEmpty end,
+        function(value) GetCfg().hideWhenEmpty = value end)
+
+    -- Action row: Preview and Lock toggle pinned to bottom of window
+    local previewBtn = CreateButton(window, "Preview Tracker", 0, 0, 74, 24, function()
+        local tip = DMX:GetModule("tip")
+        if tip and tip.SetTestStacks then
+            tip:SetTestStacks(3)
+        end
+    end)
+    previewBtn:ClearAllPoints()
+    previewBtn:SetPoint("BOTTOMLEFT", window, "BOTTOMLEFT", 16, 16)
+
+    local lockBtn = CreateButton(window, "Lock", 0, 0, 76, 24, function()
+        local db = DMX:GetDB()
+        db.locked = not db.locked
+        DMX:ForEachModule("ApplyLock")
+        RefreshTracker()
+    end)
+    lockBtn:ClearAllPoints()
+    lockBtn:SetPoint("BOTTOMLEFT", window, "BOTTOMLEFT", 100, 16)
+    self.lockBtn = lockBtn
+
+    -- barSection: bar-mode-specific controls
+    local barSection = CreateFrame("Frame", nil, window)
+    barSection:SetSize(386, 200)
+    barSection:SetPoint("TOPLEFT", window, "TOPLEFT", 0, -248)
+    self.barSection = barSection
+
+    CreateText(barSection, "Bar", 16, 0, "GameFontNormal")
+    CreateInput(barSection, "Width", 16, -28, 62,
         function() return GetCfg().width end,
         function(value)
             local width = Clamp(value, 20, 2000)
@@ -290,7 +314,7 @@ function Options:BuildWindow()
             GetCfg().width = width
             return true
         end)
-    CreateInput(window, "Height", 16, -306, 62,
+    CreateInput(barSection, "Height", 16, -58, 62,
         function() return GetCfg().height end,
         function(value)
             local height = Clamp(value, 4, 200)
@@ -298,7 +322,7 @@ function Options:BuildWindow()
             GetCfg().height = height
             return true
         end)
-    CreateInput(window, "Border", 16, -336, 62,
+    CreateInput(barSection, "Border", 16, -88, 62,
         function() return GetCfg().borderSize end,
         function(value)
             local size = Clamp(value, 0, 10)
@@ -307,18 +331,8 @@ function Options:BuildWindow()
             return true
         end)
 
-    CreateText(window, "Other Modes", 204, -120, "GameFontNormal")
-    CreateInput(window, "Text size", 204, -148, 62,
-        function() return GetCfg().numberFontSize end,
-        function(value)
-            local size = Clamp(value, 8, 96)
-            if not size then return false end
-            GetCfg().numberFontSize = size
-            return true
-        end)
-
-    CreateText(window, "Colors", 204, -248, "GameFontNormal")
-    CreateInput(window, "Fill", 204, -276, 78,
+    CreateText(barSection, "Colors", 204, 0, "GameFontNormal")
+    CreateInput(barSection, "Fill", 204, -28, 78,
         function() return ColorToHex(GetCfg().fillColor) end,
         function(value)
             local color = ParseHexColor(value)
@@ -326,7 +340,7 @@ function Options:BuildWindow()
             GetCfg().fillColor = color
             return true
         end)
-    CreateInput(window, "Border", 204, -306, 78,
+    CreateInput(barSection, "Border", 204, -58, 78,
         function() return ColorToHex(GetCfg().borderColor) end,
         function(value)
             local color = ParseHexColor(value)
@@ -334,15 +348,7 @@ function Options:BuildWindow()
             GetCfg().borderColor = color
             return true
         end)
-    CreateInput(window, "Text", 204, -336, 78,
-        function() return ColorToHex(GetCfg().textColor) end,
-        function(value)
-            local color = ParseHexColor(value)
-            if not color then return false end
-            GetCfg().textColor = color
-            return true
-        end)
-    CreateInput(window, "Empty %", 204, -366, 62,
+    CreateInput(barSection, "Empty %", 204, -88, 62,
         function() return math.floor((GetCfg().emptyColor.a or 0) * 100 + 0.5) end,
         function(value)
             local alpha = Clamp(value, 0, 100)
@@ -351,31 +357,73 @@ function Options:BuildWindow()
             return true
         end)
 
-    CreateButton(window, "Unlock Bar", 16, -414, 86, 24, function()
-        DMX:GetDB().locked = false
-        DMX:ForEachModule("ApplyLock")
-        RefreshTracker()
-    end)
-    CreateButton(window, "Lock Bar", 108, -414, 76, 24, function()
-        DMX:GetDB().locked = true
-        DMX:ForEachModule("ApplyLock")
-        RefreshTracker()
-    end)
-    CreateButton(window, "Preview", 190, -414, 74, 24, function()
-        local tip = DMX:GetModule("tip")
-        if tip and tip.SetTestStacks then
-            tip:SetTestStacks(3)
-        end
-    end)
-    CreateButton(window, "Reset", 270, -414, 70, 24, function()
-        local tip = DMX:GetModule("tip")
-        if tip and tip.ResetPosition then
-            tip:ResetPosition()
-        end
-    end)
-    CreateButton(window, "Reset Style", 16, -444, 96, 24, function()
-        if DMX.ResetTipStyle then
-            DMX:ResetTipStyle()
+    -- numberSection: number-mode-specific controls
+    local numberSection = CreateFrame("Frame", nil, window)
+    numberSection:SetSize(386, 240)
+    numberSection:SetPoint("TOPLEFT", window, "TOPLEFT", 0, -248)
+    self.numberSection = numberSection
+
+    CreateText(numberSection, "Number Mode", 16, 0, "GameFontNormal")
+    CreateInput(numberSection, "Text size", 16, -28, 62,
+        function() return GetCfg().numberFontSize end,
+        function(value)
+            local size = Clamp(value, 8, 96)
+            if not size then return false end
+            GetCfg().numberFontSize = size
+            return true
+        end)
+
+    CreateText(numberSection, "Stack Colors", 16, -68, "GameFontNormal")
+
+    local stackLabels = { "0 stacks", "1 stack", "2 stacks", "3 stacks" }
+    local stackYOffsets = { -96, -126, -156, -186 }
+    for i = 0, 3 do
+        local idx = i
+        CreateInput(numberSection, stackLabels[i + 1], 16, stackYOffsets[i + 1], 78,
+            function() return ColorToHex(GetCfg().stackColors[idx]) end,
+            function(value)
+                local color = ParseHexColor(value)
+                if not color then return false end
+                GetCfg().stackColors[idx] = color
+                return true
+            end)
+    end
+
+    -- Reset Colors button: raw CreateFrame (not factory) to prevent auto-Refresh reverting confirm text
+    local resetColorsBtn = CreateFrame("Button", nil, numberSection, "UIPanelButtonTemplate")
+    resetColorsBtn:SetSize(100, 24)
+    resetColorsBtn:SetPoint("TOPLEFT", numberSection, "TOPLEFT", 16, -216)
+    resetColorsBtn:SetText("Reset Colors")
+    self.resetColorsBtn = resetColorsBtn
+    self.resetColorsPending = false
+    self.resetColorsTimer = nil
+
+    resetColorsBtn:SetScript("OnClick", function()
+        if not Options:CanChange() then return end
+
+        if not Options.resetColorsPending then
+            -- First click: arm the confirm state
+            Options.resetColorsPending = true
+            resetColorsBtn:SetText("Confirm Reset")
+
+            if C_Timer and C_Timer.NewTimer then
+                Options.resetColorsTimer = C_Timer.NewTimer(3, function()
+                    if not Options.resetColorsPending then return end
+                    Options.resetColorsPending = false
+                    Options.resetColorsTimer = nil
+                    resetColorsBtn:SetText("Reset Colors")
+                end)
+            end
+        else
+            -- Second click: perform the reset
+            Options.resetColorsPending = false
+            if Options.resetColorsTimer then
+                Options.resetColorsTimer:Cancel()
+                Options.resetColorsTimer = nil
+            end
+            GetCfg().stackColors = DMX._test.CopyDefaults(DMX.defaults.tip.stackColors)
+            RefreshTracker()
+            Options:Refresh()
         end
     end)
 
@@ -396,6 +444,35 @@ function Options:Refresh()
 
     for _, item in ipairs(self.inputs or {}) do
         item.editBox:SetText(tostring(item.get()))
+    end
+
+    -- Show/hide mode-conditional sections and adjust window height
+    if self.barSection then
+        if cfg.displayMode == "bar" then
+            self.barSection:Show()
+            self.numberSection:Hide()
+            self.window:SetSize(386, 380)
+        else
+            self.barSection:Hide()
+            self.numberSection:Show()
+            self.window:SetSize(386, 484)
+        end
+    end
+
+    -- Sync lock toggle text
+    if self.lockBtn then
+        local db = DMX:GetDB()
+        self.lockBtn:SetText(db and db.locked and "Unlock" or "Lock")
+    end
+
+    -- Reset Colors: revert pending state on any Refresh
+    if self.resetColorsBtn and self.resetColorsPending then
+        self.resetColorsPending = false
+        if self.resetColorsTimer then
+            self.resetColorsTimer:Cancel()
+            self.resetColorsTimer = nil
+        end
+        self.resetColorsBtn:SetText("Reset Colors")
     end
 end
 
