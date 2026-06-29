@@ -455,22 +455,19 @@ Note: The existing `CreateButton` factory anchors to TOPLEFT. The action row use
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **SETTINGS_MIGRATION version bump**
+1. **SETTINGS_MIGRATION version bump** — RESOLVED: Use `"0.3.2-stackcolors"` to signal the DB schema change.
    - What we know: `NormalizeDB` runs a full reset when `db.settingsMigration` does not match `SETTINGS_MIGRATION`. The current value is `"0.3.2-fontfix"`.
-   - What's unclear: The planner must choose the new version string (e.g., `"0.3.2-stackcolors"` or `"0.3.3-options-overhaul"`).
-   - Recommendation: Use `"0.3.2-stackcolors"` to signal the specific DB schema change. The version bump triggers the migration branch which resets all `tip.*` fields except preserved ones (x, y, scale, optionsX, optionsY). `stackColors` will be populated from DEFAULTS.
+   - Resolution: Use `"0.3.2-stackcolors"` to signal the specific DB schema change. The version bump triggers the migration branch which resets all `tip.*` fields except preserved ones (x, y, scale, optionsX, optionsY). `stackColors` will be populated from DEFAULTS.
 
-2. **`DMX:ResetTipStyle()` in Core.lua**
+2. **`DMX:ResetTipStyle()` in Core.lua** — RESOLVED: Leave as-is (dead code cleanup is out of scope).
    - What we know: This function deep-copies DEFAULTS.tip back over db.tip, preserving position/scale. It was called by the now-removed "Reset Style" button.
-   - What's unclear: Should this function be removed from Core.lua in this phase or left as dead code?
-   - Recommendation: Leave it. It's a Core-layer function, not UI. Phase 6 scope is Options.lua changes. Dead code cleanup is a separate concern.
+   - Resolution: Leave it. It's a Core-layer function, not UI. Phase 6 scope is Options.lua changes. Dead code cleanup is a separate concern.
 
-3. **`C_Timer` availability in Reset Colors handler**
+3. **`C_Timer` availability in Reset Colors handler** — RESOLVED: Add nil guard matching existing TipOfTheSpear.lua pattern.
    - What we know: `C_Timer` is checked for nil in TipOfTheSpear.lua before every use. Options.lua currently never uses `C_Timer`.
-   - What's unclear: Is `C_Timer` guaranteed available in the WoW Midnight 12.0.5 environment?
-   - Recommendation: Add a nil guard: `if C_Timer then ... C_Timer.NewTimer(...) else` fallback to a flag-only approach with no auto-revert. This matches the existing dual-path pattern in TipOfTheSpear.lua.
+   - Resolution: Add a nil guard: `if C_Timer then ... C_Timer.NewTimer(...) else` fallback to a flag-only approach with no auto-revert. This matches the existing dual-path pattern in TipOfTheSpear.lua.
 
 ---
 
