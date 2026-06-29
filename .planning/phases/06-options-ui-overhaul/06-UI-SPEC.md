@@ -40,14 +40,14 @@ WoW pixel spacing used throughout Options.lua. All values are multiples of 4.
 | sm | 8px | Close button inset from window edge (right edge -38, top -6) |
 | md | 16px | Left margin for all controls (TOPLEFT x=16) |
 | lg | 24px | Vertical step between section headers and first control |
-| xl | 30px | Vertical step between consecutive inputs in a column |
+| xl | 32px | Vertical step between consecutive inputs in a column (4×8) |
 | 2xl | 48px | Vertical gap from window top to mode selector row (y=-43 baseline) |
 | 3xl | 64px | Vertical gap between major sections (header → mode row → first section) |
 
 Exceptions:
 - Section header label to first input beneath it: 28px (y-delta of -28 from header baseline)
-- Title bar total height: 30px
-- Button row bottom margin: 10px above window bottom edge
+- Title bar total height: 30px — hard-coded in current Options.lua:203 (`header:SetSize(1, 30)`); not changing this phase. Nearest multiples would be 28px or 32px; 30px preserved for visual continuity with existing window chrome.
+- Action row bottom inset: 16px (BOTTOMLEFT y=16, which is 4×4 — on-scale)
 
 ---
 
@@ -98,6 +98,10 @@ Source: hardcoded `STACK_COLORS` table in `TipOfTheSpear.lua` lines 33–38. The
 ---
 
 ## Widget Layout Contract
+
+### Primary Visual Anchor
+
+The mode selector row ("Display: Bar" label + "Bar" / "Number" buttons at y=-43 to y=-48) is the primary focal point of the options window. It is the first interactive element below the title bar and determines which section is visible. All other controls are subordinate to this row. Implementation must ensure this row is visually prominent — rendered immediately below the header band with no competing elements at the same vertical level.
 
 ### Window Dimensions
 
@@ -252,7 +256,7 @@ Note: Lock toggle appears in both the shared controls section (for mid-window ac
 | Input labels | `X` / `Y` / `Scale` / `Width` / `Height` / `Border` / `Fill` / `Border` / `Empty %` / `Text size` / `0 stacks` / `1 stack` / `2 stacks` / `3 stacks` |
 | Lock toggle (locked state) | `Unlock` |
 | Lock toggle (unlocked state) | `Lock` |
-| Preview button | `Preview` |
+| Preview button | `Preview Tracker` |
 | Reset Colors button (default) | `Reset Colors` |
 | Reset Colors button (pending confirmation) | `Confirm Reset` |
 | Combat error | `Settings cannot be opened or changed in combat.` |
