@@ -421,7 +421,8 @@ function Options:BuildWindow()
                 Options.resetColorsTimer:Cancel()
                 Options.resetColorsTimer = nil
             end
-            GetCfg().stackColors = DMX._test.CopyDefaults(DMX.defaults.tip.stackColors)
+            resetColorsBtn:SetText("Reset Colors")
+            GetCfg().stackColors = DMX.Util.CopyDefaults(DMX.defaults.tip.stackColors)
             RefreshTracker()
             Options:Refresh()
         end
@@ -447,7 +448,7 @@ function Options:Refresh()
     end
 
     -- Show/hide mode-conditional sections and adjust window height
-    if self.barSection then
+    if self.barSection and self.numberSection then
         if cfg.displayMode == "bar" then
             self.barSection:Show()
             self.numberSection:Hide()
