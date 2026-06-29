@@ -5,8 +5,8 @@ milestone_name: milestone
 current_phase: 06
 current_phase_name: options-ui-overhaul
 status: verifying
-stopped_at: Phase 06 UI-SPEC approved
-last_updated: "2026-06-29T11:59:51.377Z"
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-06-29T12:01:08.116Z"
 last_activity: 2026-06-29
 last_activity_desc: Phase 06 execution started
 progress:
@@ -64,6 +64,7 @@ Progress: [██████░░░░] 75%
 | Phase 01 P03 | 3min | - tasks | - files |
 | Phase 05 P01 | 12 | 3 tasks | 3 files |
 | Phase 06 P01 | 3min | 2 tasks | 4 files |
+| Phase 06 P01 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,9 @@ Recent decisions affecting current work:
 - [Phase ?]: Bar else-branch is the catch-all in RefreshLayout and Update for any unknown displayMode value
 - [Phase ?]: stackColors added to DEFAULTS.tip; enabled removed from DEFAULTS.tip; SETTINGS_MIGRATION bumped to 0.3.2-stackcolors
 - [Phase ?]: Tip:Update() reads config-driven stack colors via GetCfg().stackColors with STACK_COLORS constant as nil-safety fallback
+- [Phase ?]: stackColors added to DEFAULTS.tip replacing hardcoded STACK_COLORS in rendering
+- [Phase ?]: enabled field removed from DEFAULTS.tip; tracker always on for Survival spec
+- [Phase ?]: SETTINGS_MIGRATION bumped to 0.3.2-stackcolors to propagate DB schema to existing saves
 
 ### Roadmap Evolution
 
@@ -123,6 +127,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-06-29T11:59:37.116Z
-Stopped at: Phase 06 UI-SPEC approved
-Resume file: .planning/phases/06-options-ui-overhaul/06-UI-SPEC.md
+Last session: 2026-06-29T12:01:08.112Z
+Stopped at: Completed 06-01-PLAN.md
+Resume file: None
