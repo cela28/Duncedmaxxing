@@ -4,17 +4,17 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 06
 current_phase_name: options-panel-v2-per-mode-visibility-configurable-stack-colo
-status: executing
+status: verifying
 stopped_at: Phase 6 context gathered
-last_updated: "2026-07-01T21:18:08.948Z"
+last_updated: "2026-07-01T21:23:46.994Z"
 last_activity: 2026-07-01
 last_activity_desc: Phase 06 execution started
 progress:
   total_phases: 7
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 17
-  completed_plans: 16
-  percent: 86
+  completed_plans: 17
+  percent: 100
 ---
 
 # Project State
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-06-17)
 
 Phase: 06 (options-panel-v2-per-mode-visibility-configurable-stack-colo) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-01 — Phase 06 execution started
 
 Progress: [██████████] 100%
@@ -65,6 +65,7 @@ Progress: [██████████] 100%
 | Phase 05 P01 | 12 | 3 tasks | 3 files |
 | Phase 06 P01 | 3min | 2 tasks | 2 files |
 | Phase 06 P02 | 8min | 2 tasks | 1 files |
+| Phase 06 P03 | 5min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -89,6 +90,8 @@ Recent decisions affecting current work:
 - [Phase ?]: Kept stackColors[N] as array-indexed RGBA tuples (via ParseHexColor .r/.g/.b/.a) -- ColorTuple already reads both shapes
 - [Phase ?]: Repositioned mode buttons and right-column layout to fit 4 stack-color rows in the unchanged 386x484 options window (D-10)
 - [Phase ?]: Unrecognized displayMode values fall back to bar visibility in Options:Refresh, mirroring the Phase 5 bar-catch-all convention
+- [Phase ?]: Used pcall + assert.is_true instead of assert.has_no.errors since the project's minimal assert shim does not implement busted's full assertion API
+- [Phase ?]: Added a dedicated legacy-DB describe block for the MergeDefaults->NormalizeDB no-wipe pipeline case, isolating it from the narrower single-function NormalizeDB tests
 
 ### Roadmap Evolution
 
@@ -128,6 +131,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-07-01T21:17:12.260Z
+Last session: 2026-07-01T21:22:57.508Z
 Stopped at: Phase 6 context gathered
 Resume file: .planning/phases/06-options-panel-v2-per-mode-visibility-configurable-stack-colo/06-CONTEXT.md
