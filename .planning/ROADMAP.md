@@ -201,3 +201,48 @@ Plans:
 **Wave 2** *(blocked on Wave 1 completion)*
 
 - [x] 05-02-PLAN.md — Update core_spec.lua display-mode assertions for the two-mode world (icons→bar fallback) and add a fengari (Lua-VM-in-JS) node harness so the suite runs locally without busted
+
+### Phase 6: Options panel v2 — per-mode visibility, configurable stack colors, layout fix
+
+**Goal:** The options window shows only the controls relevant to the active display mode (Bar vs Number), per-stack number colors are user-configurable, and the mode-selector layout bug is fixed.
+
+**LOCKED decisions (user-confirmed 2026-07-01):**
+
+- **Number-mode color model = "Color by stack" toggle + 4 per-stack color pickers.** When the toggle is ON, the number uses 4 configurable per-stack colors (defaults = current hardcoded values: white for 0, green for 1, yellow for 2, red/orange for 3). When OFF, the number uses the single flat `textColor`. Toggle defaults ON so current behavior is preserved out of the box.
+- **Per-mode option visibility mapping:**
+  - Both modes: Position (X/Y/Scale), Enabled, Hide empty, Border color
+  - Bar only: Width, Height, Border size, Fill, Empty %
+  - Number only: Text size, stack-color controls (toggle + pickers)
+
+**Scope notes (current state, pre-refactor):**
+
+- All option widgets in `Duncedmaxxing/Options.lua` are always shown (no per-mode gating). Widgets are created in `Options:BuildWindow` (~lines 247–352) and refreshed in `Options:Refresh` (~line 385). Mode switch goes through `Options:SetMode`.
+- Stack colors are hardcoded in `Duncedmaxxing/Modules/TipOfTheSpear.lua:33` (`STACK_COLORS`) and applied in the number-mode render path (~line 621), currently overriding `textColor` unconditionally.
+- Defaults live in `Duncedmaxxing/Core.lua` `DEFAULTS.tip`; new fields (per-stack colors + `colorByStack` toggle) must be added there with `NormalizeDB` validation and no settings wipe on load.
+- Layout bug: `Options.lua:247` places the "Display: Bar/Number" label at x=16; the label text collides with the Bar button at x=108 (worse when the label reads "Display: Number"). Reposition label/buttons so they don't overlap.
+- No native Lua/busted toolchain — regression runs go through the fengari (Lua-VM-in-JS) harness (`spec/run.cjs`).
+- Discovered during Phase 05 UAT (the layout bug was Test 1's "arranged weirdly" finding).
+
+**Requirements**: DISP-05, DISP-06, DISP-07 (new — to be confirmed at plan time)
+**Depends on:** Phase 5
+**Success Criteria** (what must be TRUE):
+
+  1. In Bar mode the panel shows Width, Height, Border size, Fill, Empty % and hides Text size and all stack-color controls; in Number mode it shows Text size and stack-color controls and hides the Bar-only controls. Position, Enabled, Hide empty, and Border color are visible in both modes.
+  2. Switching modes (via buttons or `/dmax mode ...`) updates widget visibility immediately with no Lua error.
+  3. A "Color by stack" toggle plus 4 per-stack color inputs exist and persist in SavedVariables; editing a stack color changes that stack's number color in-game.
+  4. With the toggle ON, per-stack colors are applied (defaults match today's green/yellow/red/white); with it OFF, the number uses the single flat `textColor`.
+  5. The "Display:" label no longer overlaps the Bar button in either mode.
+  6. A fresh/legacy DB loads cleanly — the new color/toggle fields default correctly with no settings wipe and no Lua error.
+  7. The test suite passes via the fengari harness, with new coverage for config-driven stack colors and the color-by-stack toggle fallback.
+
+**Plans:** 3 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 06-01-PLAN.md — Data layer: add colorByStack + nested stackColors defaults to DEFAULTS.tip (Core.lua) and swap the number-mode render to a config-driven per-stack color read with flat textColor fallback (TipOfTheSpear.lua) — DISP-06 foundation
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 06-02-PLAN.md — Options.lua: per-mode widget visibility gating (DISP-05), colorByStack toggle + 4 stack color inputs + flat Text picker greying (DISP-06 UI), and the mode-selector layout fix — remove the Display label, highlight the active button, fixed window size (DISP-07)
+- [ ] 06-03-PLAN.md — Fengari spec coverage: colorByStack ON/OFF number-color behavior (tip_spec) and legacy/fresh DB default-merge no-wipe (core_spec) — DISP-06 regression
