@@ -47,6 +47,29 @@ describe("MergeDefaults", function()
         assert.is_table(result)
         assert.equals(1, result.a)
     end)
+
+    it("fills missing colorByStack and all four stackColors defaults byte-for-byte", function()
+        local result = DMX._test.MergeDefaults(DMX.defaults, {})
+        assert.is_true(result.tip.colorByStack)
+        for i = 0, 3 do
+            for j = 1, 4 do
+                assert.near(DMX.defaults.tip.stackColors[i][j], result.tip.stackColors[i][j], 0.00001)
+            end
+        end
+    end)
+
+    it("does not overwrite a user-set colorByStack = false", function()
+        local result = DMX._test.MergeDefaults(DMX.defaults, {tip = {colorByStack = false}})
+        assert.is_false(result.tip.colorByStack)
+    end)
+
+    it("preserves an edited stackColors[1] entry instead of overwriting with the default", function()
+        local edited = {0.9, 0.1, 0.1, 1}
+        local result = DMX._test.MergeDefaults(DMX.defaults, {tip = {stackColors = {[1] = edited}}})
+        for j = 1, 4 do
+            assert.near(edited[j], result.tip.stackColors[1][j], 0.00001)
+        end
+    end)
 end)
 
 describe("NormalizeDB — migration branch (settingsMigration does not match)", function()
@@ -182,6 +205,66 @@ describe("NormalizeDB — already migrated branch (settingsMigration matches)", 
     it("skips migration: settingsMigration remains unchanged", function()
         local db = migratedDB()
         DMX._test.NormalizeDB(db)
+        assert.equals("0.3.2-fontfix", db.settingsMigration)
+    end)
+end)
+
+describe("MergeDefaults + NormalizeDB — legacy DB gains colorByStack/stackColors with no wipe (D-11)", function()
+    local DMX
+
+    before_each(function()
+        DMX = loader.load()
+    end)
+
+    local function legacyMigratedDB()
+        return {
+            settingsMigration = "0.3.2-fontfix",
+            tip = {
+                enabled          = true,
+                hideWhenEmpty    = false,
+                x                = 50,
+                y                = -100,
+                scale            = 1.2,
+                displayMode      = "number",
+                width            = 247,
+                height           = 10,
+                borderSize       = 1,
+                numberFontSize   = 22,
+                optionsX         = 360,
+                optionsY         = 170,
+                -- colorByStack / stackColors intentionally absent, simulating a
+                -- pre-DISP-06 SavedVariables snapshot.
+            },
+        }
+    end
+
+    it("default-merges colorByStack + stackColors onto a legacy DB with no wipe, no error, no migration bump", function()
+        local db = legacyMigratedDB()
+
+        local ok, err = pcall(function()
+            DMX._test.MergeDefaults(DMX.defaults, db)
+            DMX._test.NormalizeDB(db)
+        end)
+        assert.is_true(ok, "MergeDefaults/NormalizeDB should not raise on a legacy DB: " .. tostring(err))
+
+        -- New fields populated.
+        assert.is_true(db.tip.colorByStack)
+        assert.is_table(db.tip.stackColors)
+        for i = 0, 3 do
+            assert.is_table(db.tip.stackColors[i])
+            for j = 1, 4 do
+                assert.near(DMX.defaults.tip.stackColors[i][j], db.tip.stackColors[i][j], 0.00001)
+            end
+        end
+
+        -- Existing fields unchanged (no wipe).
+        assert.equals("number", db.tip.displayMode)
+        assert.equals(50,       db.tip.x)
+        assert.equals(-100,     db.tip.y)
+        assert.equals(1.2,      db.tip.scale)
+        assert.equals(true,     db.tip.enabled)
+
+        -- No migration bump — already at current settingsMigration.
         assert.equals("0.3.2-fontfix", db.settingsMigration)
     end)
 end)
