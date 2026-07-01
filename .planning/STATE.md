@@ -4,16 +4,16 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 05
 status: verifying
-stopped_at: "Completed 01-03 plan: Kill Command stack-overshoot fix"
-last_updated: "2026-06-23T19:50:04.496Z"
-last_activity: 2026-06-23
-last_activity_desc: Phase 05 complete
+stopped_at: Phase 6 context gathered
+last_updated: "2026-07-01T20:44:12.948Z"
+last_activity: 2026-06-24
+last_activity_desc: "Completed quick task 260624-0hx: slash interface settings-only + README de-bloat"
 progress:
-  total_phases: 6
+  total_phases: 7
   completed_phases: 6
   total_plans: 14
   completed_plans: 14
-  percent: 100
+  percent: 86
 current_phase_name: refactor-display-modes-remove-icon-mode-and-add-a-bar-text-m
 ---
 
@@ -86,6 +86,7 @@ Recent decisions affecting current work:
 ### Roadmap Evolution
 
 - Phase 5 added: Refactor display modes — remove icon mode and add a bar + text mode
+- Phase 6 added: Options panel v2 — per-mode option visibility, configurable per-stack colors, and the mode-selector layout fix (surfaced by Phase 05 UAT)
 
 ### Pending Todos
 
@@ -120,6 +121,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-06-23T19:45:26.916Z
-Stopped at: Completed 01-03 plan: Kill Command stack-overshoot fix
-Resume file: .planning/phases/04-performance-caching-and-ci-cd/04-CONTEXT.md
+Last session: 2026-07-01T20:44:12.932Z
+Stopped at: Phase 6 context gathered
+Resume file: .planning/phases/06-options-panel-v2-per-mode-visibility-configurable-stack-colo/06-CONTEXT.md
