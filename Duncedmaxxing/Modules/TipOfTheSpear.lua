@@ -618,8 +618,15 @@ function Tip:Update()
         end
 
         numberText:SetText(stacks)
-        local sc = STACK_COLORS[stacks] or STACK_COLORS[0]
-        numberText:SetTextColor(sc[1], sc[2], sc[3], sc[4])
+        if cfg.colorByStack ~= false then
+            local stackColors = cfg.stackColors or STACK_COLORS
+            local sc = stackColors[stacks] or stackColors[0]
+            local r, g, b, a = ColorTuple(sc, STACK_COLORS[stacks] or STACK_COLORS[0])
+            numberText:SetTextColor(r, g, b, a)
+        else
+            local r, g, b, a = ColorTuple(cfg.textColor, DMX.defaults.tip.textColor)
+            numberText:SetTextColor(r, g, b, a)
+        end
         numberText:Show()
         label:SetShown(unlocked)
         return
