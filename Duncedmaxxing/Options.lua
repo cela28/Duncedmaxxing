@@ -7,10 +7,6 @@ local Clamp        = DMX.Util.Clamp
 local ParseHexColor = DMX.Util.ParseHexColor
 
 local WHITE_TEX = "Interface\\Buttons\\WHITE8X8"
-local MODE_LABELS = {
-    bar = "Bar",
-    number = "Number",
-}
 
 local function InCombat()
     return InCombatLockdown and InCombatLockdown()
@@ -178,6 +174,10 @@ function Options:SetMode(mode)
 
     cfg.displayMode = mode
     RefreshTracker()
+
+    if self.window and self.window:IsShown() then
+        self:Refresh()
+    end
 end
 
 local function AddToGroup(group, ...)
@@ -436,13 +436,58 @@ function Options:BuildWindow()
     window:Hide()
 end
 
+local function SetWidgetShown(widget, shown)
+    if not widget then return end
+    if shown then
+        widget:Show()
+    else
+        widget:Hide()
+    end
+end
+
+local function SetColorGroupEnabled(items, enabled)
+    for _, item in ipairs(items or {}) do
+        local widget = item.widget
+        local label = item.label
+        if widget then
+            if widget.Disable and widget.Enable then
+                if enabled then
+                    widget:Enable()
+                else
+                    widget:Disable()
+                end
+            end
+            widget:SetAlpha(enabled and 1 or 0.4)
+        end
+        if label then
+            label:SetAlpha(enabled and 1 or 0.4)
+        end
+    end
+end
+
+local function HighlightModeButton(button, active)
+    if not button then return end
+
+    if active then
+        if button.LockHighlight then
+            button:LockHighlight()
+        end
+        if button.SetAlpha then
+            button:SetAlpha(1)
+        end
+    else
+        if button.UnlockHighlight then
+            button:UnlockHighlight()
+        end
+        if button.SetAlpha then
+            button:SetAlpha(0.75)
+        end
+    end
+end
+
 function Options:Refresh()
     local cfg = GetCfg()
     if not cfg then return end
-
-    if self.modeText then
-        self.modeText:SetText("Display: " .. (MODE_LABELS[cfg.displayMode] or "Bar"))
-    end
 
     for _, item in ipairs(self.checkboxes or {}) do
         item.check:SetChecked(item.get() and true or false)
@@ -450,6 +495,33 @@ function Options:Refresh()
 
     for _, item in ipairs(self.inputs or {}) do
         item.editBox:SetText(tostring(item.get()))
+    end
+
+    local mode = cfg.displayMode
+    if mode ~= "bar" and mode ~= "number" then
+        mode = "bar"
+    end
+
+    local groups = self.widgetGroups or {}
+    for _, widget in ipairs(groups.both or {}) do
+        SetWidgetShown(widget, true)
+    end
+    for _, widget in ipairs(groups.bar or {}) do
+        SetWidgetShown(widget, mode == "bar")
+    end
+    for _, widget in ipairs(groups.number or {}) do
+        SetWidgetShown(widget, mode == "number")
+    end
+
+    if self.modeButtons then
+        HighlightModeButton(self.modeButtons.bar, mode == "bar")
+        HighlightModeButton(self.modeButtons.number, mode == "number")
+    end
+
+    if mode == "number" and self.colorGroups then
+        local colorByStack = cfg.colorByStack ~= false
+        SetColorGroupEnabled(self.colorGroups.stack, colorByStack)
+        SetColorGroupEnabled(self.colorGroups.flat, not colorByStack)
     end
 end
 
