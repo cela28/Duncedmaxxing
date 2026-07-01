@@ -99,10 +99,12 @@ local function CreateCheckbox(parent, text, x, y, getValue, setValue)
         check = check,
         get = getValue,
     })
+
+    return check, label
 end
 
 local function CreateInput(parent, text, x, y, width, getValue, setValue)
-    CreateText(parent, text, x, y - 2)
+    local label = CreateText(parent, text, x, y - 2)
 
     local editBox = CreateFrame("EditBox", nil, parent, "InputBoxTemplate")
     editBox:SetSize(width, 22)
@@ -136,6 +138,8 @@ local function CreateInput(parent, text, x, y, width, getValue, setValue)
         editBox = editBox,
         get = getValue,
     })
+
+    return editBox, label
 end
 
 function Options:CanChange()
@@ -176,6 +180,15 @@ function Options:SetMode(mode)
     RefreshTracker()
 end
 
+local function AddToGroup(group, ...)
+    for i = 1, select("#", ...) do
+        local widget = select(i, ...)
+        if widget then
+            table.insert(Options.widgetGroups[group], widget)
+        end
+    end
+end
+
 function Options:BuildWindow()
     if self.window then
         return
@@ -183,6 +196,9 @@ function Options:BuildWindow()
 
     self.inputs = {}
     self.checkboxes = {}
+    self.widgetGroups = { both = {}, bar = {}, number = {} }
+    self.modeButtons = {}
+    self.colorGroups = { flat = {}, stack = {} }
 
     local window = CreateFrame("Frame", "DuncedmaxxingOptionsWindow", UIParent)
     window:SetSize(386, 484)
@@ -244,19 +260,21 @@ function Options:BuildWindow()
         window:Hide()
     end)
 
-    self.modeText = CreateText(window, "Display: Bar", 16, -48, "GameFontNormal")
-    CreateButton(window, "Bar", 108, -43, 62, 22, function() self:SetMode("bar") end)
-    CreateButton(window, "Number", 244, -43, 72, 22, function() self:SetMode("number") end)
+    self.modeButtons.bar = CreateButton(window, "Bar", 16, -43, 62, 22, function() self:SetMode("bar") end)
+    self.modeButtons.number = CreateButton(window, "Number", 82, -43, 72, 22, function() self:SetMode("number") end)
 
-    CreateCheckbox(window, "Enabled", 14, -80,
+    local enabledCheck, enabledLabel = CreateCheckbox(window, "Enabled", 14, -80,
         function() return GetCfg().enabled end,
         function(value) GetCfg().enabled = value end)
-    CreateCheckbox(window, "Hide empty", 260, -80,
+    AddToGroup("both", enabledCheck, enabledLabel)
+    local hideEmptyCheck, hideEmptyLabel = CreateCheckbox(window, "Hide empty", 260, -80,
         function() return GetCfg().hideWhenEmpty end,
         function(value) GetCfg().hideWhenEmpty = value end)
+    AddToGroup("both", hideEmptyCheck, hideEmptyLabel)
 
-    CreateText(window, "Position", 16, -120, "GameFontNormal")
-    CreateInput(window, "X", 16, -148, 62,
+    local positionHeader = CreateText(window, "Position", 16, -120, "GameFontNormal")
+    AddToGroup("both", positionHeader)
+    local xInput, xLabel = CreateInput(window, "X", 16, -148, 62,
         function() return GetCfg().x end,
         function(value)
             local x = Clamp(value, -4000, 4000)
@@ -264,7 +282,8 @@ function Options:BuildWindow()
             GetCfg().x = x
             return true
         end)
-    CreateInput(window, "Y", 16, -178, 62,
+    AddToGroup("both", xInput, xLabel)
+    local yInput, yLabel = CreateInput(window, "Y", 16, -178, 62,
         function() return GetCfg().y end,
         function(value)
             local y = Clamp(value, -4000, 4000)
@@ -272,7 +291,8 @@ function Options:BuildWindow()
             GetCfg().y = y
             return true
         end)
-    CreateInput(window, "Scale", 16, -208, 62,
+    AddToGroup("both", yInput, yLabel)
+    local scaleInput, scaleLabel = CreateInput(window, "Scale", 16, -208, 62,
         function() return GetCfg().scale end,
         function(value)
             local scale = Clamp(value, 0.5, 2)
@@ -280,9 +300,11 @@ function Options:BuildWindow()
             GetCfg().scale = scale
             return true
         end)
+    AddToGroup("both", scaleInput, scaleLabel)
 
-    CreateText(window, "Bar", 16, -248, "GameFontNormal")
-    CreateInput(window, "Width", 16, -276, 62,
+    local barHeader = CreateText(window, "Bar", 16, -248, "GameFontNormal")
+    AddToGroup("bar", barHeader)
+    local widthInput, widthLabel = CreateInput(window, "Width", 16, -276, 62,
         function() return GetCfg().width end,
         function(value)
             local width = Clamp(value, 20, 2000)
@@ -290,7 +312,8 @@ function Options:BuildWindow()
             GetCfg().width = width
             return true
         end)
-    CreateInput(window, "Height", 16, -306, 62,
+    AddToGroup("bar", widthInput, widthLabel)
+    local heightInput, heightLabel = CreateInput(window, "Height", 16, -306, 62,
         function() return GetCfg().height end,
         function(value)
             local height = Clamp(value, 4, 200)
@@ -298,7 +321,8 @@ function Options:BuildWindow()
             GetCfg().height = height
             return true
         end)
-    CreateInput(window, "Border", 16, -336, 62,
+    AddToGroup("bar", heightInput, heightLabel)
+    local borderSizeInput, borderSizeLabel = CreateInput(window, "Border", 16, -336, 62,
         function() return GetCfg().borderSize end,
         function(value)
             local size = Clamp(value, 0, 10)
@@ -306,9 +330,11 @@ function Options:BuildWindow()
             GetCfg().borderSize = size
             return true
         end)
+    AddToGroup("bar", borderSizeInput, borderSizeLabel)
 
-    CreateText(window, "Other Modes", 204, -120, "GameFontNormal")
-    CreateInput(window, "Text size", 204, -148, 62,
+    local numberHeader = CreateText(window, "Number", 204, -120, "GameFontNormal")
+    AddToGroup("number", numberHeader)
+    local fontSizeInput, fontSizeLabel = CreateInput(window, "Text size", 204, -148, 62,
         function() return GetCfg().numberFontSize end,
         function(value)
             local size = Clamp(value, 8, 96)
@@ -316,17 +342,17 @@ function Options:BuildWindow()
             GetCfg().numberFontSize = size
             return true
         end)
+    AddToGroup("number", fontSizeInput, fontSizeLabel)
 
-    CreateText(window, "Colors", 204, -248, "GameFontNormal")
-    CreateInput(window, "Fill", 204, -276, 78,
-        function() return ColorToHex(GetCfg().fillColor) end,
-        function(value)
-            local color = ParseHexColor(value)
-            if not color then return false end
-            GetCfg().fillColor = color
-            return true
-        end)
-    CreateInput(window, "Border", 204, -306, 78,
+    local colorByStackCheck, colorByStackLabel = CreateCheckbox(window, "Color by stack", 204, -178,
+        function() return GetCfg().colorByStack end,
+        function(value) GetCfg().colorByStack = value end)
+    AddToGroup("number", colorByStackCheck, colorByStackLabel)
+
+    local colorsHeader = CreateText(window, "Colors", 204, -238, "GameFontNormal")
+    AddToGroup("bar", colorsHeader)
+    AddToGroup("number", colorsHeader)
+    local borderColorInput, borderColorLabel = CreateInput(window, "Border", 204, -264, 78,
         function() return ColorToHex(GetCfg().borderColor) end,
         function(value)
             local color = ParseHexColor(value)
@@ -334,15 +360,17 @@ function Options:BuildWindow()
             GetCfg().borderColor = color
             return true
         end)
-    CreateInput(window, "Text", 204, -336, 78,
-        function() return ColorToHex(GetCfg().textColor) end,
+    AddToGroup("both", borderColorInput, borderColorLabel)
+    local fillInput, fillLabel = CreateInput(window, "Fill", 204, -292, 78,
+        function() return ColorToHex(GetCfg().fillColor) end,
         function(value)
             local color = ParseHexColor(value)
             if not color then return false end
-            GetCfg().textColor = color
+            GetCfg().fillColor = color
             return true
         end)
-    CreateInput(window, "Empty %", 204, -366, 62,
+    AddToGroup("bar", fillInput, fillLabel)
+    local emptyPctInput, emptyPctLabel = CreateInput(window, "Empty %", 204, -320, 62,
         function() return math.floor((GetCfg().emptyColor.a or 0) * 100 + 0.5) end,
         function(value)
             local alpha = Clamp(value, 0, 100)
@@ -350,6 +378,32 @@ function Options:BuildWindow()
             GetCfg().emptyColor.a = alpha / 100
             return true
         end)
+    AddToGroup("bar", emptyPctInput, emptyPctLabel)
+
+    local textInput, textLabel = CreateInput(window, "Text", 204, -292, 78,
+        function() return ColorToHex(GetCfg().textColor) end,
+        function(value)
+            local color = ParseHexColor(value)
+            if not color then return false end
+            GetCfg().textColor = color
+            return true
+        end)
+    AddToGroup("number", textInput, textLabel)
+    table.insert(self.colorGroups.flat, { widget = textInput, label = textLabel })
+
+    local stackLabels = { [0] = "0 stacks", [1] = "1 stack", [2] = "2 stacks", [3] = "3 stacks" }
+    for stack = 0, 3 do
+        local stackInput, stackLabel = CreateInput(window, stackLabels[stack], 204, -320 - (stack * 22), 78,
+            function() return ColorToHex(GetCfg().stackColors[stack]) end,
+            function(value)
+                local color = ParseHexColor(value)
+                if not color then return false end
+                GetCfg().stackColors[stack] = color
+                return true
+            end)
+        AddToGroup("number", stackInput, stackLabel)
+        table.insert(self.colorGroups.stack, { widget = stackInput, label = stackLabel })
+    end
 
     CreateButton(window, "Unlock Bar", 16, -414, 86, 24, function()
         DMX:GetDB().locked = false
