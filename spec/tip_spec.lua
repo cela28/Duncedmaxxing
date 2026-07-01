@@ -646,4 +646,34 @@ describe("Tip:Update number mode color coding", function()
         assert.is_nil(rawget(Tip.numberText, "_textColor"),
             "bar mode should not set numberText color")
     end)
+
+    it("colorByStack ON: reflects an edited db.tip.stackColors[2] entry rather than a hardcoded value", function()
+        local db = DMX:GetDB()
+        db.tip.colorByStack = true
+        db.tip.stackColors[2] = { 0.5, 0.25, 0.75, 1 }
+        Tip.stacks = 2
+        Tip:Update()
+        assertColor(Tip.numberText._textColor, { 0.5, 0.25, 0.75, 1 },
+            "edited stackColors[2] should be reflected in the render, proving config-driven color")
+    end)
+
+    it("colorByStack OFF: applies the flat textColor fallback at 1 stack instead of the per-stack color", function()
+        local db = DMX:GetDB()
+        db.tip.colorByStack = false
+        db.tip.textColor = { r = 0.2, g = 0.4, b = 0.6, a = 1 }
+        Tip.stacks = 1
+        Tip:Update()
+        assertColor(Tip.numberText._textColor, { 0.2, 0.4, 0.6, 1 },
+            "1 stack with colorByStack OFF should use the flat textColor, not the per-stack green")
+    end)
+
+    it("colorByStack OFF: applies the same flat textColor fallback at 3 stacks", function()
+        local db = DMX:GetDB()
+        db.tip.colorByStack = false
+        db.tip.textColor = { r = 0.2, g = 0.4, b = 0.6, a = 1 }
+        Tip.stacks = 3
+        Tip:Update()
+        assertColor(Tip.numberText._textColor, { 0.2, 0.4, 0.6, 1 },
+            "3 stacks with colorByStack OFF should use the flat textColor, not the per-stack red")
+    end)
 end)
