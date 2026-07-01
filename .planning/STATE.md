@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 05
+current_phase: 06
+current_phase_name: options-panel-v2-per-mode-visibility-configurable-stack-colo
 status: executing
 stopped_at: Phase 6 context gathered
-last_updated: "2026-07-01T21:03:35.298Z"
-last_activity: 2026-06-24
-last_activity_desc: "Completed quick task 260624-0hx: slash interface settings-only + README de-bloat"
+last_updated: "2026-07-01T21:09:57.465Z"
+last_activity: 2026-07-01
+last_activity_desc: Phase 06 execution started
 progress:
   total_phases: 7
   completed_phases: 6
-  total_plans: 14
-  completed_plans: 14
+  total_plans: 17
+  completed_plans: 15
   percent: 86
-current_phase_name: refactor-display-modes-remove-icon-mode-and-add-a-bar-text-m
 ---
 
 # Project State
@@ -24,14 +24,14 @@ current_phase_name: refactor-display-modes-remove-icon-mode-and-add-a-bar-text-m
 See: .planning/PROJECT.md (updated 2026-06-17)
 
 **Core value:** Accurate, instant stack display during combat
-**Current focus:** Phase 05 — refactor-display-modes-remove-icon-mode-and-add-a-bar-text-m
+**Current focus:** Phase 06 — options-panel-v2-per-mode-visibility-configurable-stack-colo
 
 ## Current Position
 
-Phase: 05
-Plan: Not started
+Phase: 06 (options-panel-v2-per-mode-visibility-configurable-stack-colo) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-06-24 — Completed quick task 260624-0hx: slash interface settings-only + README de-bloat
+Last activity: 2026-07-01 — Phase 06 execution started
 
 Progress: [██████████] 100%
 
@@ -63,6 +63,7 @@ Progress: [██████████] 100%
 | Phase 02-test-framework-and-core-logic-tests P03 | 15min | 2 tasks | 4 files |
 | Phase 01 P03 | 3min | - tasks | - files |
 | Phase 05 P01 | 12 | 3 tasks | 3 files |
+| Phase 06 P01 | 3min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,8 @@ Recent decisions affecting current work:
 - [Phase ?]: hasPrimalSurge field added to Tip module table; reserved for future HasPrimalSurge() wiring when ID is confirmed
 - [Phase ?]: Remove icons mode entirely — persisted icons/icon values normalize to bar via NormalizeDB
 - [Phase ?]: Bar else-branch is the catch-all in RefreshLayout and Update for any unknown displayMode value
+- [Phase ?]: stackColors stored as array-indexed RGBA tuples (matching STACK_COLORS shape), not r/g/b/a keys — ColorTuple reads both shapes
+- [Phase ?]: cfg.colorByStack == nil treated as ON (only explicit false disables per-stack coloring)
 
 ### Roadmap Evolution
 
@@ -121,6 +124,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-07-01T20:44:12.932Z
+Last session: 2026-07-01T21:09:38.075Z
 Stopped at: Phase 6 context gathered
 Resume file: .planning/phases/06-options-panel-v2-per-mode-visibility-configurable-stack-colo/06-CONTEXT.md

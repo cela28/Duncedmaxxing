@@ -56,7 +56,7 @@ Requirements for the polish milestone. Each maps to roadmap phases.
 - [x] **DISP-03**: The now-orphaned `iconSize`/`iconSpacing` settings are removed from `DEFAULTS` and from the Options window — no display mode reads them after icon removal.
 - [x] **DISP-04**: Test suite updated — icon-mode assertions removed; `bar` and `number` display-mode coverage retained and passing via the fengari (Lua-VM-in-JS) harness.
 - [ ] **DISP-05**: The Options window gates widget visibility by active display mode — Bar-only controls (Width, Height, Border size, Fill, Empty %) hide in Number mode; Number-only controls (Text size + all stack-color controls) hide in Bar mode; Position/Enabled/Hide empty/Border color show in both. Switching modes updates visibility immediately with no Lua error and no combat-lockdown violation.
-- [ ] **DISP-06**: Per-stack number colors are user-configurable via a "Color by stack" toggle plus 4 per-stack color pickers (stacks 0–3), persisted in SavedVariables. Toggle ON (default) applies the 4 configurable colors (defaults byte-for-byte match today's hardcoded `STACK_COLORS`); toggle OFF applies the single flat `textColor`. The hardcoded `STACK_COLORS` read in the number-mode render path is replaced by a config read. A fresh/legacy DB default-merges the new fields with no settings wipe and no Lua error.
+- [x] **DISP-06**: Per-stack number colors are user-configurable via a "Color by stack" toggle plus 4 per-stack color pickers (stacks 0–3), persisted in SavedVariables. Toggle ON (default) applies the 4 configurable colors (defaults byte-for-byte match today's hardcoded `STACK_COLORS`); toggle OFF applies the single flat `textColor`. The hardcoded `STACK_COLORS` read in the number-mode render path is replaced by a config read. A fresh/legacy DB default-merges the new fields with no settings wipe and no Lua error.
 - [ ] **DISP-07**: The mode-selector layout bug is fixed — the "Display:" text label is removed and the active mode button (Bar/Number) is visually highlighted instead, eliminating the label/Bar-button overlap. The window stays a fixed size on mode switch (hidden controls leave empty space, no reflow).
 
 ## v2 Requirements
@@ -118,7 +118,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DISP-03 | Phase 5 | Complete |
 | DISP-04 | Phase 5 | Complete |
 | DISP-05 | Phase 6 | Pending |
-| DISP-06 | Phase 6 | Pending |
+| DISP-06 | Phase 6 | Complete |
 | DISP-07 | Phase 6 | Pending |
 
 **Coverage:**

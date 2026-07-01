@@ -235,12 +235,12 @@ Plans:
   6. A fresh/legacy DB loads cleanly — the new color/toggle fields default correctly with no settings wipe and no Lua error.
   7. The test suite passes via the fengari harness, with new coverage for config-driven stack colors and the color-by-stack toggle fallback.
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 06-01-PLAN.md — Data layer: add colorByStack + nested stackColors defaults to DEFAULTS.tip (Core.lua) and swap the number-mode render to a config-driven per-stack color read with flat textColor fallback (TipOfTheSpear.lua) — DISP-06 foundation
+- [x] 06-01-PLAN.md — Data layer: add colorByStack + nested stackColors defaults to DEFAULTS.tip (Core.lua) and swap the number-mode render to a config-driven per-stack color read with flat textColor fallback (TipOfTheSpear.lua) — DISP-06 foundation
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
