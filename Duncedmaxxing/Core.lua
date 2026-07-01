@@ -26,6 +26,13 @@ local DEFAULTS = {
         emptyColor = { r = 0, g = 0, b = 0, a = 0.5 },
         borderColor = { r = 0, g = 0, b = 0, a = 1 },
         textColor = { r = 1, g = 1, b = 1, a = 1 },
+        colorByStack = true,
+        stackColors = {
+            [0] = { 1, 1, 1, 1 },
+            [1] = { 0.18039, 0.80000, 0.44314, 1 },
+            [2] = { 1, 0.94118, 0, 1 },
+            [3] = { 1, 0.29804, 0.18824, 1 },
+        },
         optionsX = 360,
         optionsY = 170,
     },
