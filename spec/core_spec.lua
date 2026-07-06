@@ -52,8 +52,8 @@ describe("MergeDefaults", function()
         local result = DMX._test.MergeDefaults(DMX.defaults, {})
         assert.is_true(result.tip.colorByStack)
         for i = 0, 3 do
-            for j = 1, 4 do
-                assert.near(DMX.defaults.tip.stackColors[i][j], result.tip.stackColors[i][j], 0.00001)
+            for _, key in ipairs({"r", "g", "b", "a"}) do
+                assert.near(DMX.defaults.tip.stackColors[i][key], result.tip.stackColors[i][key], 0.00001)
             end
         end
     end)
@@ -64,10 +64,10 @@ describe("MergeDefaults", function()
     end)
 
     it("preserves an edited stackColors[1] entry instead of overwriting with the default", function()
-        local edited = {0.9, 0.1, 0.1, 1}
+        local edited = {r = 0.9, g = 0.1, b = 0.1, a = 1}
         local result = DMX._test.MergeDefaults(DMX.defaults, {tip = {stackColors = {[1] = edited}}})
-        for j = 1, 4 do
-            assert.near(edited[j], result.tip.stackColors[1][j], 0.00001)
+        for _, key in ipairs({"r", "g", "b", "a"}) do
+            assert.near(edited[key], result.tip.stackColors[1][key], 0.00001)
         end
     end)
 end)
@@ -172,7 +172,7 @@ describe("NormalizeDB — already migrated branch (settingsMigration matches)", 
 
     local function migratedDB(tipOverrides)
         local db = {
-            settingsMigration = "0.3.2-fontfix",
+            settingsMigration = "0.3.3-stackcolorfmt",
             tip = {
                 enabled          = true,
                 hideWhenEmpty    = false,
@@ -205,7 +205,7 @@ describe("NormalizeDB — already migrated branch (settingsMigration matches)", 
     it("skips migration: settingsMigration remains unchanged", function()
         local db = migratedDB()
         DMX._test.NormalizeDB(db)
-        assert.equals("0.3.2-fontfix", db.settingsMigration)
+        assert.equals("0.3.3-stackcolorfmt", db.settingsMigration)
     end)
 end)
 
@@ -218,7 +218,7 @@ describe("MergeDefaults + NormalizeDB — legacy DB gains colorByStack/stackColo
 
     local function legacyMigratedDB()
         return {
-            settingsMigration = "0.3.2-fontfix",
+            settingsMigration = "0.3.3-stackcolorfmt",
             tip = {
                 enabled          = true,
                 hideWhenEmpty    = false,
@@ -252,8 +252,8 @@ describe("MergeDefaults + NormalizeDB — legacy DB gains colorByStack/stackColo
         assert.is_table(db.tip.stackColors)
         for i = 0, 3 do
             assert.is_table(db.tip.stackColors[i])
-            for j = 1, 4 do
-                assert.near(DMX.defaults.tip.stackColors[i][j], db.tip.stackColors[i][j], 0.00001)
+            for _, key in ipairs({"r", "g", "b", "a"}) do
+                assert.near(DMX.defaults.tip.stackColors[i][key], db.tip.stackColors[i][key], 0.00001)
             end
         end
 
@@ -265,7 +265,7 @@ describe("MergeDefaults + NormalizeDB — legacy DB gains colorByStack/stackColo
         assert.equals(true,     db.tip.enabled)
 
         -- No migration bump — already at current settingsMigration.
-        assert.equals("0.3.2-fontfix", db.settingsMigration)
+        assert.equals("0.3.3-stackcolorfmt", db.settingsMigration)
     end)
 end)
 
@@ -278,7 +278,7 @@ describe("NormalizeDB — deprecated fields ignored post-migration (QUAL-03)", f
 
     local function migratedDB(tipOverrides)
         local db = {
-            settingsMigration = "0.3.2-fontfix",
+            settingsMigration = "0.3.3-stackcolorfmt",
             tip = {
                 enabled    = true,
                 displayMode = "bar",
@@ -348,7 +348,7 @@ describe("NormalizeDB — displayMode validation (always runs)", function()
 
     local function migratedDB(displayMode)
         return {
-            settingsMigration = "0.3.2-fontfix",
+            settingsMigration = "0.3.3-stackcolorfmt",
             tip = {
                 enabled    = true,
                 displayMode = displayMode,
