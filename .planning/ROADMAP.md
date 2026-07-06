@@ -235,7 +235,7 @@ Plans:
   6. A fresh/legacy DB loads cleanly — the new color/toggle fields default correctly with no settings wipe and no Lua error.
   7. The test suite passes via the fengari harness, with new coverage for config-driven stack colors and the color-by-stack toggle fallback.
 
-**Plans:** 6/6 plans complete
+**Plans:** 6/8 plans complete (2 gap-closure plans pending re-verification)
 
 Plans:
 **Wave 1**
@@ -257,3 +257,10 @@ Plans:
 *Wave 2 (blocked on 06-04)*
 
 - [x] 06-06-PLAN.md — Options panel layout rebalance: reclaim Bar-mode dead region, close vacated rows, even section spacing, optionally tighten window height (DISP-07)
+
+**Gap closure (from 06-VERIFICATION re-verification)**
+
+*Wave 1 (parallel — no file overlap)*
+
+- [ ] 06-07-PLAN.md — SC-6 BLOCKER fix: replace NormalizeDB's blanket tip-wipe with a targeted stackColors re-seed (StackColorsAreLegacyFormat) so the migration-token bump no longer discards user customizations; add a regression test on the old v1.0.0 token (DISP-06)
+- [ ] 06-08-PLAN.md — SC-1/SC-2 override records: formally accept the removed Enabled checkbox, bar-only Border color, and button-only mode switching in 06-VERIFICATION.md; align ROADMAP/REQUIREMENTS wording (DISP-05, DISP-07)
