@@ -6,15 +6,15 @@ current_phase: 06
 current_phase_name: options-panel-v2-per-mode-visibility-configurable-stack-colo
 status: executing
 stopped_at: Completed 06-06-PLAN.md
-last_updated: "2026-07-06T22:07:38.009Z"
+last_updated: "2026-07-06T22:12:32.715Z"
 last_activity: 2026-07-06
 last_activity_desc: Phase 06 execution started
 progress:
   total_phases: 7
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 22
-  completed_plans: 21
-  percent: 86
+  completed_plans: 22
+  percent: 100
 ---
 
 # Project State
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-17)
 ## Current Position
 
 Phase: 06 (options-panel-v2-per-mode-visibility-configurable-stack-colo) — EXECUTING
-Plan: 2 of 8
+Plan: 3 of 8
 Status: Ready to execute
 Last activity: 2026-07-06 — Phase 06 execution started
 
@@ -70,6 +70,7 @@ Progress: [██████████] 100%
 | Phase 06 P05 | 4min | 2 tasks | 2 files |
 | Phase 06 P06 | 10min | 1 tasks | 1 files |
 | Phase 06 P07 | 5min | 2 tasks | 2 files |
+| Phase 06 P08 | 5min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -103,6 +104,7 @@ Recent decisions affecting current work:
 - [Phase ?]: 06-06: Overlapped Bar-section and Number-section widgets (and their headers) at the same left-column row coordinates, and bar color fields with number text/stack color fields at the same right-column row coordinates, since each pair is mutually exclusive by displayMode
 - [Phase ?]: 06-06: Shrunk options-panel window height 484 -> 400 (width unchanged) after collapsing mutually-exclusive mode sections onto shared row coordinates
 - [Phase ?]: 06-07: NormalizeDB migration branch re-seeds only stackColors (via StackColorsAreLegacyFormat) instead of blanket CopyDefaults(DEFAULTS.tip) overwrite, fixing SC-6 settings wipe on token bump
+- [Phase ?]: 06-08: Recorded formal overrides for SC-1/SC-2 in 06-VERIFICATION.md (Enabled checkbox removal + Border color bar-only regrouping; button-only mode switching) and aligned ROADMAP/REQUIREMENTS wording
 
 ### Roadmap Evolution
 
@@ -144,6 +146,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-07-06T22:07:10.610Z
+Last session: 2026-07-06T22:11:41.077Z
 Stopped at: Completed 06-06-PLAN.md
 Resume file: None

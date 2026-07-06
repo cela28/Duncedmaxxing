@@ -96,3 +96,10 @@ None - no external service configuration required.
 ---
 *Phase: 06-options-panel-v2-per-mode-visibility-configurable-stack-colo*
 *Completed: 2026-07-06*
+
+## Self-Check: PASSED
+
+- FOUND: `.planning/phases/06-options-panel-v2-per-mode-visibility-configurable-stack-colo/06-VERIFICATION.md`
+- FOUND: `.planning/phases/06-options-panel-v2-per-mode-visibility-configurable-stack-colo/06-08-SUMMARY.md`
+- FOUND commit: `a0ff670`
+- FOUND commit: `91388c9`
