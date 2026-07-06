@@ -4,17 +4,17 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 06
 current_phase_name: options-panel-v2-per-mode-visibility-configurable-stack-colo
-status: verifying
-stopped_at: Phase 6 context gathered
-last_updated: "2026-07-01T21:23:46.994Z"
-last_activity: 2026-07-01
+status: executing
+stopped_at: Completed 06-04-PLAN.md
+last_updated: "2026-07-06T20:55:49.150Z"
+last_activity: 2026-07-06
 last_activity_desc: Phase 06 execution started
 progress:
   total_phases: 7
-  completed_phases: 7
-  total_plans: 17
-  completed_plans: 17
-  percent: 100
+  completed_phases: 6
+  total_plans: 20
+  completed_plans: 18
+  percent: 86
 ---
 
 # Project State
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-06-17)
 ## Current Position
 
 Phase: 06 (options-panel-v2-per-mode-visibility-configurable-stack-colo) — EXECUTING
-Plan: 3 of 3
-Status: Phase complete — ready for verification
-Last activity: 2026-07-01 — Phase 06 execution started
+Plan: 2 of 6
+Status: Ready to execute
+Last activity: 2026-07-06 — Phase 06 execution started
 
 Progress: [██████████] 100%
 
@@ -66,6 +66,7 @@ Progress: [██████████] 100%
 | Phase 06 P01 | 3min | 2 tasks | 2 files |
 | Phase 06 P02 | 8min | 2 tasks | 1 files |
 | Phase 06 P03 | 5min | 2 tasks | 2 files |
+| Phase 06 P04 | 5min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -92,6 +93,9 @@ Recent decisions affecting current work:
 - [Phase ?]: Unrecognized displayMode values fall back to bar visibility in Options:Refresh, mirroring the Phase 5 bar-catch-all convention
 - [Phase ?]: Used pcall + assert.is_true instead of assert.has_no.errors since the project's minimal assert shim does not implement busted's full assertion API
 - [Phase ?]: Added a dedicated legacy-DB describe block for the MergeDefaults->NormalizeDB no-wipe pipeline case, isolating it from the narrower single-function NormalizeDB tests
+- [Phase ?]: Scale and Border color reassigned to the existing bar-only widget group in Options.lua
+- [Phase ?]: Enabled checkbox UI control removed while DEFAULTS.tip.enabled = true kept for the shouldShow gate and core_spec assertions
+- [Phase ?]: Position Reset button and its sole caller Tip:ResetPosition deleted together after confirming no other references exist
 
 ### Roadmap Evolution
 
@@ -131,6 +135,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-07-01T21:22:57.508Z
-Stopped at: Phase 6 context gathered
-Resume file: .planning/phases/06-options-panel-v2-per-mode-visibility-configurable-stack-colo/06-CONTEXT.md
+Last session: 2026-07-06T20:55:49.144Z
+Stopped at: Completed 06-04-PLAN.md
+Resume file: None
