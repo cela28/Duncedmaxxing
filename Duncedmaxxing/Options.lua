@@ -417,12 +417,6 @@ function Options:BuildWindow()
             tip:SetTestStacks(3)
         end
     end)
-    CreateButton(window, "Reset", 270, -414, 70, 24, function()
-        local tip = DMX:GetModule("tip")
-        if tip and tip.ResetPosition then
-            tip:ResetPosition()
-        end
-    end)
     CreateButton(window, "Reset Style", 16, -444, 96, 24, function()
         if DMX.ResetTipStyle then
             DMX:ResetTipStyle()

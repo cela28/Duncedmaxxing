@@ -548,14 +548,6 @@ function Tip:ApplyLock()
     label:SetShown(unlocked)
 end
 
-function Tip:ResetPosition()
-    local cfg = DMX:GetDB().tip
-    cfg.x = DMX.defaults.tip.x
-    cfg.y = DMX.defaults.tip.y
-    cfg.scale = DMX.defaults.tip.scale
-    self:RefreshLayout()
-end
-
 function Tip:SetTestStacks(stacks)
     self.testMode = true
     self.testStacks = ClampStacks(stacks)
