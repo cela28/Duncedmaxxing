@@ -227,8 +227,8 @@ Plans:
 **Depends on:** Phase 5
 **Success Criteria** (what must be TRUE):
 
-  1. In Bar mode the panel shows Width, Height, Border size, Fill, Empty % and hides Text size and all stack-color controls; in Number mode it shows Text size and stack-color controls and hides the Bar-only controls. Position, Enabled, Hide empty, and Border color are visible in both modes.
-  2. Switching modes (via buttons or `/dmax mode ...`) updates widget visibility immediately with no Lua error.
+  1. In Bar mode the panel shows Width, Height, Border size, Fill, Empty % and hides Text size and all stack-color controls; in Number mode it shows Text size and stack-color controls and hides the Bar-only controls. Position and Hide empty are visible in both modes; Border color is a Bar-only control (the Enabled checkbox was removed from the panel entirely) — accepted deviation, see 06-VERIFICATION.md overrides / 06-UAT.md tests 1-2.
+  2. Switching modes is button-only (Bar/Number buttons via `Options:SetMode`) and updates widget visibility immediately with no Lua error; slash-command mode switching was intentionally dropped per user direction — accepted deviation, see 06-VERIFICATION.md overrides / 06-UAT.md test 2.
   3. A "Color by stack" toggle plus 4 per-stack color inputs exist and persist in SavedVariables; editing a stack color changes that stack's number color in-game.
   4. With the toggle ON, per-stack colors are applied (defaults match today's green/yellow/red/white); with it OFF, the number uses the single flat `textColor`.
   5. The "Display:" label no longer overlaps the Bar button in either mode.
