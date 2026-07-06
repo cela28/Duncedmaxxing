@@ -2,17 +2,15 @@
 phase: 06-options-panel-v2-per-mode-visibility-configurable-stack-colo
 reviewed: 2026-07-07T00:00:00Z
 depth: standard
-files_reviewed: 4
+files_reviewed: 2
 files_reviewed_list:
-  - Duncedmaxxing/Options.lua
-  - Duncedmaxxing/Modules/TipOfTheSpear.lua
   - Duncedmaxxing/Core.lua
   - spec/core_spec.lua
 findings:
   critical: 1
-  warning: 5
+  warning: 2
   info: 2
-  total: 8
+  total: 5
 status: issues_found
 ---
 
@@ -20,142 +18,169 @@ status: issues_found
 
 **Reviewed:** 2026-07-07T00:00:00Z
 **Depth:** standard
-**Files Reviewed:** 4
+**Files Reviewed:** 2
 **Status:** issues_found
 
 ## Summary
 
-Reviewed the gap-closure changes from plans 06-04 (widget removal + per-mode visibility in `Options.lua`, orphaned `Tip:ResetPosition` removal), 06-05 (`stackColors` defaults converted to named-key form + `SETTINGS_MIGRATION` bump in `Core.lua`, `core_spec.lua` assertions updated), and 06-06 (options-panel layout rebalance in `Options.lua`).
+Reviewed the phase 06-07 gap-closure change: the `NormalizeDB` settings-migration fix
+that replaced a blanket `CopyDefaults(DEFAULTS.tip)` wipe with a targeted `stackColors`
+re-seed gated by a new `StackColorsAreLegacyFormat` helper, plus the SC-6 regression test.
 
-The per-mode visibility regrouping (Scale/Border color → bar-only, Text size/Color-by-stack/stack pickers → number-only) is wired correctly through the existing `AddToGroup`/`SetWidgetShown` engine, and the 06-06 layout rebalance does not introduce any widget coordinate collisions — I traced every `SetPoint` pair in both columns and all mutually-exclusive bar/number rows are genuinely mutually exclusive at runtime. `core_spec.lua`'s new named-key assertions correctly match the new `DEFAULTS.tip.stackColors` shape, and `ColorTuple`/`ParseHexColor` consistently produce/consume the same `{r,g,b,a}` shape end to end.
+The migration logic reads plausibly in isolation, but it is broken **in the actual
+production initialization path**. On `ADDON_LOADED` (`Core.lua:206-207`) the addon always
+calls `MergeDefaults(DEFAULTS, DuncedmaxxingDB)` *before* `NormalizeDB(DuncedmaxxingDB)`.
+`MergeDefaults` deep-recurses into legacy array-format `stackColors` entries and injects
+`.r/.g/.b/.a` keys into them. By the time `NormalizeDB` runs, `StackColorsAreLegacyFormat`
+sees a non-nil `.r` and returns `false`, so the targeted reseed at `Core.lua:90` **never
+executes for any real legacy DB**. The SC-6 regression test does not catch this because it
+invokes `NormalizeDB` directly and skips the mandatory `MergeDefaults` step — so it exercises
+the reseed branch under conditions that never occur at runtime.
 
-However, I found one BLOCKER: the `SETTINGS_MIGRATION` version bump in `Core.lua` triggers `NormalizeDB`'s full-tip-wipe migration branch for every user who is not already on `"0.3.3-stackcolorfmt"`, and that branch overwrites every `tip.*` field (display mode, colors, width/height/border, `hideWhenEmpty`, `colorByStack`, `enabled`, stack colors) with fresh defaults, preserving only position/scale/options-window-position. This is real, reproducible data loss for any existing user who customized anything beyond position — not a hypothetical edge case, but the direct, guaranteed effect of this phase's migration bump landing in production. I also found a genuine functional regression from 06-04's "Scale → bar-only" regrouping: `cfg.scale` is still applied to the frame in Number mode (`TipOfTheSpear.lua:492`), but the Scale control is now hidden whenever Number mode is active, so a non-1.0 scale value cannot be corrected from within the mode it visibly affects.
+I confirmed this empirically with a fengari probe replicating the production call order:
+`stackColors[1].r` came out `0.18039` (the default) with the user's custom `0.9` value
+discarded, and the legacy junk array key `stackColors[1][1] = 0.9` survived untouched.
 
 ## Critical Issues
 
-### CR-01: `SETTINGS_MIGRATION` bump silently wipes all user tip customization except position/scale on next login
+### CR-01: Targeted `stackColors` reseed is dead code in production; regression test does not reproduce the real init path
 
-**File:** `Duncedmaxxing/Core.lua:75-94`
+**File:** `Duncedmaxxing/Core.lua:85-98`, `Duncedmaxxing/Core.lua:206-207`, `spec/core_spec.lua:200-217`
 **Issue:**
+The production bootstrap runs migration in this fixed order (`Core.lua:206-207`):
+
 ```lua
-if db.settingsMigration ~= SETTINGS_MIGRATION then
-    local x, y, scale = tip.x, tip.y, tip.scale
-    local optionsX, optionsY = tip.optionsX, tip.optionsY
-    local fresh = CopyDefaults(DEFAULTS.tip)
-
-    for key, value in pairs(fresh) do
-        tip[key] = value
-    end
-
-    tip.x = x or fresh.x
-    tip.y = y or fresh.y
-    tip.scale = scale or fresh.scale
-    tip.optionsX = optionsX or fresh.optionsX
-    tip.optionsY = optionsY or fresh.optionsY
-    ...
+DuncedmaxxingDB = MergeDefaults(DEFAULTS, DuncedmaxxingDB)  -- runs FIRST
+NormalizeDB(DuncedmaxxingDB)                                -- runs SECOND
 ```
-`SETTINGS_MIGRATION` was bumped from `"0.3.2-fontfix"` to `"0.3.3-stackcolorfmt"` in this phase specifically to re-seed the old positional-array `stackColors` into the new named-key form. But the migration mechanism does not do a targeted `stackColors` fix — it overwrites the *entire* `tip` table with `CopyDefaults(DEFAULTS.tip)` and then restores only 5 fields (`x`, `y`, `scale`, `optionsX`, `optionsY`). Every other customization a user made through the Options panel — `displayMode` ("number" reverts to "bar"), `width`, `height`, `borderSize`, `fillColor`, `emptyColor`, `borderColor`, `textColor`, `hideWhenEmpty`, `colorByStack`, all 4 `stackColors` entries, and `enabled` — is silently discarded and replaced with stock defaults the next time the addon loads after this update, with no warning, no backup, and no way to undo. This will visibly reset every existing user's tracker to factory settings on update.
-**Fix:** Do a targeted re-seed of only the field whose *shape* actually changed, instead of nuking the whole `tip` table:
+
+`MergeDefaults` deep-recurses into `stackColors` and, for each legacy array entry such as
+`[0] = {1,1,1,1}`, fills the missing `.r/.g/.b/.a` keys from `DEFAULTS.tip.stackColors`
+(it only skips keys that are already non-nil, and the numeric array indices `[1]..[4]` do
+not collide with the string keys `r/g/b/a`). The legacy entry becomes a *mixed* table:
+`{ [1]=1,[2]=1,[3]=1,[4]=1, r=1,g=1,b=1,a=1 }`.
+
+`NormalizeDB` then evaluates `StackColorsAreLegacyFormat`:
+
+```lua
+return first.r == nil and first[1] ~= nil   -- first.r is now 1, so this is FALSE
+```
+
+so the reseed at `Core.lua:89-91` is skipped for every real legacy DB. The branch that
+plan 06-07 added is therefore **dead in the production path**. Confirmed with a fengari
+probe using the exact production order:
+
+```
+>>> stackColors[1].r after prod flow = 0.18039   (default green; user's custom 0.9 lost)
+>>> stackColors[1][1] (junk array key) = 0.9      (legacy array index never cleaned)
+>>> RESEED DID NOT RUN — junk array keys survived (dead branch confirmed)
+```
+
+The SC-6 regression test (`spec/core_spec.lua:200-217`) "passes" only because it calls
+`DMX._test.NormalizeDB(db)` directly on a raw legacy table **without first calling
+`MergeDefaults`** — the opposite of what production does. It therefore gives false
+confidence that the migration repairs legacy `stackColors`, when in fact the reseed can
+never fire at runtime. Observable production consequences:
+1. The 06-07 fix does not do what the plan claims — the reseed is unreachable.
+2. Legacy junk array keys (`[1]..[4]`) persist permanently in SavedVariables (the
+   migration token is bumped once, so they are never cleaned on later loads).
+3. Rendered colors happen to be correct-looking (defaults, filled by `MergeDefaults`),
+   which masks the defect and makes it hard to notice.
+
+**Fix:** Make the migration reflect the real call order. Either detect legacy format
+*before* `MergeDefaults` runs, or make the helper robust to the mixed table `MergeDefaults`
+produces, and have the regression test replicate production order. Minimal option — run the
+reseed check against the mixed shape by testing for a lingering numeric index:
+
 ```lua
 local function StackColorsAreLegacyFormat(stackColors)
-    local sample = stackColors and stackColors[0]
-    return type(sample) == "table" and sample.r == nil and sample[1] ~= nil
-end
-
-local function NormalizeDB(db)
-    local tip = db.tip
-
-    if StackColorsAreLegacyFormat(tip.stackColors) then
-        tip.stackColors = CopyDefaults(DEFAULTS.tip.stackColors)
+    if type(stackColors) ~= "table" then
+        return false
     end
-
-    if db.settingsMigration ~= SETTINGS_MIGRATION then
-        tip.barWidth = nil
-        tip.barHeight = nil
-        tip.spacing = nil
-        db.settingsMigration = SETTINGS_MIGRATION
+    local first = stackColors[0]
+    if type(first) ~= "table" then
+        return false
     end
-
-    if tip.displayMode ~= "bar" and tip.displayMode ~= "number" then
-        tip.displayMode = DEFAULTS.tip.displayMode
-    end
+    -- After MergeDefaults, legacy entries carry BOTH .r and stale array keys.
+    return first[1] ~= nil
 end
 ```
-This preserves every field the user actually customized and only repairs the one field whose format is provably broken, while still bumping `settingsMigration` so the fix runs exactly once. (Note: this also requires updating the `core_spec.lua` migration-branch tests, which currently assert a full wipe-and-restore.)
+
+and update the regression test to mirror `Core.lua:206-207`:
+
+```lua
+DMX._test.MergeDefaults(DMX.defaults, db)  -- production runs this first
+DMX._test.NormalizeDB(db)
+-- assert the stale numeric array keys are gone after reseed:
+assert.is_nil(db.tip.stackColors[0][1])
+assert.is_nil(db.tip.stackColors[1][1])
+```
 
 ## Warnings
 
-### WR-01: `cfg.scale` still applies to Number mode, but the Scale control was moved to the bar-only visibility group
+### WR-01: `StackColorsAreLegacyFormat` only inspects index `[0]`
 
-**File:** `Duncedmaxxing/Options.lua:307-315` (Scale registered `AddToGroup("bar", ...)`) vs `Duncedmaxxing/Modules/TipOfTheSpear.lua:489-495`
-**Issue:** Plan 06-04 moved the Scale input into the bar-only widget group so it hides while the panel is in Number mode (per UAT feedback "we do not need... scale" for text mode). But `Tip:RefreshLayout()`'s Number-mode branch still calls `root:SetScale(cfg.scale or 1)`:
+**File:** `Duncedmaxxing/Core.lua:72-83`
+**Issue:** The helper decides the format of the entire `stackColors` table from a single
+probe of `stackColors[0]`. If a stored DB has `[0]` missing or already in new format while
+`[1]`/`[2]`/`[3]` are still legacy array format (e.g. a partially hand-edited or
+partially-migrated SavedVariables file), the function returns `false` and leaves the legacy
+entries unrepaired. Combined with CR-01 this compounds the risk of stale mixed-format data.
+**Fix:** Scan the entries that actually exist rather than trusting `[0]` alone, e.g. iterate
+`for i = 0, 3 do` and treat the table as legacy if any present entry has a numeric `[1]`
+element and no `.r`. Guard against `[0]` being absent.
+
+### WR-02: Legacy user color customizations are silently discarded rather than remapped
+
+**File:** `Duncedmaxxing/Core.lua:89-91`
+**Issue:** The legacy array format stores components positionally as `{r, g, b, a}`
+(`spec/core_spec.lua:188-193` shows `[1] = { 0.18039, 0.8, 0.44314, 1 }`), so the data is
+fully recoverable. The reseed instead overwrites with `CopyDefaults(DEFAULTS.tip.stackColors)`,
+throwing away any user-customized legacy colors. For a user who tuned their stack colors in
+the old format this is a silent data loss on upgrade. (In today's broken production path the
+loss happens anyway via `MergeDefaults` defaults — see CR-01 — but once CR-01 is fixed the
+reseed itself will still discard recoverable data.)
+**Fix:** Remap positional array entries into the new keyed shape instead of dropping them:
+
 ```lua
-if mode == "number" then
-    local fontSize = tonumber(cfg.numberFontSize) or 22
-    root:SetSize(fontSize * 2, fontSize + 4)
-    root:SetScale(cfg.scale or 1)   -- still reads the shared scale value
-    ...
-```
-`cfg.scale` is a single value shared between both display modes — it is not mode-scoped. A user who sets Scale to, say, 1.5 while in Bar mode and then switches to Number mode will see the number display rendered 1.5x larger than the "Text size" control implies, with no way to see or correct that from the Number-mode view of the panel (Scale is hidden). The only workaround is switching back to Bar mode, which is not discoverable from the Number-mode UI.
-**Fix:** Either keep Scale in the shared (`"both"`) group since it demonstrably affects both render paths, or stop applying `cfg.scale` in the Number branch and rely solely on `numberFontSize` for that mode's sizing (decoupling the two modes' scale semantics entirely). Silently hiding a control that still has an effect is the wrong fix for the UAT complaint.
-
-### WR-02: Removing the Enabled checkbox leaves no UI path to recover a legacy `enabled = false` state
-
-**File:** `Duncedmaxxing/Options.lua` (checkbox deleted in 06-04) vs `Duncedmaxxing/Modules/TipOfTheSpear.lua:587`
-**Issue:** `shouldShow = unlocked or self.testMode or (cfg.enabled and self.isSurvival)` still gates visibility on `cfg.enabled`, and `DEFAULTS.tip.enabled = true` is preserved per the 06-04 plan. However, any returning user whose `SavedVariables` already has `tip.enabled = false` (set via the now-removed checkbox, or the slash command that was removed even earlier) has no remaining way to set it back to `true` — there is no checkbox, no slash command, and `MergeDefaults` will never touch an already-non-nil `false` value. The only recovery path is "Reset Style", which (per CR-01) already wipes far more than intended, or manually editing the `WTF` SavedVariables file. A first-time user is unaffected (default is `true`), but this is a real dead-end for anyone upgrading from a version where the checkbox existed and was unchecked.
-**Fix:** Either force `tip.enabled = true` unconditionally in `NormalizeDB` (since there is no longer any legitimate way to set it to `false` through the UI, the field is effectively vestigial), or keep a minimal recovery affordance (e.g. treat `cfg.enabled` as always-true and remove the field's read in `TipOfTheSpear.lua` entirely) rather than leaving a partially-wired on/off flag with only one direction reachable from the UI.
-
-### WR-03: `Options.lua` has zero automated test coverage; this phase's visibility/grouping/migration-interaction changes are unverified by the suite
-
-**File:** `spec/support/init.lua` (loader) / `Duncedmaxxing/Options.lua` (subject)
-**Issue:** The test harness's `load()` function loads `Util.lua`, `Core.lua`, and `Modules/TipOfTheSpear.lua` only — `Options.lua` is explicitly skipped. None of this phase's `AddToGroup`/`widgetGroups` per-mode gating (`Options.lua:190-197, 509-518`), the `SetColorGroupEnabled` toggle-greying (`Options.lua:452-470`), or the Scale/Border-color regrouping (`Options.lua:307-315, 365-373`, see WR-01) has any unit test. A regression in any of these (e.g. a mode-group mis-assignment reintroducing the bug this phase just fixed) would ship silently.
-**Fix:** Extend the test harness to load `Options.lua` with minimal `CheckButton`/`EditBox`/`Button` stubs (`Enable`/`Disable`/`SetAlpha`/`LockHighlight`), or explicitly document in the phase's STATE/ROADMAP that Options.lua UI wiring is UAT-only coverage by design.
-
-### WR-04: `Options:Refresh()` only recomputes stack/flat color-group enable state when `mode == "number"`
-
-**File:** `Duncedmaxxing/Options.lua:525-529`
-**Issue:**
-```lua
-if mode == "number" and self.colorGroups then
-    local colorByStack = cfg.colorByStack ~= false
-    SetColorGroupEnabled(self.colorGroups.stack, colorByStack)
-    SetColorGroupEnabled(self.colorGroups.flat, not colorByStack)
-end
-```
-This branch is a no-op whenever `mode == "bar"`. It's currently harmless only because the same widgets are also `Hide()`-n via the `groups.number` visibility loop a few lines above, so a stale enabled/disabled alpha state is never visibly reachable. Correctness here depends on execution order between two logically-unrelated code paths (visibility gating vs. enable/alpha gating) rather than an invariant — fragile if either block is ever reordered or a widget is added to `colorGroups` without also being added to `widgetGroups.number`.
-**Fix:**
-```lua
-if self.colorGroups then
-    local colorByStack = cfg.colorByStack ~= false
-    SetColorGroupEnabled(self.colorGroups.stack, mode == "number" and colorByStack)
-    SetColorGroupEnabled(self.colorGroups.flat, mode == "number" and not colorByStack)
+local function ConvertLegacyStackColors(sc)
+    local out = {}
+    for i = 0, 3 do
+        local e = sc[i]
+        if type(e) == "table" and e.r == nil then
+            out[i] = { r = e[1], g = e[2], b = e[3], a = e[4] }
+        else
+            out[i] = e or CopyDefaults(DEFAULTS.tip.stackColors[i])
+        end
+    end
+    return out
 end
 ```
 
-### WR-05: Duplicated text-color fallback logic between `Tip:Update()`'s Number branch and `Tip:RefreshLayout()`
-
-**File:** `Duncedmaxxing/Modules/TipOfTheSpear.lua:494` and `:619`
-**Issue:** `ColorTuple(cfg.textColor, DMX.defaults.tip.textColor)` is called independently in both `RefreshLayout` (initial paint) and `Update` (the `colorByStack == false` flat-color path). Not a functional bug today, but a future change to the text-color fallback chain (e.g. adding a "combat-tinted" override) must be made in two places or will silently diverge. `Tip:Update()` is already a single ~75-line function handling both display modes via an early `return`; this phase's `colorByStack` branching added another 8 lines to that early-return block.
-**Fix:** Extract a small `GetFlatTextColor(cfg)` helper shared by both call sites. Low priority — maintainability only.
+If discarding is a deliberate design decision, document it in a comment so the intent is clear.
 
 ## Info
 
-### IN-01: Stack-color range (`0`-`3`) hardcoded independently in three files with no shared constant
+### IN-01: `NormalizeDB` dereferences `db.tip` with no nil guard
 
-**File:** `Duncedmaxxing/Options.lua:404-405`, `Duncedmaxxing/Core.lua:30-35`, `Duncedmaxxing/Modules/TipOfTheSpear.lua:7,33-38`
-**Issue:** `local stackLabels = { [0] = "0 stacks", ... }` / `for stack = 0, 3 do` in `Options.lua`, the `stackColors` default table in `Core.lua`, and `MAX_STACKS = 3` / `STACK_COLORS` in `TipOfTheSpear.lua` all encode the same `0..MAX_STACKS` range independently. If `MAX_STACKS` ever changes, all three must be updated in lockstep with no compiler/linter to catch a mismatch.
-**Fix:** Not urgent given Lua's lack of a shared-constant-module mechanism across these files without extra wiring; consider building the `Options.lua` loop by iterating `pairs(DMX.defaults.tip.stackColors)` (Core.lua already owns the canonical range) instead of a separately hardcoded `0, 3` literal.
+**File:** `Duncedmaxxing/Core.lua:85-89`
+**Issue:** `NormalizeDB` reads `db.tip` and then `tip.stackColors` / `tip.displayMode`
+without checking `db` or `db.tip` for nil. In production this is safe because
+`MergeDefaults` always creates `db.tip`, but the function is also exposed via `DMX._test`
+and called directly in tests, so the invariant is not locally enforced. A defensive
+`if not db or type(db.tip) ~= "table" then return end` guard would harden the escape hatch
+and match the project's stated nil-safety conventions.
+**Fix:** Add a leading guard clause before touching `db.tip`.
 
-### IN-02: `SetColorGroupEnabled` guards `Enable`/`Disable` but calls `SetAlpha` unconditionally
+### IN-02: SC-6 regression test asserts only `stackColors[0]`, not `[1]`–`[3]`
 
-**File:** `Duncedmaxxing/Options.lua:452-470`
-**Issue:** `if widget.Disable and widget.Enable then ... end` correctly guards the `Enable()`/`Disable()` calls, but `widget:SetAlpha(enabled and 1 or 0.4)` runs outside that guard for every widget passed in. All current callers pass `EditBox`/`FontString`-backed widgets that support `SetAlpha`, so this isn't currently reachable, but the inconsistent guarding is worth normalizing before a new widget type is added to `colorGroups`.
-**Fix:**
-```lua
-if widget.SetAlpha then
-    widget:SetAlpha(enabled and 1 or 0.4)
-end
-```
+**File:** `spec/core_spec.lua:213-214`
+**Issue:** The regression test verifies only `db.tip.stackColors[0]` is a table with
+`.r == 1`. It never asserts that indices `[1]`, `[2]`, `[3]` were repaired, nor that the
+stale numeric array keys were removed. Even after CR-01 is fixed, this leaves the per-index
+repair and the junk-key cleanup unverified.
+**Fix:** Loop `for i = 0, 3 do` asserting each entry has `.r/.g/.b/.a` and that
+`stackColors[i][1]` is nil (no leftover array key).
 
 ---
 
