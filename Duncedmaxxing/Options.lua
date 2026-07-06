@@ -263,10 +263,6 @@ function Options:BuildWindow()
     self.modeButtons.bar = CreateButton(window, "Bar", 16, -43, 62, 22, function() self:SetMode("bar") end)
     self.modeButtons.number = CreateButton(window, "Number", 82, -43, 72, 22, function() self:SetMode("number") end)
 
-    local enabledCheck, enabledLabel = CreateCheckbox(window, "Enabled", 14, -80,
-        function() return GetCfg().enabled end,
-        function(value) GetCfg().enabled = value end)
-    AddToGroup("both", enabledCheck, enabledLabel)
     local hideEmptyCheck, hideEmptyLabel = CreateCheckbox(window, "Hide empty", 260, -80,
         function() return GetCfg().hideWhenEmpty end,
         function(value) GetCfg().hideWhenEmpty = value end)
