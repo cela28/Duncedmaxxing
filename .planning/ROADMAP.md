@@ -235,7 +235,7 @@ Plans:
   6. A fresh/legacy DB loads cleanly — the new color/toggle fields default correctly with no settings wipe and no Lua error.
   7. The test suite passes via the fengari harness, with new coverage for config-driven stack colors and the color-by-stack toggle fallback.
 
-**Plans:** 5/6 plans executed
+**Plans:** 6/6 plans complete
 
 Plans:
 **Wave 1**
@@ -256,4 +256,4 @@ Plans:
 
 *Wave 2 (blocked on 06-04)*
 
-- [ ] 06-06-PLAN.md — Options panel layout rebalance: reclaim Bar-mode dead region, close vacated rows, even section spacing, optionally tighten window height (DISP-07)
+- [x] 06-06-PLAN.md — Options panel layout rebalance: reclaim Bar-mode dead region, close vacated rows, even section spacing, optionally tighten window height (DISP-07)

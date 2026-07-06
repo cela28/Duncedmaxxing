@@ -5,16 +5,16 @@ milestone_name: milestone
 current_phase: 06
 current_phase_name: options-panel-v2-per-mode-visibility-configurable-stack-colo
 status: executing
-stopped_at: Completed 06-05-PLAN.md
-last_updated: "2026-07-06T21:00:14.346Z"
+stopped_at: Completed 06-06-PLAN.md
+last_updated: "2026-07-06T21:09:18.899Z"
 last_activity: 2026-07-06
 last_activity_desc: Phase 06 execution started
 progress:
   total_phases: 7
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 20
-  completed_plans: 19
-  percent: 86
+  completed_plans: 20
+  percent: 100
 ---
 
 # Project State
@@ -29,8 +29,8 @@ See: .planning/PROJECT.md (updated 2026-06-17)
 ## Current Position
 
 Phase: 06 (options-panel-v2-per-mode-visibility-configurable-stack-colo) — EXECUTING
-Plan: 3 of 6
-Status: Ready to execute
+Plan: 6 of 6
+Status: All plans executed
 Last activity: 2026-07-06 — Phase 06 execution started
 
 Progress: [██████████] 100%
@@ -68,6 +68,7 @@ Progress: [██████████] 100%
 | Phase 06 P03 | 5min | 2 tasks | 2 files |
 | Phase 06 P04 | 5min | 3 tasks | 2 files |
 | Phase 06 P05 | 4min | 2 tasks | 2 files |
+| Phase 06 P06 | 10min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -98,6 +99,8 @@ Recent decisions affecting current work:
 - [Phase ?]: Enabled checkbox UI control removed while DEFAULTS.tip.enabled = true kept for the shouldShow gate and core_spec assertions
 - [Phase ?]: Position Reset button and its sole caller Tip:ResetPosition deleted together after confirming no other references exist
 - [Phase ?]: Converted DEFAULTS.tip.stackColors to named-key {r,g,b,a} form and bumped SETTINGS_MIGRATION to 0.3.3-stackcolorfmt to fix stack-color picker defaults rendering as ffffff (DISP-06)
+- [Phase ?]: 06-06: Overlapped Bar-section and Number-section widgets (and their headers) at the same left-column row coordinates, and bar color fields with number text/stack color fields at the same right-column row coordinates, since each pair is mutually exclusive by displayMode
+- [Phase ?]: 06-06: Shrunk options-panel window height 484 -> 400 (width unchanged) after collapsing mutually-exclusive mode sections onto shared row coordinates
 
 ### Roadmap Evolution
 
@@ -137,6 +140,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-07-06T21:00:14.340Z
-Stopped at: Completed 06-05-PLAN.md
+Last session: 2026-07-06T21:09:10.925Z
+Stopped at: Completed 06-06-PLAN.md
 Resume file: None
