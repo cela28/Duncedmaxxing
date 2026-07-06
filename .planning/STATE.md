@@ -124,6 +124,7 @@ None yet.
 | 260623-x5d | Remove the showOnlyInCombat display feature so the tracker always shows regardless of combat state | 2026-06-23 | 7243c0c | [260623-x5d-remove-the-showonlyincombat-display-feat](./quick/260623-x5d-remove-the-showonlyincombat-display-feat/) |
 | 260624-0hx | Reduce slash interface to settings-only (/dmax opens settings); de-bloat README | 2026-06-24 | 893c3a1 | [260624-0hx-reduce-slash-interface-to-settings-only-](./quick/260624-0hx-reduce-slash-interface-to-settings-only-/) |
 | 260707-0sb | Raise AURA_VERIFY_DELAY 1.25 → 2.0 (delay earliest post-cast aura sync) | 2026-07-06 | ea08235 | [260707-0sb-change-aura-verify-delay-in-duncedmaxxin](./quick/260707-0sb-change-aura-verify-delay-in-duncedmaxxin/) |
+| 260707-1jr | Raise FINAL_AURA_VERIFY_DELAY 2.05 → 2.25 (widen backstop-read stagger) | 2026-07-06 | 9370711 | [260707-1jr-raise-final-aura-verify-delay-in-duncedm](./quick/260707-1jr-raise-final-aura-verify-delay-in-duncedm/) |
 
 ### Blockers/Concerns
 
