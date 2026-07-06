@@ -163,6 +163,59 @@ describe("NormalizeDB — migration branch (settingsMigration does not match)", 
     end)
 end)
 
+describe("NormalizeDB — migration branch preserves user customizations (SC-6 regression)", function()
+    local DMX
+
+    before_each(function()
+        DMX = loader.load()
+    end)
+
+    local function shippedLegacyDB()
+        return {
+            settingsMigration = "0.3.2-fontfix",
+            tip = {
+                enabled          = true,
+                hideWhenEmpty    = true,
+                x                = 0,
+                y                = -160,
+                scale            = 1,
+                displayMode      = "number",
+                width            = 400,
+                borderSize       = 3,
+                numberFontSize   = 40,
+                borderColor      = { r = 0.5, g = 0, b = 0, a = 1 },
+                colorByStack     = false,
+                stackColors = {
+                    [0] = { 1, 1, 1, 1 },
+                    [1] = { 0.18039, 0.8, 0.44314, 1 },
+                    [2] = { 1, 0.94118, 0, 1 },
+                    [3] = { 1, 0.29804, 0.18824, 1 },
+                },
+                optionsX = 360,
+                optionsY = 170,
+            },
+        }
+    end
+
+    it("preserves non-position customizations and repairs legacy stackColors shape when migrating from the shipped v1.0.0 token", function()
+        local db = shippedLegacyDB()
+
+        DMX._test.NormalizeDB(db)
+
+        assert.equals("number", db.tip.displayMode)
+        assert.is_true(db.tip.hideWhenEmpty)
+        assert.equals(400, db.tip.width)
+        assert.equals(3, db.tip.borderSize)
+        assert.equals(40, db.tip.numberFontSize)
+        assert.near(0.5, db.tip.borderColor.r, 0.00001)
+        assert.is_false(db.tip.colorByStack)
+
+        assert.is_number(db.tip.stackColors[0].r)
+
+        assert.equals(DMX._test.SETTINGS_MIGRATION, db.settingsMigration)
+    end)
+end)
+
 describe("NormalizeDB — already migrated branch (settingsMigration matches)", function()
     local DMX
 
