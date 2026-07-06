@@ -13,7 +13,7 @@ local stubs  = require("spec.support.wow_stubs")
 local BUFF_DURATION          = 10
 local MAX_STACKS             = 3
 local CONSUMER_UPSYNC_GRACE  = 2.75
-local AURA_VERIFY_DELAY      = 1.25
+local AURA_VERIFY_DELAY      = 2.0
 
 -- ---------------------------------------------------------------------------
 -- Tip:ApplySpell
@@ -372,7 +372,7 @@ describe("Tip:ScheduleCastVerify serial-mismatch", function()
             return originalSync(self)
         end
 
-        -- First ApplySpell: serial increments to 1, timer fires at 100 + 1.25 = 101.25
+        -- First ApplySpell: serial increments to 1, timer fires at 100 + 2.0 = 102.0
         Tip:ApplySpell("generator")
         assert.equals(1, Tip.castVerifySerial)
 
@@ -384,21 +384,17 @@ describe("Tip:ScheduleCastVerify serial-mismatch", function()
         -- callback in test mode — start fresh)
         syncCallCount = 0
 
-        -- Advance past the first ApplySpell timer's AURA_VERIFY_DELAY (1.25s).
-        -- The timer with serial=1 fires but sees castVerifySerial=2 → early return.
-        -- The timer with serial=2 has not yet fired (it was scheduled at a later clock.now).
-        -- We advance just enough to fire the first serial-1 timer but not the serial-2 one.
+        -- Advance past the first (AURA_VERIFY_DELAY = 2.0s) verify timer only, NOT
+        -- the FINAL one (FINAL_AURA_VERIFY_DELAY = 2.05s). The gap between them is
+        -- just 0.05s, so the advance margin must land inside (2.0, 2.05).
         --
-        -- Both ApplySpell calls happened at clock.now=100; both timers fire at ~101.25 and ~102.05.
-        -- After the two ApplySpell calls the clock is still at 100 (no advance yet).
-        -- Advance to 101.3: the AURA_VERIFY_DELAY timers (fireAt=101.25) for BOTH serials fire.
-        -- We cannot selectively fire only the first without a more granular clock.
-        --
-        -- Use a simpler approach: advance past AURA_VERIFY_DELAY then count calls.
-        -- Advancing 1.3s fires the 1.25-delay timers for both ApplySpell calls (serial 1 and 2).
+        -- Both ApplySpell calls happened at clock.now=100; each schedules two timers,
+        -- at fireAt=102.0 (AURA_VERIFY_DELAY) and fireAt=102.05 (FINAL). Advancing to
+        -- 102.02 fires only the 102.0 timers for BOTH serials — the 102.05 timers stay
+        -- pending, so serial-2's SyncFromAura runs exactly once (not twice).
         -- serial-1 timer → early return (no sync). serial-2 timer → calls SyncFromAura.
         -- Net call count should be exactly 1 (the valid serial-2 call).
-        clock:advance(AURA_VERIFY_DELAY + 0.1)
+        clock:advance(AURA_VERIFY_DELAY + 0.02)
         assert.equals(1, syncCallCount)
 
         -- Restore
