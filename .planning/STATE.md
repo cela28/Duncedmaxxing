@@ -121,6 +121,7 @@ None yet.
 | 260622-tyy | Add spell ID 1262343 (Raptor Swipe — Aspect of the Eagle ranged variant) as a consumer | 2026-06-22 | 8b7ab8a | [260622-tyy-add-spell-id-1262343-raptor-swipe-aspect](./quick/260622-tyy-add-spell-id-1262343-raptor-swipe-aspect/) |
 | 260623-x5d | Remove the showOnlyInCombat display feature so the tracker always shows regardless of combat state | 2026-06-23 | 7243c0c | [260623-x5d-remove-the-showonlyincombat-display-feat](./quick/260623-x5d-remove-the-showonlyincombat-display-feat/) |
 | 260624-0hx | Reduce slash interface to settings-only (/dmax opens settings); de-bloat README | 2026-06-24 | 893c3a1 | [260624-0hx-reduce-slash-interface-to-settings-only-](./quick/260624-0hx-reduce-slash-interface-to-settings-only-/) |
+| 260707-0sb | Raise AURA_VERIFY_DELAY 1.25 → 2.0 (delay earliest post-cast aura sync) | 2026-07-06 | ea08235 | [260707-0sb-change-aura-verify-delay-in-duncedmaxxin](./quick/260707-0sb-change-aura-verify-delay-in-duncedmaxxin/) |
 
 ### Blockers/Concerns
 
