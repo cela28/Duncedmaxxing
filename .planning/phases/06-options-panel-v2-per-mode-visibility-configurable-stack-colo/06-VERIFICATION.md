@@ -4,7 +4,16 @@ verified: 2026-07-06T21:30:00Z
 status: gaps_found
 score: 4/7 must-haves verified
 behavior_unverified: 0
-overrides_applied: 0
+overrides_applied: 2
+overrides:
+  - must_have: "Position, Enabled, Hide empty, and Border color are visible in both modes"
+    reason: "UAT feedback (06-UAT.md test 1-2) explicitly rejected both controls: border color is meaningless for text-mode rendering (no border drawn in Number mode) and the Enabled checkbox was deemed unnecessary entirely. Removed/regrouped exactly as requested."
+    accepted_by: "cela28"
+    accepted_at: "2026-07-06T22:09:10Z"
+  - must_have: "Switching modes via /dmax mode ... slash command updates widget visibility"
+    reason: "UAT feedback (06-UAT.md test 2) explicitly requested button-only mode switching with no slash-command path ('I do not want any slash commands for modes'). The subcommand was already removed prior to this phase; button-driven switching (Options:SetMode) remains fully functional."
+    accepted_by: "cela28"
+    accepted_at: "2026-07-06T22:09:10Z"
 re_verification:
   previous_status: human_needed
   previous_score: 7/7
