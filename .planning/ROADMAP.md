@@ -235,7 +235,7 @@ Plans:
   6. A fresh/legacy DB loads cleanly — the new color/toggle fields default correctly with no settings wipe and no Lua error.
   7. The test suite passes via the fengari harness, with new coverage for config-driven stack colors and the color-by-stack toggle fallback.
 
-**Plans:** 3/3 plans complete
+**Plans:** 3/3 plans complete + 3 gap-closure plans (from UAT)
 
 Plans:
 **Wave 1**
@@ -246,3 +246,14 @@ Plans:
 
 - [x] 06-02-PLAN.md — Options.lua: per-mode widget visibility gating (DISP-05), colorByStack toggle + 4 stack color inputs + flat Text picker greying (DISP-06 UI), and the mode-selector layout fix — remove the Display label, highlight the active button, fixed window size (DISP-07)
 - [x] 06-03-PLAN.md — Fengari spec coverage: colorByStack ON/OFF number-color behavior (tip_spec) and legacy/fresh DB default-merge no-wipe (core_spec) — DISP-06 regression
+
+**Gap closure (from 06-UAT)**
+
+*Wave 1*
+
+- [ ] 06-04-PLAN.md — Widget removal & per-mode visibility: move Scale + Border color to bar-only, delete Enabled checkbox (keep DB field), delete position Reset button + orphaned ResetPosition; confirm no /dmax mode subcommand (DISP-05, DISP-07)
+- [ ] 06-05-PLAN.md — Stack-color default-display fix: DEFAULTS.tip.stackColors to named-key form + SETTINGS_MIGRATION bump so pickers show real colors instead of ffffff; update core_spec assertions (DISP-06)
+
+*Wave 2 (blocked on 06-04)*
+
+- [ ] 06-06-PLAN.md — Options panel layout rebalance: reclaim Bar-mode dead region, close vacated rows, even section spacing, optionally tighten window height (DISP-07)
