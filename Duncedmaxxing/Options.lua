@@ -300,7 +300,7 @@ function Options:BuildWindow()
             GetCfg().scale = scale
             return true
         end)
-    AddToGroup("both", scaleInput, scaleLabel)
+    AddToGroup("bar", scaleInput, scaleLabel)
 
     local barHeader = CreateText(window, "Bar", 16, -248, "GameFontNormal")
     AddToGroup("bar", barHeader)
@@ -360,7 +360,7 @@ function Options:BuildWindow()
             GetCfg().borderColor = color
             return true
         end)
-    AddToGroup("both", borderColorInput, borderColorLabel)
+    AddToGroup("bar", borderColorInput, borderColorLabel)
     local fillInput, fillLabel = CreateInput(window, "Fill", 204, -292, 78,
         function() return ColorToHex(GetCfg().fillColor) end,
         function(value)
