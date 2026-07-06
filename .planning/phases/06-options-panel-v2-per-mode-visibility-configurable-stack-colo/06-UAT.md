@@ -34,11 +34,17 @@ severity: major
 expected: No "Display:" text label appears anywhere in the window (in either mode) and it does not overlap the Bar button; the currently active mode button (Bar or Number) is visually distinguishable (locked highlight / full alpha) from the inactive button. (SC-5 / DISP-07)
 result: pass
 
+### 5. Options panel layout / empty space organization
+expected: Panel real estate is used efficiently — no large dead gaps (e.g. the empty upper-right area beside Position in Bar mode), columns balanced, sections evenly spaced across both modes.
+result: issue
+reported: "organize empty space better too [screenshots: Bar mode has large empty region upper-right next to Position; overall layout has uneven gaps]"
+severity: cosmetic
+
 ## Summary
 
-total: 4
+total: 5
 passed: 1
-issues: 3
+issues: 4
 pending: 0
 skipped: 0
 blocked: 0
@@ -96,5 +102,15 @@ blocked: 0
       issue: "DEFAULTS.stackColors stored as positional arrays {r,g,b,a} indexed [0..3]"
     - path: "Duncedmaxxing/Options.lua"
       issue: "Stack color inputs likely read named r/g/b keys, so positional-array defaults yield nil -> ffffff fallback"
+  missing: []
+  debug_session: ""
+
+- truth: "Options panel uses its space efficiently with no large dead gaps and balanced columns in both modes"
+  status: failed
+  reason: "User reported: organize empty space better too (Bar mode shows a large empty region upper-right beside Position; uneven section spacing)"
+  severity: cosmetic
+  test: 5
+  root_cause: ""
+  artifacts: []
   missing: []
   debug_session: ""
