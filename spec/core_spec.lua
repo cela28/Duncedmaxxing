@@ -210,7 +210,8 @@ describe("NormalizeDB — migration branch preserves user customizations (SC-6 r
         assert.near(0.5, db.tip.borderColor.r, 0.00001)
         assert.is_false(db.tip.colorByStack)
 
-        assert.is_number(db.tip.stackColors[0].r)
+        assert.is_table(db.tip.stackColors[0])
+        assert.near(1, db.tip.stackColors[0].r, 0.00001)
 
         assert.equals(DMX._test.SETTINGS_MIGRATION, db.settingsMigration)
     end)

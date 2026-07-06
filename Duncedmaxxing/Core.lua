@@ -69,23 +69,27 @@ local function MergeDefaults(defaults, target)
     return target
 end
 
+local function StackColorsAreLegacyFormat(stackColors)
+    if type(stackColors) ~= "table" then
+        return false
+    end
+
+    local first = stackColors[0]
+    if type(first) ~= "table" then
+        return false
+    end
+
+    return first.r == nil and first[1] ~= nil
+end
+
 local function NormalizeDB(db)
     local tip = db.tip
 
     if db.settingsMigration ~= SETTINGS_MIGRATION then
-        local x, y, scale = tip.x, tip.y, tip.scale
-        local optionsX, optionsY = tip.optionsX, tip.optionsY
-        local fresh = CopyDefaults(DEFAULTS.tip)
-
-        for key, value in pairs(fresh) do
-            tip[key] = value
+        if StackColorsAreLegacyFormat(tip.stackColors) then
+            tip.stackColors = CopyDefaults(DEFAULTS.tip.stackColors)
         end
 
-        tip.x = x or fresh.x
-        tip.y = y or fresh.y
-        tip.scale = scale or fresh.scale
-        tip.optionsX = optionsX or fresh.optionsX
-        tip.optionsY = optionsY or fresh.optionsY
         tip.barWidth = nil
         tip.barHeight = nil
         tip.spacing = nil
