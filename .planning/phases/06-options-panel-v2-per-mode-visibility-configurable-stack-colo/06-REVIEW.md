@@ -1,48 +1,119 @@
 ---
 phase: 06-options-panel-v2-per-mode-visibility-configurable-stack-colo
-reviewed: 2026-07-02T00:00:00Z
+reviewed: 2026-07-07T00:00:00Z
 depth: standard
-files_reviewed: 5
+files_reviewed: 4
 files_reviewed_list:
-  - Duncedmaxxing/Core.lua
-  - Duncedmaxxing/Modules/TipOfTheSpear.lua
   - Duncedmaxxing/Options.lua
+  - Duncedmaxxing/Modules/TipOfTheSpear.lua
+  - Duncedmaxxing/Core.lua
   - spec/core_spec.lua
-  - spec/tip_spec.lua
 findings:
-  critical: 0
-  warning: 3
-  info: 3
-  total: 6
+  critical: 1
+  warning: 5
+  info: 2
+  total: 8
 status: issues_found
 ---
 
 # Phase 06: Code Review Report
 
-**Reviewed:** 2026-07-02T00:00:00Z
+**Reviewed:** 2026-07-07T00:00:00Z
 **Depth:** standard
-**Files Reviewed:** 5
+**Files Reviewed:** 4
 **Status:** issues_found
 
 ## Summary
 
-Reviewed the phase-6 changes: `colorByStack`/`stackColors` defaults and migration in `Core.lua`, the per-stack color render read in `TipOfTheSpear.lua:Update()`, and the Options.lua v2 panel (per-mode widget visibility groups, stack color pickers, checkbox/input toggle greying, and active-mode button highlighting).
+Reviewed the gap-closure changes from plans 06-04 (widget removal + per-mode visibility in `Options.lua`, orphaned `Tip:ResetPosition` removal), 06-05 (`stackColors` defaults converted to named-key form + `SETTINGS_MIGRATION` bump in `Core.lua`, `core_spec.lua` assertions updated), and 06-06 (options-panel layout rebalance in `Options.lua`).
 
-The core logic is sound: `ColorTuple` correctly handles both positional (`{r,g,b,a}`) and keyed (`{r=,g=,b=,a=}`) color tables, `MergeDefaults`/`NormalizeDB` correctly backfill `colorByStack`/`stackColors` onto legacy DBs without wiping existing settings (verified against `core_spec.lua`'s dedicated D-11 test), stack indices are always clamped to `[0, MAX_STACKS]` before table lookups so no nil-index crash is reachable, and all mutating Options controls remain gated by `Options:CanChange()` / `InCombatLockdown()` consistent with the project's combat-safety pattern.
+The per-mode visibility regrouping (Scale/Border color → bar-only, Text size/Color-by-stack/stack pickers → number-only) is wired correctly through the existing `AddToGroup`/`SetWidgetShown` engine, and the 06-06 layout rebalance does not introduce any widget coordinate collisions — I traced every `SetPoint` pair in both columns and all mutually-exclusive bar/number rows are genuinely mutually exclusive at runtime. `core_spec.lua`'s new named-key assertions correctly match the new `DEFAULTS.tip.stackColors` shape, and `ColorTuple`/`ParseHexColor` consistently produce/consume the same `{r,g,b,a}` shape end to end.
 
-The most significant finding is a test-coverage gap: `spec/support/init.lua` explicitly skips loading `Options.lua` in the test harness ("Options.lua (skipped)"), so none of the phase-6 Options.lua work — per-mode visibility gating, stack color pickers, toggle greying, mode-button highlighting — has any automated test coverage despite `tip_spec.lua` and `core_spec.lua` thoroughly covering the corresponding Core/Tip render-path changes. Two smaller robustness/consistency issues are noted below.
+However, I found one BLOCKER: the `SETTINGS_MIGRATION` version bump in `Core.lua` triggers `NormalizeDB`'s full-tip-wipe migration branch for every user who is not already on `"0.3.3-stackcolorfmt"`, and that branch overwrites every `tip.*` field (display mode, colors, width/height/border, `hideWhenEmpty`, `colorByStack`, `enabled`, stack colors) with fresh defaults, preserving only position/scale/options-window-position. This is real, reproducible data loss for any existing user who customized anything beyond position — not a hypothetical edge case, but the direct, guaranteed effect of this phase's migration bump landing in production. I also found a genuine functional regression from 06-04's "Scale → bar-only" regrouping: `cfg.scale` is still applied to the frame in Number mode (`TipOfTheSpear.lua:492`), but the Scale control is now hidden whenever Number mode is active, so a non-1.0 scale value cannot be corrected from within the mode it visibly affects.
+
+## Critical Issues
+
+### CR-01: `SETTINGS_MIGRATION` bump silently wipes all user tip customization except position/scale on next login
+
+**File:** `Duncedmaxxing/Core.lua:75-94`
+**Issue:**
+```lua
+if db.settingsMigration ~= SETTINGS_MIGRATION then
+    local x, y, scale = tip.x, tip.y, tip.scale
+    local optionsX, optionsY = tip.optionsX, tip.optionsY
+    local fresh = CopyDefaults(DEFAULTS.tip)
+
+    for key, value in pairs(fresh) do
+        tip[key] = value
+    end
+
+    tip.x = x or fresh.x
+    tip.y = y or fresh.y
+    tip.scale = scale or fresh.scale
+    tip.optionsX = optionsX or fresh.optionsX
+    tip.optionsY = optionsY or fresh.optionsY
+    ...
+```
+`SETTINGS_MIGRATION` was bumped from `"0.3.2-fontfix"` to `"0.3.3-stackcolorfmt"` in this phase specifically to re-seed the old positional-array `stackColors` into the new named-key form. But the migration mechanism does not do a targeted `stackColors` fix — it overwrites the *entire* `tip` table with `CopyDefaults(DEFAULTS.tip)` and then restores only 5 fields (`x`, `y`, `scale`, `optionsX`, `optionsY`). Every other customization a user made through the Options panel — `displayMode` ("number" reverts to "bar"), `width`, `height`, `borderSize`, `fillColor`, `emptyColor`, `borderColor`, `textColor`, `hideWhenEmpty`, `colorByStack`, all 4 `stackColors` entries, and `enabled` — is silently discarded and replaced with stock defaults the next time the addon loads after this update, with no warning, no backup, and no way to undo. This will visibly reset every existing user's tracker to factory settings on update.
+**Fix:** Do a targeted re-seed of only the field whose *shape* actually changed, instead of nuking the whole `tip` table:
+```lua
+local function StackColorsAreLegacyFormat(stackColors)
+    local sample = stackColors and stackColors[0]
+    return type(sample) == "table" and sample.r == nil and sample[1] ~= nil
+end
+
+local function NormalizeDB(db)
+    local tip = db.tip
+
+    if StackColorsAreLegacyFormat(tip.stackColors) then
+        tip.stackColors = CopyDefaults(DEFAULTS.tip.stackColors)
+    end
+
+    if db.settingsMigration ~= SETTINGS_MIGRATION then
+        tip.barWidth = nil
+        tip.barHeight = nil
+        tip.spacing = nil
+        db.settingsMigration = SETTINGS_MIGRATION
+    end
+
+    if tip.displayMode ~= "bar" and tip.displayMode ~= "number" then
+        tip.displayMode = DEFAULTS.tip.displayMode
+    end
+end
+```
+This preserves every field the user actually customized and only repairs the one field whose format is provably broken, while still bumping `settingsMigration` so the fix runs exactly once. (Note: this also requires updating the `core_spec.lua` migration-branch tests, which currently assert a full wipe-and-restore.)
 
 ## Warnings
 
-### WR-01: Options.lua has zero automated test coverage — phase-6 UI logic changes are unverified
+### WR-01: `cfg.scale` still applies to Number mode, but the Scale control was moved to the bar-only visibility group
 
-**File:** `spec/support/init.lua:30` (harness), `Duncedmaxxing/Options.lua` (subject)
-**Issue:** The test loader comment explicitly states `-- Options.lua (skipped)` and the `load()` function only loads `Util.lua`, `Core.lua`, and `Modules/TipOfTheSpear.lua` (lines 31-33). None of this phase's Options.lua additions — `AddToGroup`/`widgetGroups` per-mode show/hide (`Options.lua:183-190,505-514`), `SetColorGroupEnabled` toggle-greying (`Options.lua:448-466`), `HighlightModeButton` active-mode highlighting (`Options.lua:468-486`), or the four stack color picker inputs (`Options.lua:394-406`) — has any unit test exercising it. A regression here (e.g. a mode-group misassignment, or `Refresh()` skipping the `colorByStack` enable/disable branch) would ship silently since `core_spec.lua`/`tip_spec.lua` cannot detect it.
-**Fix:** Either extend the test harness to load `Options.lua` (it will need `CreateFrame`/widget stubs for `CheckButton`, `EditBox`, `Button` with `Enable`/`Disable`/`SetAlpha`/`LockHighlight` support in `wow_stubs.lua`), or explicitly document in the phase plan that Options.lua UI wiring is verified only via manual/UAT testing, so the gap is a conscious tradeoff rather than an oversight.
+**File:** `Duncedmaxxing/Options.lua:307-315` (Scale registered `AddToGroup("bar", ...)`) vs `Duncedmaxxing/Modules/TipOfTheSpear.lua:489-495`
+**Issue:** Plan 06-04 moved the Scale input into the bar-only widget group so it hides while the panel is in Number mode (per UAT feedback "we do not need... scale" for text mode). But `Tip:RefreshLayout()`'s Number-mode branch still calls `root:SetScale(cfg.scale or 1)`:
+```lua
+if mode == "number" then
+    local fontSize = tonumber(cfg.numberFontSize) or 22
+    root:SetSize(fontSize * 2, fontSize + 4)
+    root:SetScale(cfg.scale or 1)   -- still reads the shared scale value
+    ...
+```
+`cfg.scale` is a single value shared between both display modes — it is not mode-scoped. A user who sets Scale to, say, 1.5 while in Bar mode and then switches to Number mode will see the number display rendered 1.5x larger than the "Text size" control implies, with no way to see or correct that from the Number-mode view of the panel (Scale is hidden). The only workaround is switching back to Bar mode, which is not discoverable from the Number-mode UI.
+**Fix:** Either keep Scale in the shared (`"both"`) group since it demonstrably affects both render paths, or stop applying `cfg.scale` in the Number branch and rely solely on `numberFontSize` for that mode's sizing (decoupling the two modes' scale semantics entirely). Silently hiding a control that still has an effect is the wrong fix for the UAT complaint.
 
-### WR-02: `Options:Refresh()` only recomputes stack/flat color-group enable state when `mode == "number"`
+### WR-02: Removing the Enabled checkbox leaves no UI path to recover a legacy `enabled = false` state
 
-**File:** `Duncedmaxxing/Options.lua:521-525`
+**File:** `Duncedmaxxing/Options.lua` (checkbox deleted in 06-04) vs `Duncedmaxxing/Modules/TipOfTheSpear.lua:587`
+**Issue:** `shouldShow = unlocked or self.testMode or (cfg.enabled and self.isSurvival)` still gates visibility on `cfg.enabled`, and `DEFAULTS.tip.enabled = true` is preserved per the 06-04 plan. However, any returning user whose `SavedVariables` already has `tip.enabled = false` (set via the now-removed checkbox, or the slash command that was removed even earlier) has no remaining way to set it back to `true` — there is no checkbox, no slash command, and `MergeDefaults` will never touch an already-non-nil `false` value. The only recovery path is "Reset Style", which (per CR-01) already wipes far more than intended, or manually editing the `WTF` SavedVariables file. A first-time user is unaffected (default is `true`), but this is a real dead-end for anyone upgrading from a version where the checkbox existed and was unchecked.
+**Fix:** Either force `tip.enabled = true` unconditionally in `NormalizeDB` (since there is no longer any legitimate way to set it to `false` through the UI, the field is effectively vestigial), or keep a minimal recovery affordance (e.g. treat `cfg.enabled` as always-true and remove the field's read in `TipOfTheSpear.lua` entirely) rather than leaving a partially-wired on/off flag with only one direction reachable from the UI.
+
+### WR-03: `Options.lua` has zero automated test coverage; this phase's visibility/grouping/migration-interaction changes are unverified by the suite
+
+**File:** `spec/support/init.lua` (loader) / `Duncedmaxxing/Options.lua` (subject)
+**Issue:** The test harness's `load()` function loads `Util.lua`, `Core.lua`, and `Modules/TipOfTheSpear.lua` only — `Options.lua` is explicitly skipped. None of this phase's `AddToGroup`/`widgetGroups` per-mode gating (`Options.lua:190-197, 509-518`), the `SetColorGroupEnabled` toggle-greying (`Options.lua:452-470`), or the Scale/Border-color regrouping (`Options.lua:307-315, 365-373`, see WR-01) has any unit test. A regression in any of these (e.g. a mode-group mis-assignment reintroducing the bug this phase just fixed) would ship silently.
+**Fix:** Extend the test harness to load `Options.lua` with minimal `CheckButton`/`EditBox`/`Button` stubs (`Enable`/`Disable`/`SetAlpha`/`LockHighlight`), or explicitly document in the phase's STATE/ROADMAP that Options.lua UI wiring is UAT-only coverage by design.
+
+### WR-04: `Options:Refresh()` only recomputes stack/flat color-group enable state when `mode == "number"`
+
+**File:** `Duncedmaxxing/Options.lua:525-529`
 **Issue:**
 ```lua
 if mode == "number" and self.colorGroups then
@@ -51,8 +122,8 @@ if mode == "number" and self.colorGroups then
     SetColorGroupEnabled(self.colorGroups.flat, not colorByStack)
 end
 ```
-This branch is a no-op whenever `mode == "bar"`. In practice this happens to be harmless today because the same widgets are `Hide()`-n via the `groups.number` loop a few lines above (so a disabled-vs-stale-enabled state is not visibly reachable), and the branch re-runs correctly the next time the panel is shown in number mode. However, this makes correctness depend on the *order* of two unrelated code paths (visibility gating vs. enable/alpha gating) rather than on an invariant, which is fragile: any future change that reorders these blocks, or that stops fully hiding disabled color widgets, will surface stale grey/enabled state.
-**Fix:** Make the state computation mode-independent so it doesn't rely on hide-ordering as a correctness crutch:
+This branch is a no-op whenever `mode == "bar"`. It's currently harmless only because the same widgets are also `Hide()`-n via the `groups.number` visibility loop a few lines above, so a stale enabled/disabled alpha state is never visibly reachable. Correctness here depends on execution order between two logically-unrelated code paths (visibility gating vs. enable/alpha gating) rather than an invariant — fragile if either block is ever reordered or a widget is added to `colorGroups` without also being added to `widgetGroups.number`.
+**Fix:**
 ```lua
 if self.colorGroups then
     local colorByStack = cfg.colorByStack ~= false
@@ -61,24 +132,24 @@ if self.colorGroups then
 end
 ```
 
-### WR-03: `numberText` text-color duplication across the early-return and fallthrough code paths in `Tip:Update()`
+### WR-05: Duplicated text-color fallback logic between `Tip:Update()`'s Number branch and `Tip:RefreshLayout()`
 
-**File:** `Duncedmaxxing/Modules/TipOfTheSpear.lua:613-633` vs `635-658`
-**Issue:** The number-mode branch (`cfg.colorByStack`/`stackColors`/`ColorTuple` fallback logic) and the bar-mode branch both independently call `label:SetShown(unlocked)` at their respective tails (lines 631 and 657), and the `ColorTuple(cfg.textColor, DMX.defaults.tip.textColor)` fallback call appears twice with subtly different intent (once for the `colorByStack == false` flat-color case at line 627, and implicitly assumed available at `RefreshLayout:494` for initial layout). This isn't a functional bug today, but the duplicated `ColorTuple(cfg.textColor, ...)` call pattern between `RefreshLayout` and `Update` means a future change to text-color fallback logic (e.g. adding a new fallback tier) has to be made in two places or will silently diverge.
-**Fix:** Extract a small `GetFlatTextColor(cfg)` helper used by both `RefreshLayout` and `Update` to keep the fallback chain single-sourced. Low priority — quality/maintainability only.
+**File:** `Duncedmaxxing/Modules/TipOfTheSpear.lua:494` and `:619`
+**Issue:** `ColorTuple(cfg.textColor, DMX.defaults.tip.textColor)` is called independently in both `RefreshLayout` (initial paint) and `Update` (the `colorByStack == false` flat-color path). Not a functional bug today, but a future change to the text-color fallback chain (e.g. adding a "combat-tinted" override) must be made in two places or will silently diverge. `Tip:Update()` is already a single ~75-line function handling both display modes via an early `return`; this phase's `colorByStack` branching added another 8 lines to that early-return block.
+**Fix:** Extract a small `GetFlatTextColor(cfg)` helper shared by both call sites. Low priority — maintainability only.
 
 ## Info
 
-### IN-01: `stackLabels` table and stack-picker loop use magic numbers `0`/`3` instead of `MAX_STACKS`
+### IN-01: Stack-color range (`0`-`3`) hardcoded independently in three files with no shared constant
 
-**File:** `Duncedmaxxing/Options.lua:394-406`
-**Issue:** `local stackLabels = { [0] = "0 stacks", [1] = "1 stack", [2] = "2 stacks", [3] = "3 stacks" }` and `for stack = 0, 3 do` hardcode the stack range even though `Duncedmaxxing/Modules/TipOfTheSpear.lua` defines `MAX_STACKS = 3` and Options.lua has no equivalent shared constant. If `MAX_STACKS` ever changes, this loop and the `Core.lua` `stackColors` defaults table (`Core.lua:30-35`, also hardcoded `[0]`..`[3]`) must be manually kept in sync across three files with no compiler/linter to catch a mismatch.
-**Fix:** Not urgent given WoW Lua's lack of shared constant modules across files without extra wiring, but consider exposing `DMX.defaults.tip.stackColors` keys (`Core.lua` already owns the canonical range) and building the Options.lua loop by iterating `pairs(DMX.defaults.tip.stackColors)` sorted by key, rather than a separately hardcoded `0, 3` literal range.
+**File:** `Duncedmaxxing/Options.lua:404-405`, `Duncedmaxxing/Core.lua:30-35`, `Duncedmaxxing/Modules/TipOfTheSpear.lua:7,33-38`
+**Issue:** `local stackLabels = { [0] = "0 stacks", ... }` / `for stack = 0, 3 do` in `Options.lua`, the `stackColors` default table in `Core.lua`, and `MAX_STACKS = 3` / `STACK_COLORS` in `TipOfTheSpear.lua` all encode the same `0..MAX_STACKS` range independently. If `MAX_STACKS` ever changes, all three must be updated in lockstep with no compiler/linter to catch a mismatch.
+**Fix:** Not urgent given Lua's lack of a shared-constant-module mechanism across these files without extra wiring; consider building the `Options.lua` loop by iterating `pairs(DMX.defaults.tip.stackColors)` (Core.lua already owns the canonical range) instead of a separately hardcoded `0, 3` literal.
 
-### IN-02: `SetColorGroupEnabled` silently no-ops `Enable`/`Disable` on widgets lacking those methods, but still forces `SetAlpha`
+### IN-02: `SetColorGroupEnabled` guards `Enable`/`Disable` but calls `SetAlpha` unconditionally
 
-**File:** `Duncedmaxxing/Options.lua:448-466`
-**Issue:** The guard `if widget.Disable and widget.Enable then` correctly protects the `Enable()`/`Disable()` calls, but `widget:SetAlpha(enabled and 1 or 0.4)` is called unconditionally outside that guard. For any widget type that doesn't support `SetAlpha` (unlikely for standard `Frame`-derived widgets, but not guaranteed for all templates), this would error. All current callers pass `EditBox`/`FontString`-backed widgets that do support `SetAlpha`, so this is not currently reachable, but the inconsistent guarding (checked for `Enable`/`Disable`, unchecked for `SetAlpha`) is worth normalizing.
+**File:** `Duncedmaxxing/Options.lua:452-470`
+**Issue:** `if widget.Disable and widget.Enable then ... end` correctly guards the `Enable()`/`Disable()` calls, but `widget:SetAlpha(enabled and 1 or 0.4)` runs outside that guard for every widget passed in. All current callers pass `EditBox`/`FontString`-backed widgets that support `SetAlpha`, so this isn't currently reachable, but the inconsistent guarding is worth normalizing before a new widget type is added to `colorGroups`.
 **Fix:**
 ```lua
 if widget.SetAlpha then
@@ -86,14 +157,8 @@ if widget.SetAlpha then
 end
 ```
 
-### IN-03: `Tip:Update()` number-mode branch shadows the outer `mode` boolean check with an early `return`, making the function's control flow harder to follow
-
-**File:** `Duncedmaxxing/Modules/TipOfTheSpear.lua:613-633`
-**Issue:** `Tip:Update()` is a single function handling both display modes via an early `return` inside the `if mode == "number" then ... return end` block, followed by ~25 more lines of bar-mode-only logic with no `else`. This is pre-existing structure, not newly introduced by phase 6, but the phase-6 diff added another 8 lines of branching (`colorByStack` on/off) inside that early-return block, further growing an already ~75-line function with two divergent responsibilities.
-**Fix:** No action required for this phase; flagged for awareness only if `Tip:Update()` grows again — consider splitting into `Tip:UpdateNumberMode()`/`Tip:UpdateBarMode()` helpers in a future cleanup pass.
-
 ---
 
-_Reviewed: 2026-07-02T00:00:00Z_
+_Reviewed: 2026-07-07T00:00:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
