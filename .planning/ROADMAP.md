@@ -235,7 +235,7 @@ Plans:
   6. A fresh/legacy DB loads cleanly — the new color/toggle fields default correctly with no settings wipe and no Lua error.
   7. The test suite passes via the fengari harness, with new coverage for config-driven stack colors and the color-by-stack toggle fallback.
 
-**Plans:** 4/6 plans executed
+**Plans:** 5/6 plans executed
 
 Plans:
 **Wave 1**
@@ -252,7 +252,7 @@ Plans:
 *Wave 1*
 
 - [x] 06-04-PLAN.md — Widget removal & per-mode visibility: move Scale + Border color to bar-only, delete Enabled checkbox (keep DB field), delete position Reset button + orphaned ResetPosition; confirm no /dmax mode subcommand (DISP-05, DISP-07)
-- [ ] 06-05-PLAN.md — Stack-color default-display fix: DEFAULTS.tip.stackColors to named-key form + SETTINGS_MIGRATION bump so pickers show real colors instead of ffffff; update core_spec assertions (DISP-06)
+- [x] 06-05-PLAN.md — Stack-color default-display fix: DEFAULTS.tip.stackColors to named-key form + SETTINGS_MIGRATION bump so pickers show real colors instead of ffffff; update core_spec assertions (DISP-06)
 
 *Wave 2 (blocked on 06-04)*
 
