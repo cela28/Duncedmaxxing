@@ -385,12 +385,12 @@ describe("Tip:ScheduleCastVerify serial-mismatch", function()
         syncCallCount = 0
 
         -- Advance past the first (AURA_VERIFY_DELAY = 2.0s) verify timer only, NOT
-        -- the FINAL one (FINAL_AURA_VERIFY_DELAY = 2.05s). The gap between them is
-        -- just 0.05s, so the advance margin must land inside (2.0, 2.05).
+        -- the FINAL one (FINAL_AURA_VERIFY_DELAY = 2.25s). The gap between them is
+        -- 0.25s, so the advance margin must land inside (2.0, 2.25).
         --
         -- Both ApplySpell calls happened at clock.now=100; each schedules two timers,
-        -- at fireAt=102.0 (AURA_VERIFY_DELAY) and fireAt=102.05 (FINAL). Advancing to
-        -- 102.02 fires only the 102.0 timers for BOTH serials — the 102.05 timers stay
+        -- at fireAt=102.0 (AURA_VERIFY_DELAY) and fireAt=102.25 (FINAL). Advancing to
+        -- 102.02 fires only the 102.0 timers for BOTH serials — the 102.25 timers stay
         -- pending, so serial-2's SyncFromAura runs exactly once (not twice).
         -- serial-1 timer → early return (no sync). serial-2 timer → calls SyncFromAura.
         -- Net call count should be exactly 1 (the valid serial-2 call).
