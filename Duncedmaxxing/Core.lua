@@ -74,12 +74,39 @@ local function StackColorsAreLegacyFormat(stackColors)
         return false
     end
 
-    local first = stackColors[0]
-    if type(first) ~= "table" then
-        return false
+    -- Legacy entries store components positionally as { [1]=r, [2]=g, [3]=b, [4]=a }.
+    -- In production MergeDefaults runs before NormalizeDB and injects .r/.g/.b/.a default
+    -- keys into these tables, but it leaves the numeric indices intact -- so a lingering
+    -- numeric [1] is the reliable legacy signal (a check on .r == nil would miss the
+    -- post-merge mixed shape). Scan every slot (0-3) so a partially-migrated table is
+    -- still detected and repaired.
+    for i = 0, 3 do
+        local entry = stackColors[i]
+        if type(entry) == "table" and entry[1] ~= nil then
+            return true
+        end
     end
 
-    return first.r == nil and first[1] ~= nil
+    return false
+end
+
+local function ConvertLegacyStackColors(stackColors)
+    local converted = {}
+
+    for i = 0, 3 do
+        local entry = stackColors[i]
+        if type(entry) == "table" and entry[1] ~= nil then
+            -- Recover the user's customized colors from the positional data and drop the
+            -- stale numeric keys (plus any default .r/.g/.b/.a that MergeDefaults injected).
+            converted[i] = { r = entry[1], g = entry[2], b = entry[3], a = entry[4] }
+        elseif type(entry) == "table" then
+            converted[i] = entry
+        else
+            converted[i] = CopyDefaults(DEFAULTS.tip.stackColors[i])
+        end
+    end
+
+    return converted
 end
 
 local function NormalizeDB(db)
@@ -87,7 +114,7 @@ local function NormalizeDB(db)
 
     if db.settingsMigration ~= SETTINGS_MIGRATION then
         if StackColorsAreLegacyFormat(tip.stackColors) then
-            tip.stackColors = CopyDefaults(DEFAULTS.tip.stackColors)
+            tip.stackColors = ConvertLegacyStackColors(tip.stackColors)
         end
 
         tip.barWidth = nil

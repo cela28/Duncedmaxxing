@@ -185,9 +185,12 @@ describe("NormalizeDB — migration branch preserves user customizations (SC-6 r
                 numberFontSize   = 40,
                 borderColor      = { r = 0.5, g = 0, b = 0, a = 1 },
                 colorByStack     = false,
+                -- Legacy positional shape, with a deliberately CUSTOM stack-1 color
+                -- (0.9 red) that differs from the default 0.18039 green so the test can
+                -- prove the user's customization is recovered, not silently defaulted.
                 stackColors = {
                     [0] = { 1, 1, 1, 1 },
-                    [1] = { 0.18039, 0.8, 0.44314, 1 },
+                    [1] = { 0.9, 0.1, 0.1, 1 },
                     [2] = { 1, 0.94118, 0, 1 },
                     [3] = { 1, 0.29804, 0.18824, 1 },
                 },
@@ -200,8 +203,14 @@ describe("NormalizeDB — migration branch preserves user customizations (SC-6 r
     it("preserves non-position customizations and repairs legacy stackColors shape when migrating from the shipped v1.0.0 token", function()
         local db = shippedLegacyDB()
 
+        -- Mirror the real production init order (Core.lua:206-207): MergeDefaults runs
+        -- FIRST and injects .r/.g/.b/.a into the legacy positional entries, THEN
+        -- NormalizeDB runs the migration. Calling NormalizeDB alone (as the prior test
+        -- did) exercises a path that never occurs at runtime.
+        db = DMX._test.MergeDefaults(DMX.defaults, db)
         DMX._test.NormalizeDB(db)
 
+        -- Non-position customizations survive the migration token bump.
         assert.equals("number", db.tip.displayMode)
         assert.is_true(db.tip.hideWhenEmpty)
         assert.equals(400, db.tip.width)
@@ -210,8 +219,24 @@ describe("NormalizeDB — migration branch preserves user customizations (SC-6 r
         assert.near(0.5, db.tip.borderColor.r, 0.00001)
         assert.is_false(db.tip.colorByStack)
 
-        assert.is_table(db.tip.stackColors[0])
-        assert.near(1, db.tip.stackColors[0].r, 0.00001)
+        -- Legacy positional stackColors are converted to named-key form for every slot,
+        -- and the stale numeric array keys are removed.
+        for i = 0, 3 do
+            assert.is_table(db.tip.stackColors[i])
+            for _, key in ipairs({ "r", "g", "b", "a" }) do
+                assert.is_true(type(db.tip.stackColors[i][key]) == "number",
+                    "stackColors[" .. i .. "]." .. key .. " should be a number after migration")
+            end
+            assert.is_nil(db.tip.stackColors[i][1],
+                "stale positional key stackColors[" .. i .. "][1] should be removed")
+        end
+
+        -- The user's CUSTOM stack-1 color (0.9 red) is recovered from the positional
+        -- data, not overwritten with the 0.18039 default.
+        assert.near(0.9, db.tip.stackColors[1].r, 0.00001)
+        assert.near(0.1, db.tip.stackColors[1].g, 0.00001)
+        assert.near(0.1, db.tip.stackColors[1].b, 0.00001)
+        assert.near(1,   db.tip.stackColors[0].r, 0.00001)
 
         assert.equals(DMX._test.SETTINGS_MIGRATION, db.settingsMigration)
     end)
