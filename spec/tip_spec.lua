@@ -491,9 +491,9 @@ describe("QUAL-02 -- frame references on Tip table", function()
 end)
 
 -- ---------------------------------------------------------------------------
--- Caching -- isSurvival and spellTexture
+-- Caching -- isSurvival
 -- ---------------------------------------------------------------------------
-describe("Caching -- isSurvival and spellTexture", function()
+describe("Caching -- isSurvival", function()
     local DMX, Tip, clock
 
     before_each(function()
@@ -526,18 +526,6 @@ describe("Caching -- isSurvival and spellTexture", function()
         Tip.isSurvival = true  -- set a known state
         Tip:OnEvent("PLAYER_SPECIALIZATION_CHANGED", "target")
         assert.is_true(Tip.isSurvival)
-    end)
-
-    -- spellTexture should be populated (non-nil) after Initialize.
-    it("Tip.spellTexture is non-nil after Initialize", function()
-        DMX, Tip, clock = loader.load()
-        assert.is_not_nil(Tip.spellTexture)
-    end)
-
-    -- C_Spell.GetSpellTexture stub returns 132275; that must be stored.
-    it("Tip.spellTexture equals expected icon ID after Initialize", function()
-        DMX, Tip, clock = loader.load()
-        assert.equals(132275, Tip.spellTexture)
     end)
 
     -- PLAYER_TALENT_UPDATE must refresh isSurvival from the spec API.

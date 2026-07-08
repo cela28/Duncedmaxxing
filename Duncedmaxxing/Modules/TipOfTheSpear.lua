@@ -9,7 +9,6 @@ local BUFF_DURATION = 10
 local AURA_VERIFY_DELAY = 2.0
 local FINAL_AURA_VERIFY_DELAY = 2.25
 local CONSUMER_UPSYNC_GRACE = 2.75
-local FALLBACK_ICON = 132275
 local TRACKER_WIDTH = 247
 local TRACKER_HEIGHT = 10
 local BORDER_SIZE = 1
@@ -61,7 +60,6 @@ Tip.auraVerifyPending = false
 Tip.lastPredictAt = 0
 Tip.lastPredictKind = nil
 Tip.hasTwinFangs  = false
-Tip.spellTexture  = nil
 
 local function ClampStacks(value)
     value = tonumber(value) or 0
@@ -141,20 +139,6 @@ local function ColorTuple(color, fallback)
         color.g or color[2] or fallback.g or fallback[2] or 1,
         color.b or color[3] or fallback.b or fallback[3] or 1,
         color.a or color[4] or fallback.a or fallback[4] or 1
-end
-
--- Called once at Initialize and on PLAYER_LOGIN to populate tip.spellTexture.
--- C_Spell.GetSpellTexture returns two values (iconID, originalIconID);
--- only the first is captured — Lua discards the second implicitly.
-local function CacheSpellTexture(tip)
-    local tex
-    if C_Spell and C_Spell.GetSpellTexture then
-        tex = C_Spell.GetSpellTexture(TIP_OF_THE_SPEAR)
-    end
-    if not tex and _G.GetSpellTexture then
-        tex = _G.GetSpellTexture(TIP_OF_THE_SPEAR)
-    end
-    tip.spellTexture = tex or FALLBACK_ICON
 end
 
 local function ApplyPosition(tip)
@@ -691,7 +675,6 @@ function Tip:OnEvent(event, ...)
         self:Update()
         return
     elseif event == "PLAYER_LOGIN" or event == "PLAYER_ENTERING_WORLD" then
-        CacheSpellTexture(self)
         self:RefreshActive()
         self:SyncFromAura()
         self:Update()
@@ -738,7 +721,6 @@ function Tip:Initialize(core)
     self.inCombat = InCombatLockdown and InCombatLockdown() or false
     self.hasTwinFangs = HasTwinFangs()
     self.isSurvival   = DMX:IsSurvivalHunter()
-    CacheSpellTexture(self)
     self:RefreshLayout()
 
     self.eventFrame = CreateFrame("Frame")
