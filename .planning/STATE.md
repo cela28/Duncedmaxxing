@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-07-08)
 Phase: 07
 Plan: Not started
 Status: Phase complete — ready for verification
-Last activity: 2026-07-08 — Phase 07 complete
+Last activity: 2026-07-09 — Completed quick task 260709-15i: remove orphaned GetSpellTexture stubs
 
 Progress: [██████████] 100%
 
@@ -140,6 +140,7 @@ None yet.
 | 260707-0sb | Raise AURA_VERIFY_DELAY 1.25 → 2.0 (delay earliest post-cast aura sync) | 2026-07-06 | ea08235 | [260707-0sb-change-aura-verify-delay-in-duncedmaxxin](./quick/260707-0sb-change-aura-verify-delay-in-duncedmaxxin/) |
 | 260707-1jr | Raise FINAL_AURA_VERIFY_DELAY 2.05 → 2.25 (widen backstop-read stagger) | 2026-07-06 | 9370711 | [260707-1jr-raise-final-aura-verify-delay-in-duncedm](./quick/260707-1jr-raise-final-aura-verify-delay-in-duncedm/) |
 | 260708-w5r | Finish Reset Style button removal — delete orphaned DMX:ResetTipStyle from Core.lua | 2026-07-08 | b3c3c43 | [260708-w5r-finish-reset-style-button-removal-delete](./quick/260708-w5r-finish-reset-style-button-removal-delete/) |
+| 260709-15i | Remove orphaned C_Spell.GetSpellTexture/GetSpellTexture mock stubs from spec/support/wow_stubs.lua (07-REVIEW.md IN-01) | 2026-07-09 | 49e1f01 | [260709-15i-remove-orphaned-c-spell-getspelltexture-](./quick/260709-15i-remove-orphaned-c-spell-getspelltexture-/) |
 
 ### Blockers/Concerns
 
