@@ -70,6 +70,12 @@ describe("MergeDefaults", function()
             assert.near(edited[key], result.tip.stackColors[1][key], 0.00001)
         end
     end)
+
+    it("does not reintroduce removed iconSize/iconSpacing keys into merged tip defaults", function()
+        local result = DMX._test.MergeDefaults(DMX.defaults, {})
+        assert.is_nil(result.tip.iconSize)
+        assert.is_nil(result.tip.iconSpacing)
+    end)
 end)
 
 describe("NormalizeDB — migration branch (settingsMigration does not match)", function()
