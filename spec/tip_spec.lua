@@ -203,8 +203,19 @@ describe("Tip:ApplySpell", function()
     -- Regression: 265189 must be in CONSUMERS so ClassifySpellID returns "consumer" for it;
     -- ApplySpell with explicit kind="consumer" exercises the same plain -1 branch as 186270.
     it("Aspect-of-the-Eagle Raptor Strike (265189) decrements 1 stack instantly", function()
+        assert.equals("consumer", Tip._test.ClassifySpellID(265189))  -- D-06 hardening
         Tip.stacks = 2
         Tip:ApplySpell("consumer", 265189)  -- Aspect-of-the-Eagle ranged Raptor Strike
+        assert.equals(1, Tip.stacks)
+    end)
+
+    -- Raptor Swipe (1262293) decrements 1 stack instantly (plain consumer path)
+    -- Regression: 1262293 must be in CONSUMERS so ClassifySpellID returns "consumer" for it;
+    -- Base Raptor Swipe, pairs with 1262343 (Aspect-of-the-Eagle ranged variant).
+    it("Raptor Swipe (1262293) decrements 1 stack instantly", function()
+        assert.equals("consumer", Tip._test.ClassifySpellID(1262293))  -- D-06 hardening
+        Tip.stacks = 2
+        Tip:ApplySpell("consumer", 1262293)  -- Base Raptor Swipe
         assert.equals(1, Tip.stacks)
     end)
 
@@ -212,6 +223,7 @@ describe("Tip:ApplySpell", function()
     -- Regression: 1262343 must be in CONSUMERS so ClassifySpellID returns "consumer" for it;
     -- Pairs with 1262293 (base Raptor Swipe) the same way 265189 pairs with 186270 (Raptor Strike).
     it("Aspect-of-the-Eagle Raptor Swipe (1262343) decrements 1 stack instantly", function()
+        assert.equals("consumer", Tip._test.ClassifySpellID(1262343))  -- D-06 hardening
         Tip.stacks = 2
         Tip:ApplySpell("consumer", 1262343)  -- Aspect-of-the-Eagle ranged Raptor Swipe
         assert.equals(1, Tip.stacks)

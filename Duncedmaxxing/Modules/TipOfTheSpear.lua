@@ -758,4 +758,10 @@ function Tip:Initialize(core)
     end)
 end
 
+-- Test-only escape hatch: exposes local functions for spec/tip_spec.lua.
+-- Do not use in production addon code.
+Tip._test = {
+    ClassifySpellID = ClassifySpellID,
+}
+
 DMX:RegisterModule("tip", Tip)
