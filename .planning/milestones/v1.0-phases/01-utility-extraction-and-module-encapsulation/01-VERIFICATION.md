@@ -1,10 +1,22 @@
 ---
 phase: 01-utility-extraction-and-module-encapsulation
 verified: 2026-06-22T00:00:00Z
-status: human_needed
-score: 7/9 must-haves verified
-behavior_unverified: 2
+status: passed
+score: 7/9 must-haves verified (2 runtime items later confirmed in-game)
+behavior_unverified: 0
 overrides_applied: 0
+human_resolved: 2026-06-23
+human_resolved_by: cela28
+human_resolved_via: "01-HUMAN-UAT.md — full-milestone smoke test (7 passed, 1 skipped, 0 issues)"
+human_resolved_note: >
+  The 2 behavior-unverified runtime items were confirmed in-game and the phase
+  is now marked passed. Kill Command with Twin Fangs shows the correct flat-2
+  grant with no transient over-count (smoke Test 2); predictive spender
+  decrement is instant (smoke Test 4); the addon loads with no Lua errors
+  (smoke Test 1, SC-5). The Aspect-of-the-Eagle Raptor Strike / Raptor Swipe
+  spell IDs (265189, 1262343, 1262293) were registered as consumers (plan
+  01-04, quick 260622-tyy, Phase 7 tests) and accepted by the author; residual
+  patch-12.0.5 spell-ID confirmation is an accepted low-risk item.
 re_verification:
   previous_status: human_needed
   previous_score: 4/5
@@ -45,7 +57,7 @@ human_verification:
 
 **Phase Goal:** The codebase has a clean structural foundation — shared utilities live in one place, frame references are accessible for testing, and module iteration is ordered.
 **Verified:** 2026-06-22T00:00:00Z
-**Status:** human_needed
+**Status:** passed (2 runtime items confirmed in-game via 01-HUMAN-UAT.md, 2026-06-23)
 **Re-verification:** Yes — gap-closure plans 01-03 (Kill Command stack-overshoot) and 01-04 (Raptor Strike + Aspect of the Eagle lag) added since initial verification.
 
 ---

@@ -1,4 +1,5 @@
 ---
+status: complete
 phase: quick
 plan: 260622-hmo
 subsystem: tip-of-the-spear

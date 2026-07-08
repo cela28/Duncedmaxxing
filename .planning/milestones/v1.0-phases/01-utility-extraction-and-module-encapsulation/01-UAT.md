@@ -1,9 +1,15 @@
 ---
-status: diagnosed
+status: complete
 phase: 01-utility-extraction-and-module-encapsulation
 source: [01-01-SUMMARY.md, 01-02-SUMMARY.md]
 started: 2026-06-21T21:11:37Z
-updated: 2026-06-21T21:15:20Z
+updated: 2026-06-23T00:00:00Z
+resolution: >
+  Both diagnosed issues were fixed and re-confirmed. Test 3 (Kill Command
+  over-count) closed by plan 01-03 (generator grant decoupled from Twin Fangs
+  to a flat 2); Test 6 (Raptor Strike lag under Aspect of the Eagle) closed by
+  plan 01-04 (265189 registered as a consumer). Both re-verified in-game via
+  01-HUMAN-UAT.md (smoke Tests 2 and 4, 0 issues).
 ---
 
 ## Current Test

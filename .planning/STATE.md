@@ -1,13 +1,13 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-milestone_name: "tech debt: remove dead code"
-current_phase: 07
-status: verifying
-stopped_at: Completed 07-03-PLAN.md (phase 07 complete)
-last_updated: "2026-07-08T21:45:41.560Z"
-last_activity: 2026-07-08
-last_activity_desc: Phase 07 complete
+milestone_name: "Polish Pass"
+current_phase: 0
+status: Awaiting next milestone
+stopped_at: Milestone v1.0 completed and archived
+last_updated: "2026-07-09T00:00:00.000Z"
+last_activity: 2026-07-09
+last_activity_desc: Milestone v1.0 completed and archived
 progress:
   total_phases: 8
   completed_phases: 8
@@ -21,19 +21,17 @@ current_phase_name: address-v1-0-tech-debt-remove-dead-code-tip-spelltexture-dmx
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-07-08)
+See: .planning/PROJECT.md (updated 2026-07-09)
 
 **Core value:** Accurate, instant stack display during combat
-**Current focus:** Phase 07 — address-v1-0-tech-debt-remove-dead-code-tip-spelltexture-dmx
+**Current focus:** Planning next milestone (v1.0 shipped)
 
 ## Current Position
 
-Phase: 07
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-07-09 — Completed quick task 260709-15i: remove orphaned GetSpellTexture stubs
-
-Progress: [██████████] 100%
+Phase: Milestone v1.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-07-09 — Milestone v1.0 completed and archived
 
 ## Performance Metrics
 
@@ -144,8 +142,9 @@ None yet.
 
 ### Blockers/Concerns
 
-- **[Research flag — Phase 2]**: busted Lua 5.1 installation requires `--lua-version=5.1` at LuaRocks install time; mock accuracy must be reviewed against warcraft.wiki.gg before writing any test (hard gate, not follow-up)
-- **[Research flag — Phase 4]**: `C_Spell.GetSpellTexture` two-return-value behavior under patch 12.0.5 not explicitly confirmed in STACK.md — verify against warcraft.wiki.gg before implementing texture caching
+None open. (Phase 2 busted/mock-accuracy and Phase 4 `C_Spell.GetSpellTexture` research flags were both resolved during their respective phases; the texture-cache code was later retired in Phase 7.)
+
+Carry-forward for next push: confirm the committed luacheck CI job (`lint.yml`) runs green — luacheck was unavailable in the sandbox all milestone.
 
 ## Deferred Items
 
@@ -163,3 +162,7 @@ Items acknowledged and carried forward:
 Last session: 2026-07-08T21:37:40.407Z
 Stopped at: Completed 07-03-PLAN.md (phase 07 complete)
 Resume file: None
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone
