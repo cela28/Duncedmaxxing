@@ -260,34 +260,6 @@ local function SetPipBordersShown(pip, shown)
     end
 end
 
-local function LayoutPipBorder(pip, size)
-    local r, g, b, a = ColorTuple(GetCfg().borderColor, BORDER_COLOR)
-    for _, border in pairs(pip.border) do
-        border:SetVertexColor(r, g, b, a)
-    end
-
-    if size <= 0 then
-        SetPipBordersShown(pip, false)
-        return
-    end
-
-    pip.border.top:ClearAllPoints()
-    pip.border.top:SetPoint("TOPLEFT", pip, "TOPLEFT", 0, 0)
-    pip.border.top:SetSize(pip:GetWidth(), size)
-
-    pip.border.bottom:ClearAllPoints()
-    pip.border.bottom:SetPoint("BOTTOMLEFT", pip, "BOTTOMLEFT", 0, 0)
-    pip.border.bottom:SetSize(pip:GetWidth(), size)
-
-    pip.border.left:ClearAllPoints()
-    pip.border.left:SetPoint("TOPLEFT", pip, "TOPLEFT", 0, 0)
-    pip.border.left:SetSize(size, pip:GetHeight())
-
-    pip.border.right:ClearAllPoints()
-    pip.border.right:SetPoint("TOPRIGHT", pip, "TOPRIGHT", 0, 0)
-    pip.border.right:SetSize(size, pip:GetHeight())
-end
-
 local function EnsureFrame(tip)
     if tip.root then return end
 
