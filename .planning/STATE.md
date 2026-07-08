@@ -9,7 +9,7 @@ last_updated: "2026-07-08T19:48:18.534Z"
 last_activity: 2026-07-08
 last_activity_desc: "Completed quick task 260708-w5r: finish Reset Style button removal"
 progress:
-  total_phases: 7
+  total_phases: 8
   completed_phases: 7
   total_plans: 22
   completed_plans: 22
@@ -111,6 +111,7 @@ Recent decisions affecting current work:
 
 - Phase 5 added: Refactor display modes — remove icon mode and add a bar + text mode
 - Phase 6 added: Options panel v2 — per-mode option visibility, configurable per-stack colors, and the mode-selector layout fix (surfaced by Phase 05 UAT)
+- Phase 7 added: Address v1.0 tech debt — remove dead code (Tip.spellTexture, DMX.Util.ParseOnOff), fix tautological Primal Surge tests + 265189 regression bypass, review NormalizeDB db.locked reset (surfaced by v1.0 milestone audit)
 
 ### Pending Todos
 

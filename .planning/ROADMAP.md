@@ -264,3 +264,14 @@ Plans:
 
 - [x] 06-07-PLAN.md — SC-6 BLOCKER fix: replace NormalizeDB's blanket tip-wipe with a targeted stackColors re-seed (StackColorsAreLegacyFormat) so the migration-token bump no longer discards user customizations; add a regression test on the old v1.0.0 token (DISP-06)
 - [x] 06-08-PLAN.md — SC-1/SC-2 override records: formally accept the removed Enabled checkbox, bar-only Border color, and button-only mode switching in 06-VERIFICATION.md; align ROADMAP/REQUIREMENTS wording (DISP-05, DISP-07)
+
+### Phase 7: Address v1.0 tech debt: remove dead code (Tip.spellTexture, DMX.Util.ParseOnOff), fix tautological Primal Surge tests + 265189 regression test bypass, review NormalizeDB db.locked reset side effect
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 6
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 7 to break down)
