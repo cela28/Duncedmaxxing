@@ -2,7 +2,7 @@
 ## Title: |cffaad372Duncedmaxxing|r
 ## Notes: Survival Hunter Tip of the Spear Tracker
 ## Author: Dunced
-## Version: 0.3.2
+## Version: 1.1.1
 ## Category: Hunter
 ## SavedVariables: DuncedmaxxingDB
 ## IconTexture: Interface\AddOns\Duncedmaxxing\Media\duncedgers_pony.png
