@@ -477,6 +477,25 @@ describe("RefreshTip — out-of-combat aura sync (BUG-02)", function()
 end)
 
 -- ---------------------------------------------------------------------------
+-- QUAL-02 -- frame references on Tip table
+-- ---------------------------------------------------------------------------
+describe("QUAL-02 -- frame references on Tip table", function()
+    local DMX, Tip, clock
+
+    before_each(function()
+        DMX, Tip, clock = loader.load()
+    end)
+
+    it("populates all frame fields directly on the Tip module table after Initialize", function()
+        assert.is_not_nil(Tip.root)
+        assert.is_table(Tip.pips)
+        assert.is_table(Tip.borders)
+        assert.is_not_nil(Tip.label)
+        assert.is_not_nil(Tip.numberText)
+    end)
+end)
+
+-- ---------------------------------------------------------------------------
 -- Caching -- isSurvival and spellTexture
 -- ---------------------------------------------------------------------------
 describe("Caching -- isSurvival and spellTexture", function()

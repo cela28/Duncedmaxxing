@@ -354,6 +354,21 @@ describe("MergeDefaults + NormalizeDB — legacy DB gains colorByStack/stackColo
     end)
 end)
 
+describe("QUAL-04 — ordered module registry", function()
+    local DMX
+
+    before_each(function()
+        DMX = loader.load()
+    end)
+
+    it("records registered modules in an ordered moduleOrder array", function()
+        assert.is_table(DMX.moduleOrder)
+        assert.is_true(#DMX.moduleOrder >= 1)
+        assert.equals("tip", DMX.moduleOrder[1])
+        assert.is_not_nil(DMX.modules[DMX.moduleOrder[1]])
+    end)
+end)
+
 describe("NormalizeDB — deprecated fields ignored post-migration (QUAL-03)", function()
     local DMX
 
