@@ -9,23 +9,23 @@ Requirements for the polish milestone. Each maps to roadmap phases.
 
 ### Bug Fixes
 
-- [ ] **BUG-01**: auraVerifyPending flag is cleared on every exit path of the timer callback, including the early serial-mismatch return
-- [ ] **BUG-02**: Switching display modes out of combat triggers a fresh aura read so stale stack counts are not shown
-- [ ] **BUG-03**: Kill Command stack prediction reads talent state dynamically instead of hard-coding +2
-- [ ] **BUG-04**: Twin Fangs talent support — Takedown grants 3 Tip of the Spear stacks when Twin Fangs talent is active
+- [x] **BUG-01**: auraVerifyPending flag is cleared on every exit path of the timer callback, including the early serial-mismatch return
+- [x] **BUG-02**: Switching display modes out of combat triggers a fresh aura read so stale stack counts are not shown
+- [x] **BUG-03**: Kill Command stack prediction reads talent state dynamically instead of hard-coding +2
+- [x] **BUG-04**: Twin Fangs talent support — Takedown grants 3 Tip of the Spear stacks when Twin Fangs talent is active
 
 ### Code Quality
 
-- [ ] **QUAL-01**: Shared utility functions (Clamp, ParseHexColor, Trim, ParseOnOff) extracted to Duncedmaxxing/Util.lua loaded before Core.lua and Options.lua via TOC order
-- [ ] **QUAL-02**: Module-level frame locals (root, pips, borders, label, numberText) moved to Tip table fields (Tip.root, Tip.pips, etc.)
-- [ ] **QUAL-03**: Dead post-migration fallback block in NormalizeDB (lines 125-133) removed with settings migration version bump
-- [ ] **QUAL-04**: ForEachModule uses ordered moduleOrder array instead of unordered pairs iteration
-- [ ] **QUAL-05**: Unnecessary pcall wrapper removed from ClassifySpellID — pure table lookup needs no error protection
+- [x] **QUAL-01**: Shared utility functions (Clamp, ParseHexColor, Trim, ParseOnOff) extracted to Duncedmaxxing/Util.lua loaded before Core.lua and Options.lua via TOC order
+- [x] **QUAL-02**: Module-level frame locals (root, pips, borders, label, numberText) moved to Tip table fields (Tip.root, Tip.pips, etc.)
+- [x] **QUAL-03**: Dead post-migration fallback block in NormalizeDB (lines 125-133) removed with settings migration version bump
+- [x] **QUAL-04**: ForEachModule uses ordered moduleOrder array instead of unordered pairs iteration
+- [x] **QUAL-05**: Unnecessary pcall wrapper removed from ClassifySpellID — pure table lookup needs no error protection
 
 ### Performance
 
-- [ ] **PERF-01**: Spec state (IsSurvivalHunter result) cached and only re-checked on PLAYER_SPECIALIZATION_CHANGED and PLAYER_TALENT_UPDATE events, not on every Update call
-- [ ] **PERF-02**: Spell texture resolved and cached once at Initialize time (and on PLAYER_LOGIN), not on every Update and RefreshLayout call
+- [x] **PERF-01**: Spec state (IsSurvivalHunter result) cached and only re-checked on PLAYER_SPECIALIZATION_CHANGED and PLAYER_TALENT_UPDATE events, not on every Update call
+- [x] **PERF-02**: Spell texture resolved and cached once at Initialize time (and on PLAYER_LOGIN), not on every Update and RefreshLayout call
 
 ### Testing
 
@@ -47,7 +47,7 @@ Requirements for the polish milestone. Each maps to roadmap phases.
 
 ### CI/CD
 
-- [ ] **CICD-01**: GitHub Actions release workflow that packages addon files into a distributable zip on tag push (user will provide sample workflow file)
+- [x] **CICD-01**: GitHub Actions release workflow that packages addon files into a distributable zip on tag push (user will provide sample workflow file)
 
 ### Display Modes
 
@@ -94,17 +94,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CLN-03 | Phase 0 | Complete |
 | CLN-04 | Phase 0 | Complete |
 | CLN-05 | Phase 0 | Complete |
-| BUG-01 | Phase 3 | Pending |
-| BUG-02 | Phase 3 | Pending |
-| BUG-03 | Phase 3 | Pending |
-| BUG-04 | Phase 3 | Pending |
-| QUAL-01 | Phase 1 | Pending |
-| QUAL-02 | Phase 1 | Pending |
-| QUAL-03 | Phase 3 | Pending |
-| QUAL-04 | Phase 1 | Pending |
-| QUAL-05 | Phase 1 | Pending |
-| PERF-01 | Phase 4 | Pending |
-| PERF-02 | Phase 4 | Pending |
+| BUG-01 | Phase 3 | Complete |
+| BUG-02 | Phase 3 | Complete |
+| BUG-03 | Phase 3 | Complete |
+| BUG-04 | Phase 3 | Complete |
+| QUAL-01 | Phase 1 | Complete |
+| QUAL-02 | Phase 1 | Complete |
+| QUAL-03 | Phase 3 | Complete |
+| QUAL-04 | Phase 1 | Complete |
+| QUAL-05 | Phase 1 | Complete |
+| PERF-01 | Phase 4 | Complete |
+| PERF-02 | Phase 4 | Complete |
 | TEST-01 | Phase 2 | Complete |
 | TEST-02 | Phase 2 | Complete |
 | TEST-03 | Phase 2 | Complete |
@@ -112,7 +112,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TEST-05 | Phase 2 | Complete |
 | TEST-06 | Phase 2 | Complete |
 | TEST-07 | Phase 2 | Complete |
-| CICD-01 | Phase 4 | Pending |
+| CICD-01 | Phase 4 | Complete |
 | DISP-01 | Phase 5 | Complete |
 | DISP-02 | Phase 5 | Complete |
 | DISP-03 | Phase 5 | Complete |
@@ -129,4 +129,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-06-17*
-*Last updated: 2026-06-17 after roadmap creation*
+*Last updated: 2026-07-08 after v1.0 milestone audit (checkbox/traceability reconciliation)*
