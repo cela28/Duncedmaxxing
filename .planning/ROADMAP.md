@@ -278,7 +278,7 @@ Plans:
   4. The `db.locked = true` migration line is retained and documented with an intent comment (D-07)
   5. The fengari suite is green and luacheck reports zero warnings
 
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 **Wave 1** *(parallel — no file overlap)*
@@ -288,4 +288,4 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 07-03-PLAN.md — Phase gate: whole-tree grep-absence sweep + full-suite regression, and luacheck zero-warnings gate (human-verify — luacheck absent in sandbox)
+- [x] 07-03-PLAN.md — Phase gate: whole-tree grep-absence sweep + full-suite regression, and luacheck zero-warnings gate (human-verify — luacheck absent in sandbox)
