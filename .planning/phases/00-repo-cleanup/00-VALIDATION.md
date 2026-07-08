@@ -1,10 +1,11 @@
 ---
 phase: 0
 slug: repo-cleanup
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: approved
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-06-17
+validated: 2026-07-09
 ---
 
 # Phase 0 — Validation Strategy
@@ -38,14 +39,16 @@ created: 2026-06-17
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 00-01-01 | 01 | 1 | CLN-01 | — | N/A | shell assertion | `git ls-files "*:Zone.Identifier" \| wc -l \| grep -q "^0$"` | ✅ | ⬜ pending |
-| 00-01-02 | 01 | 1 | CLN-01 | — | N/A | shell assertion | `find . -name "*:Zone.Identifier" -not -path "./.git/*" \| wc -l \| grep -q "^0$"` | ✅ | ⬜ pending |
-| 00-01-03 | 01 | 1 | CLN-02 | — | N/A | shell assertion | `[ ! -f API_REFERENCES.md ] && ! git ls-files --error-unmatch API_REFERENCES.md 2>/dev/null` | ✅ | ⬜ pending |
-| 00-01-04 | 01 | 1 | CLN-03 | — | N/A | shell assertion | `[ ! -f DEVELOPMENT_NOTES.md ] && ! git ls-files --error-unmatch DEVELOPMENT_NOTES.md 2>/dev/null` | ✅ | ⬜ pending |
-| 00-01-05 | 01 | 1 | CLN-04 | — | N/A | shell assertion | `grep -qF "*:Zone.Identifier" .gitignore` | ✅ | ⬜ pending |
-| 00-01-06 | 01 | 1 | CLN-05 | — | N/A | shell assertion | `find . -maxdepth 1 -name "*.toc" \| grep -q "." && find . -maxdepth 1 -name "*.lua" \| grep -q "." && [ -d Modules ] && [ -d Media ]` | ✅ | ⬜ pending |
+| 00-01-01 | 01 | 1 | CLN-01 | T-00-01 | No NTFS zone metadata leaks into the repo | shell assertion | `test "$(git ls-files "*:Zone.Identifier" \| wc -l)" -eq 0` | ✅ | ✅ green |
+| 00-01-02 | 01 | 1 | CLN-01 | T-00-01 | No NTFS zone metadata on disk | shell assertion | `test "$(find . -name "*:Zone.Identifier" -not -path "./.git/*" \| wc -l)" -eq 0` | ✅ | ✅ green |
+| 00-01-03 | 01 | 1 | CLN-02 | — | Stale doc removed (index + disk) | shell assertion | `test "$(git ls-files API_REFERENCES.md \| wc -l)" -eq 0 && [ ! -f API_REFERENCES.md ]` | ✅ | ✅ green |
+| 00-01-04 | 01 | 1 | CLN-03 | — | Stale doc removed (index + disk) | shell assertion | `test "$(git ls-files DEVELOPMENT_NOTES.md \| wc -l)" -eq 0 && [ ! -f DEVELOPMENT_NOTES.md ]` | ✅ | ✅ green |
+| 00-01-05 | 01 | 1 | CLN-04 | T-00-02 | Pattern present; `.planning/` NOT ignored (D-02) | shell assertion | `grep -qF "*:Zone.Identifier" .gitignore && ! grep -qE "^\.?/?\.planning/?$" .gitignore` | ✅ | ✅ green |
+| 00-01-06 | 01 | 1 | CLN-05 | — | WoW addon layout intact | shell assertion | `find Duncedmaxxing -maxdepth 1 -name "*.toc" \| grep -q "." && find Duncedmaxxing -maxdepth 1 -name "*.lua" \| grep -q "." && [ -d Duncedmaxxing/Modules ] && [ -d Duncedmaxxing/Media ]` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+
+> **CLN-05 path note (2026-07-09):** the addon was relocated from the repo root into a `Duncedmaxxing/` subfolder during Phase 1 (module encapsulation). The original VALIDATION.md commands used `-maxdepth 1` at the repo root and now report red against current layout even though the structure is intact. The commands above are corrected to the nested `Duncedmaxxing/` layout; all four checks pass green.
 
 ---
 
@@ -63,11 +66,23 @@ All phase behaviors have automated verification.
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 2s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references (none — no framework needed)
+- [x] No watch-mode flags
+- [x] Feedback latency < 2s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-07-09
+
+---
+
+## Validation Audit 2026-07-09
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 (all 5 CLN reqs have automated shell-assertion verification) |
+| Resolved | 0 |
+| Escalated | 0 |
+
+State A audit: existing VALIDATION.md was structurally complete but never finalized (all statuses `pending`, `nyquist_compliant: false`). Ran the full assertion battery — **12/12 checks pass green** — and finalized statuses, sign-off, and frontmatter. No test files generated: this is a file-cleanup phase whose correct verification type is shell assertions, not a unit-test framework. The only correction was CLN-05's commands, updated for the post-Phase-1 `Duncedmaxxing/` nested layout (see path note above).
