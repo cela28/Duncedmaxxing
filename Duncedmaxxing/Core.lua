@@ -198,18 +198,6 @@ function DMX:RefreshTip()
     RefreshTip(self:GetModule("tip"))
 end
 
-function DMX:ResetTipStyle()
-    local db = self:GetDB()
-    if not db then return end
-
-    local x, y, scale = db.tip.x, db.tip.y, db.tip.scale
-    local optionsX, optionsY = db.tip.optionsX, db.tip.optionsY
-    db.tip = CopyDefaults(DEFAULTS.tip)
-    db.tip.x, db.tip.y, db.tip.scale = x, y, scale
-    db.tip.optionsX, db.tip.optionsY = optionsX, optionsY
-    self:RefreshTip()
-end
-
 local function RegisterSlashCommands()
     SLASH_DUNCEDMAXXING1 = "/duncedmaxxing"
     SLASH_DUNCEDMAXXING2 = "/dmax"

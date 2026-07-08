@@ -208,7 +208,7 @@ function Options:BuildWindow()
     self.colorGroups = { flat = {}, stack = {} }
 
     local window = CreateFrame("Frame", "DuncedmaxxingOptionsWindow", UIParent)
-    window:SetSize(386, 400)
+    window:SetSize(386, 370)
     window:SetFrameStrata("DIALOG")
     window:SetFrameLevel(90)
     window:SetClampedToScreen(true)
@@ -429,11 +429,6 @@ function Options:BuildWindow()
         local tip = DMX:GetModule("tip")
         if tip and tip.SetTestStacks then
             tip:SetTestStacks(3)
-        end
-    end)
-    CreateButton(window, "Reset Style", LEFT_X, -354, 96, 24, function()
-        if DMX.ResetTipStyle then
-            DMX:ResetTipStyle()
         end
     end)
 
