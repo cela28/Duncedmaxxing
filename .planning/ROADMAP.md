@@ -267,11 +267,25 @@ Plans:
 
 ### Phase 7: Address v1.0 tech debt: remove dead code (Tip.spellTexture, DMX.Util.ParseOnOff), fix tautological Primal Surge tests + 265189 regression test bypass, review NormalizeDB db.locked reset side effect
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** The v1.0 milestone-audit tech debt is cleared — three dead-code symbols (`hasPrimalSurge`, `Tip.spellTexture`/`CacheSpellTexture`/`FALLBACK_ICON`, `DMX.Util.ParseOnOff`) are fully removed with zero orphaned references, the tautological Primal Surge tests and the 265189/Raptor-Swipe regression tests are replaced with real `ClassifySpellID` CONSUMERS-membership assertions, the self-contradictory generator-branch comment is rewritten, and the `db.locked` migration reset is documented as designed — all with the fengari suite green and luacheck at zero warnings.
+**Requirements**: D-01, D-02, D-03, D-04, D-05, D-06, D-07 (CONTEXT.md decisions — no formal REQ-IDs; this phase is surfaced by the v1.0 milestone audit)
 **Depends on:** Phase 6
-**Plans:** 0 plans
+**Success Criteria** (what must be TRUE):
+
+  1. `grep -rn "hasPrimalSurge\|spellTexture\|CacheSpellTexture\|FALLBACK_ICON\|ParseOnOff" Duncedmaxxing/ spec/` returns zero matches (D-01, D-04, D-05)
+  2. The generator-branch comment states the grant is always 2 stacks with no Primal Surge / reserved-field framing, and the flat-2 grant logic is unchanged (D-03)
+  3. `Tip._test.ClassifySpellID` is exported and the 265189, 1262293, and 1262343 regression tests assert it returns `"consumer"` (D-06)
+  4. The `db.locked = true` migration line is retained and documented with an intent comment (D-07)
+  5. The fengari suite is green and luacheck reports zero warnings
+
+**Plans:** 3 plans
 
 Plans:
+**Wave 1** *(parallel — no file overlap)*
 
-- [ ] TBD (run /gsd-plan-phase 7 to break down)
+- [ ] 07-01-PLAN.md — Tip module cleanup + test hardening: Tip._test export & ClassifySpellID assertions (D-06), remove hasPrimalSurge + rewrite generator comment (D-01/02/03), remove spellTexture/CacheSpellTexture/FALLBACK_ICON + both call sites (D-04)
+- [ ] 07-02-PLAN.md — Util + Core cleanup: remove DMX.Util.ParseOnOff (D-05), document the db.locked migration intent (D-07)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 07-03-PLAN.md — Phase gate: whole-tree grep-absence sweep + full-suite regression, and luacheck zero-warnings gate (human-verify — luacheck absent in sandbox)
