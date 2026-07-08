@@ -120,6 +120,8 @@ local function NormalizeDB(db)
         tip.barWidth = nil
         tip.barHeight = nil
         tip.spacing = nil
+        -- Deliberate: re-lock the frame on every settings-migration upgrade so it
+        -- can't be accidentally dragged after layout defaults change (D-07).
         db.locked = true
         db.settingsMigration = SETTINGS_MIGRATION
     end
