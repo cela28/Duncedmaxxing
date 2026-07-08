@@ -128,7 +128,7 @@ None yet.
 | 260624-0hx | Reduce slash interface to settings-only (/dmax opens settings); de-bloat README | 2026-06-24 | 893c3a1 | [260624-0hx-reduce-slash-interface-to-settings-only-](./quick/260624-0hx-reduce-slash-interface-to-settings-only-/) |
 | 260707-0sb | Raise AURA_VERIFY_DELAY 1.25 → 2.0 (delay earliest post-cast aura sync) | 2026-07-06 | ea08235 | [260707-0sb-change-aura-verify-delay-in-duncedmaxxin](./quick/260707-0sb-change-aura-verify-delay-in-duncedmaxxin/) |
 | 260707-1jr | Raise FINAL_AURA_VERIFY_DELAY 2.05 → 2.25 (widen backstop-read stagger) | 2026-07-06 | 9370711 | [260707-1jr-raise-final-aura-verify-delay-in-duncedm](./quick/260707-1jr-raise-final-aura-verify-delay-in-duncedm/) |
-| 260708-w5r | Finish Reset Style button removal — delete orphaned DMX:ResetTipStyle from Core.lua | 2026-07-08 | bf7a01d | [260708-w5r-finish-reset-style-button-removal-delete](./quick/260708-w5r-finish-reset-style-button-removal-delete/) |
+| 260708-w5r | Finish Reset Style button removal — delete orphaned DMX:ResetTipStyle from Core.lua | 2026-07-08 | b3c3c43 | [260708-w5r-finish-reset-style-button-removal-delete](./quick/260708-w5r-finish-reset-style-button-removal-delete/) |
 
 ### Blockers/Concerns
 
