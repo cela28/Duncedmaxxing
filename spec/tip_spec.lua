@@ -28,7 +28,6 @@ describe("Tip:ApplySpell", function()
 
     -- Generator: adds BASE (2) stacks from 0 (flat-2 fallback path; Primal Surge ID unverifiable offline)
     it("adds BASE stacks on generator from zero (flat-2 fallback: BASE=2)", function()
-        Tip.hasPrimalSurge = false
         Tip:ApplySpell("generator")
         assert.equals(2, Tip.stacks)
     end)
@@ -117,7 +116,7 @@ describe("Tip:ApplySpell", function()
     -- Expiry timer fires after BUFF_DURATION and zeroes stacks
     it("expiry timer fires after BUFF_DURATION and zeroes stacks", function()
         Tip:ApplySpell("generator")
-        assert.equals(2, Tip.stacks)   -- BASE = 2 on flat-2 fallback path (hasPrimalSurge=false default)
+        assert.equals(2, Tip.stacks)   -- BASE = 2 on flat-2 fallback path
         -- Timer scheduled at remaining(10) + 0.03 = 10.03 seconds from now=100
         clock:advance(10.1)
         assert.equals(0, Tip.stacks)
@@ -125,28 +124,12 @@ describe("Tip:ApplySpell", function()
     end)
 
     -- Generator grant is independent of Twin Fangs (regression for kill-command-stack-overshoot)
-    -- With hasTwinFangs=true and hasPrimalSurge=false, the grant must NOT reach 3 from 0 stacks.
+    -- With hasTwinFangs=true, the grant must NOT reach 3 from 0 stacks.
     -- BASE = 2 (flat-2 fallback path; Primal Surge ID unverifiable offline).
     it("generator grant is independent of Twin Fangs: hasTwinFangs=true yields BASE (not 3) from 0 stacks", function()
         Tip.hasTwinFangs  = true
-        Tip.hasPrimalSurge = false
         Tip:ApplySpell("generator")
         assert.not_equals(3, Tip.stacks)
-        assert.equals(2, Tip.stacks)   -- BASE = 2 on flat-2 fallback path
-    end)
-
-    -- Generator grant with Primal Surge: hasPrimalSurge=true yields 2 stacks from 0
-    it("generator grant with Primal Surge yields 2 stacks from 0", function()
-        Tip.hasPrimalSurge = true
-        Tip:ApplySpell("generator")
-        assert.equals(2, Tip.stacks)
-    end)
-
-    -- Generator grant without Primal Surge: hasPrimalSurge=false yields BASE (2) stacks from 0
-    it("generator grant without Primal Surge yields BASE stacks from 0", function()
-        Tip.hasPrimalSurge = false
-        Tip.hasTwinFangs   = false
-        Tip:ApplySpell("generator")
         assert.equals(2, Tip.stacks)   -- BASE = 2 on flat-2 fallback path
     end)
 

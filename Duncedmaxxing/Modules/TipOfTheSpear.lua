@@ -61,7 +61,6 @@ Tip.auraVerifyPending = false
 Tip.lastPredictAt = 0
 Tip.lastPredictKind = nil
 Tip.hasTwinFangs  = false
-Tip.hasPrimalSurge = false
 Tip.spellTexture  = nil
 
 local function ClampStacks(value)
@@ -653,10 +652,9 @@ function Tip:ApplySpell(kind, spellID)
     local now = GetTime()
 
     if kind == "generator" then
-        -- Kill Command grant derives from Primal Surge (base 1, +1 with Primal Surge).
-        -- Flat-2 fallback: Primal Surge spell ID was not verified offline; grant is 2 in all cases.
-        -- Twin Fangs is a Takedown (consumer) modifier only and must NOT affect the generator path.
-        local grant = 2  -- flat-2 fallback (hasPrimalSurge field reserved for future ID resolution)
+        -- Kill Command (generator) always grants 2 stacks. Twin Fangs is a Takedown
+        -- (consumer) modifier only and must NOT affect this generator path.
+        local grant = 2
         self.stacks = ClampStacks(self.stacks + grant)
         self.expiresAt = now + BUFF_DURATION
     elseif kind == "consumer" then
