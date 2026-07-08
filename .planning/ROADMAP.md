@@ -278,13 +278,13 @@ Plans:
   4. The `db.locked = true` migration line is retained and documented with an intent comment (D-07)
   5. The fengari suite is green and luacheck reports zero warnings
 
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 **Wave 1** *(parallel — no file overlap)*
 
 - [x] 07-01-PLAN.md — Tip module cleanup + test hardening: Tip._test export & ClassifySpellID assertions (D-06), remove hasPrimalSurge + rewrite generator comment (D-01/02/03), remove spellTexture/CacheSpellTexture/FALLBACK_ICON + both call sites (D-04)
-- [ ] 07-02-PLAN.md — Util + Core cleanup: remove DMX.Util.ParseOnOff (D-05), document the db.locked migration intent (D-07)
+- [x] 07-02-PLAN.md — Util + Core cleanup: remove DMX.Util.ParseOnOff (D-05), document the db.locked migration intent (D-07)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 

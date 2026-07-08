@@ -6,14 +6,14 @@ current_phase: 07
 current_phase_name: address-v1-0-tech-debt-remove-dead-code-tip-spelltexture-dmx
 status: executing
 stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-07-08T21:29:02.803Z"
+last_updated: "2026-07-08T21:33:57.124Z"
 last_activity: 2026-07-08
 last_activity_desc: Phase 07 execution started
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 25
-  completed_plans: 23
+  completed_plans: 24
   percent: 88
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-07-08)
 ## Current Position
 
 Phase: 07 (address-v1-0-tech-debt-remove-dead-code-tip-spelltexture-dmx) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-07-08 — Phase 07 execution started
 
@@ -73,6 +73,7 @@ Progress: [██████████] 100%
 | Phase 06 P07 | 5min | 2 tasks | 2 files |
 | Phase 06 P08 | 5min | 2 tasks | 3 files |
 | Phase 07 P01 | 10min | 3 tasks | 3 files |
+| Phase 07 P02 | 2min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -110,6 +111,8 @@ Recent decisions affecting current work:
 - [Phase ?]: Added Tip._test escape hatch mirroring DMX._test to expose ClassifySpellID for D-06 hardened consumer regression tests (265189, 1262293, 1262343)
 - [Phase ?]: Removed hasPrimalSurge dead field and rewrote generator-branch comment to state the Kill Command grant is always 2 stacks, permanently
 - [Phase ?]: Removed Tip.spellTexture, CacheSpellTexture, and FALLBACK_ICON along with both call sites (PLAYER_LOGIN/PLAYER_ENTERING_WORLD branch and Tip:Initialize)
+- [Phase 07]: D-05: Removed DMX.Util.ParseOnOff (function, export, 15-test describe block) with zero production callers remaining
+- [Phase 07]: D-07: No logic change to db.locked = true — added intent comment documenting the deliberate post-migration re-lock
 
 ### Roadmap Evolution
 
@@ -153,6 +156,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-07-08T21:29:02.795Z
+Last session: 2026-07-08T21:32:52.182Z
 Stopped at: Completed 07-01-PLAN.md
 Resume file: None
