@@ -42,10 +42,9 @@ validated: 2026-07-09
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
 | 01-01-01 | 01 | 1 | QUAL-01 | — | N/A | unit | `npx ... node spec/run.cjs` — util_spec: Clamp / ParseHexColor / ParseOnOff / Trim via `DMX.Util.*` namespace | ✅ | ✅ green |
-| 01-02-01 | 02 | 1 | QUAL-02 | — | N/A | unit | `npx ... node spec/run.cjs` — tip_spec:482 "QUAL-02 — frame references on Tip table" asserts Tip.root/pips/borders/label/numberText populated after Initialize | ✅ | ✅ green |
-| 01-03-01 | 03 | 1 | QUAL-03 | — | N/A | unit | `npx ... node spec/run.cjs` — core_spec:407+ "NormalizeDB — deprecated fields ignored post-migration (QUAL-03)" | ✅ | ✅ green |
-| 01-03-02 | 03 | 1 | QUAL-04 | — | N/A | unit | `npx ... node spec/run.cjs` — core_spec:357 "QUAL-04 — ordered module registry" asserts `moduleOrder[1] == "tip"` | ✅ | ✅ green |
-| 01-04-01 | 04 | 1 | QUAL-05 | — | N/A | static + behavioral | `grep -n pcall Duncedmaxxing/Modules/TipOfTheSpear.lua` (pcalls only in ReadLiveState, none in ClassifySpellID) + tip_spec ApplySpell tests exercise ClassifySpellID as pure lookup | ✅ | ✅ green |
+| 01-02-01 | 02 | 1 | QUAL-02 | — | N/A | unit | `npx ... node spec/run.cjs` — tip_spec "QUAL-02 — frame references on Tip table" asserts Tip.root/pips/borders/label/numberText populated after Initialize | ✅ | ✅ green |
+| 01-03-01 | 01 | 1 | QUAL-04 | — | N/A | unit | `npx ... node spec/run.cjs` — core_spec:357 "QUAL-04 — ordered module registry" asserts `moduleOrder[1] == "tip"` | ✅ | ✅ green |
+| 01-04-01 | 02 | 1 | QUAL-05 | — | N/A | static + behavioral | `grep -n pcall Duncedmaxxing/Modules/TipOfTheSpear.lua` (pcalls only in ReadLiveState, none in ClassifySpellID) + tip_spec ApplySpell tests exercise ClassifySpellID as pure lookup | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -83,4 +82,8 @@ All phase behaviors now have automated verification via the fengari suite (added
 | Resolved | 2 (tip_spec:482 "QUAL-02 …"; core_spec:357 "QUAL-04 …") |
 | Escalated | 0 |
 
-State A audit. The original VALIDATION.md was written pre-test-harness (all entries manual-only). Since Phase 2 introduced the fengari suite, QUAL-01 and QUAL-03 were already covered retroactively; QUAL-05 is grep + behaviorally covered. Filled the two remaining automatable gaps. Suite after fill: **128 passed, 0 failed, 128 total**.
+State A audit. The original VALIDATION.md was written pre-test-harness (all entries manual-only). Phase 1's requirements are **QUAL-01, QUAL-02, QUAL-04, QUAL-05** (per plan frontmatter: 01-01 → QUAL-01/QUAL-04, 01-02 → QUAL-02/QUAL-05). Since Phase 2 introduced the fengari suite, QUAL-01 was already covered retroactively; QUAL-05 is grep + behaviorally covered. Filled the two remaining automatable gaps (QUAL-02, QUAL-04).
+
+_Correction 2026-07-09: an earlier draft of this doc erroneously listed QUAL-03 as a Phase 1 requirement. QUAL-03 (dead NormalizeDB fallback removal) belongs to **Phase 3** (plan 03-01); it is validated in `03-VALIDATION.md`. Removed from this phase's map. Phase 1 has 4 QUAL requirements, all green._
+
+Suite after fill (post-Phase-7 re-baseline): **111 passed, 0 failed**.
