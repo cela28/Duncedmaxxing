@@ -7,7 +7,7 @@ DMX.version = "0.3.2"
 DMX.modules     = DMX.modules     or {}
 DMX.moduleOrder = DMX.moduleOrder or {}
 
-local SETTINGS_MIGRATION = "0.3.2-fontfix"
+local SETTINGS_MIGRATION = "0.3.3-stackcolorfmt"
 
 local DEFAULTS = {
     locked = true,
@@ -26,6 +26,13 @@ local DEFAULTS = {
         emptyColor = { r = 0, g = 0, b = 0, a = 0.5 },
         borderColor = { r = 0, g = 0, b = 0, a = 1 },
         textColor = { r = 1, g = 1, b = 1, a = 1 },
+        colorByStack = true,
+        stackColors = {
+            [0] = { r = 1, g = 1, b = 1, a = 1 },
+            [1] = { r = 0.18039, g = 0.80000, b = 0.44314, a = 1 },
+            [2] = { r = 1, g = 0.94118, b = 0, a = 1 },
+            [3] = { r = 1, g = 0.29804, b = 0.18824, a = 1 },
+        },
         optionsX = 360,
         optionsY = 170,
     },
@@ -62,26 +69,59 @@ local function MergeDefaults(defaults, target)
     return target
 end
 
+local function StackColorsAreLegacyFormat(stackColors)
+    if type(stackColors) ~= "table" then
+        return false
+    end
+
+    -- Legacy entries store components positionally as { [1]=r, [2]=g, [3]=b, [4]=a }.
+    -- In production MergeDefaults runs before NormalizeDB and injects .r/.g/.b/.a default
+    -- keys into these tables, but it leaves the numeric indices intact -- so a lingering
+    -- numeric [1] is the reliable legacy signal (a check on .r == nil would miss the
+    -- post-merge mixed shape). Scan every slot (0-3) so a partially-migrated table is
+    -- still detected and repaired.
+    for i = 0, 3 do
+        local entry = stackColors[i]
+        if type(entry) == "table" and entry[1] ~= nil then
+            return true
+        end
+    end
+
+    return false
+end
+
+local function ConvertLegacyStackColors(stackColors)
+    local converted = {}
+
+    for i = 0, 3 do
+        local entry = stackColors[i]
+        if type(entry) == "table" and entry[1] ~= nil then
+            -- Recover the user's customized colors from the positional data and drop the
+            -- stale numeric keys (plus any default .r/.g/.b/.a that MergeDefaults injected).
+            converted[i] = { r = entry[1], g = entry[2], b = entry[3], a = entry[4] }
+        elseif type(entry) == "table" then
+            converted[i] = entry
+        else
+            converted[i] = CopyDefaults(DEFAULTS.tip.stackColors[i])
+        end
+    end
+
+    return converted
+end
+
 local function NormalizeDB(db)
     local tip = db.tip
 
     if db.settingsMigration ~= SETTINGS_MIGRATION then
-        local x, y, scale = tip.x, tip.y, tip.scale
-        local optionsX, optionsY = tip.optionsX, tip.optionsY
-        local fresh = CopyDefaults(DEFAULTS.tip)
-
-        for key, value in pairs(fresh) do
-            tip[key] = value
+        if StackColorsAreLegacyFormat(tip.stackColors) then
+            tip.stackColors = ConvertLegacyStackColors(tip.stackColors)
         end
 
-        tip.x = x or fresh.x
-        tip.y = y or fresh.y
-        tip.scale = scale or fresh.scale
-        tip.optionsX = optionsX or fresh.optionsX
-        tip.optionsY = optionsY or fresh.optionsY
         tip.barWidth = nil
         tip.barHeight = nil
         tip.spacing = nil
+        -- Deliberate: re-lock the frame on every settings-migration upgrade so it
+        -- can't be accidentally dragged after layout defaults change (D-07).
         db.locked = true
         db.settingsMigration = SETTINGS_MIGRATION
     end
@@ -158,18 +198,6 @@ end
 
 function DMX:RefreshTip()
     RefreshTip(self:GetModule("tip"))
-end
-
-function DMX:ResetTipStyle()
-    local db = self:GetDB()
-    if not db then return end
-
-    local x, y, scale = db.tip.x, db.tip.y, db.tip.scale
-    local optionsX, optionsY = db.tip.optionsX, db.tip.optionsY
-    db.tip = CopyDefaults(DEFAULTS.tip)
-    db.tip.x, db.tip.y, db.tip.scale = x, y, scale
-    db.tip.optionsX, db.tip.optionsY = optionsX, optionsY
-    self:RefreshTip()
 end
 
 local function RegisterSlashCommands()

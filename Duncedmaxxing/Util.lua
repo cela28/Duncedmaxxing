@@ -15,15 +15,6 @@ local function Clamp(value, minValue, maxValue)
     return value
 end
 
-local function ParseOnOff(value)
-    value = string.lower(Trim(value))
-    if value == "on" or value == "true" or value == "1" or value == "yes" then
-        return true
-    elseif value == "off" or value == "false" or value == "0" or value == "no" then
-        return false
-    end
-end
-
 local function ParseHexColor(value)
     value = Trim(value):gsub("^#", "")
     if not value:match("^[0-9a-fA-F]+$") or (#value ~= 6 and #value ~= 8) then
@@ -39,5 +30,4 @@ end
 
 Util.Trim         = Trim
 Util.Clamp        = Clamp
-Util.ParseOnOff   = ParseOnOff
 Util.ParseHexColor = ParseHexColor

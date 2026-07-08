@@ -6,10 +6,9 @@ local TIP_OF_THE_SPEAR = 260286
 local KILL_COMMAND = 259489
 local MAX_STACKS = 3
 local BUFF_DURATION = 10
-local AURA_VERIFY_DELAY = 1.25
-local FINAL_AURA_VERIFY_DELAY = 2.05
+local AURA_VERIFY_DELAY = 2.0
+local FINAL_AURA_VERIFY_DELAY = 2.25
 local CONSUMER_UPSYNC_GRACE = 2.75
-local FALLBACK_ICON = 132275
 local TRACKER_WIDTH = 247
 local TRACKER_HEIGHT = 10
 local BORDER_SIZE = 1
@@ -61,8 +60,6 @@ Tip.auraVerifyPending = false
 Tip.lastPredictAt = 0
 Tip.lastPredictKind = nil
 Tip.hasTwinFangs  = false
-Tip.hasPrimalSurge = false
-Tip.spellTexture  = nil
 
 local function ClampStacks(value)
     value = tonumber(value) or 0
@@ -142,20 +139,6 @@ local function ColorTuple(color, fallback)
         color.g or color[2] or fallback.g or fallback[2] or 1,
         color.b or color[3] or fallback.b or fallback[3] or 1,
         color.a or color[4] or fallback.a or fallback[4] or 1
-end
-
--- Called once at Initialize and on PLAYER_LOGIN to populate tip.spellTexture.
--- C_Spell.GetSpellTexture returns two values (iconID, originalIconID);
--- only the first is captured — Lua discards the second implicitly.
-local function CacheSpellTexture(tip)
-    local tex
-    if C_Spell and C_Spell.GetSpellTexture then
-        tex = C_Spell.GetSpellTexture(TIP_OF_THE_SPEAR)
-    end
-    if not tex and _G.GetSpellTexture then
-        tex = _G.GetSpellTexture(TIP_OF_THE_SPEAR)
-    end
-    tip.spellTexture = tex or FALLBACK_ICON
 end
 
 local function ApplyPosition(tip)
@@ -548,14 +531,6 @@ function Tip:ApplyLock()
     label:SetShown(unlocked)
 end
 
-function Tip:ResetPosition()
-    local cfg = DMX:GetDB().tip
-    cfg.x = DMX.defaults.tip.x
-    cfg.y = DMX.defaults.tip.y
-    cfg.scale = DMX.defaults.tip.scale
-    self:RefreshLayout()
-end
-
 function Tip:SetTestStacks(stacks)
     self.testMode = true
     self.testStacks = ClampStacks(stacks)
@@ -618,8 +593,15 @@ function Tip:Update()
         end
 
         numberText:SetText(stacks)
-        local sc = STACK_COLORS[stacks] or STACK_COLORS[0]
-        numberText:SetTextColor(sc[1], sc[2], sc[3], sc[4])
+        if cfg.colorByStack ~= false then
+            local stackColors = cfg.stackColors or STACK_COLORS
+            local sc = stackColors[stacks] or stackColors[0]
+            local r, g, b, a = ColorTuple(sc, STACK_COLORS[stacks] or STACK_COLORS[0])
+            numberText:SetTextColor(r, g, b, a)
+        else
+            local r, g, b, a = ColorTuple(cfg.textColor, DMX.defaults.tip.textColor)
+            numberText:SetTextColor(r, g, b, a)
+        end
         numberText:Show()
         label:SetShown(unlocked)
         return
@@ -654,10 +636,9 @@ function Tip:ApplySpell(kind, spellID)
     local now = GetTime()
 
     if kind == "generator" then
-        -- Kill Command grant derives from Primal Surge (base 1, +1 with Primal Surge).
-        -- Flat-2 fallback: Primal Surge spell ID was not verified offline; grant is 2 in all cases.
-        -- Twin Fangs is a Takedown (consumer) modifier only and must NOT affect the generator path.
-        local grant = 2  -- flat-2 fallback (hasPrimalSurge field reserved for future ID resolution)
+        -- Kill Command (generator) always grants 2 stacks. Twin Fangs is a Takedown
+        -- (consumer) modifier only and must NOT affect this generator path.
+        local grant = 2
         self.stacks = ClampStacks(self.stacks + grant)
         self.expiresAt = now + BUFF_DURATION
     elseif kind == "consumer" then
@@ -694,7 +675,6 @@ function Tip:OnEvent(event, ...)
         self:Update()
         return
     elseif event == "PLAYER_LOGIN" or event == "PLAYER_ENTERING_WORLD" then
-        CacheSpellTexture(self)
         self:RefreshActive()
         self:SyncFromAura()
         self:Update()
@@ -741,7 +721,6 @@ function Tip:Initialize(core)
     self.inCombat = InCombatLockdown and InCombatLockdown() or false
     self.hasTwinFangs = HasTwinFangs()
     self.isSurvival   = DMX:IsSurvivalHunter()
-    CacheSpellTexture(self)
     self:RefreshLayout()
 
     self.eventFrame = CreateFrame("Frame")
@@ -758,5 +737,11 @@ function Tip:Initialize(core)
         self:OnEvent(event, ...)
     end)
 end
+
+-- Test-only escape hatch: exposes local functions for spec/tip_spec.lua.
+-- Do not use in production addon code.
+Tip._test = {
+    ClassifySpellID = ClassifySpellID,
+}
 
 DMX:RegisterModule("tip", Tip)

@@ -7,10 +7,13 @@ local Clamp        = DMX.Util.Clamp
 local ParseHexColor = DMX.Util.ParseHexColor
 
 local WHITE_TEX = "Interface\\Buttons\\WHITE8X8"
-local MODE_LABELS = {
-    bar = "Bar",
-    number = "Number",
-}
+
+-- Two-column absolute layout grid. Bar-only and Number-only widgets that are
+-- never shown at the same time intentionally share a row so each mode reads
+-- as a compact, evenly spaced column instead of leaving the other mode's
+-- rows blank.
+local LEFT_X = 16
+local RIGHT_X = 204
 
 local function InCombat()
     return InCombatLockdown and InCombatLockdown()
@@ -99,10 +102,12 @@ local function CreateCheckbox(parent, text, x, y, getValue, setValue)
         check = check,
         get = getValue,
     })
+
+    return check, label
 end
 
 local function CreateInput(parent, text, x, y, width, getValue, setValue)
-    CreateText(parent, text, x, y - 2)
+    local label = CreateText(parent, text, x, y - 2)
 
     local editBox = CreateFrame("EditBox", nil, parent, "InputBoxTemplate")
     editBox:SetSize(width, 22)
@@ -136,6 +141,8 @@ local function CreateInput(parent, text, x, y, width, getValue, setValue)
         editBox = editBox,
         get = getValue,
     })
+
+    return editBox, label
 end
 
 function Options:CanChange()
@@ -174,6 +181,19 @@ function Options:SetMode(mode)
 
     cfg.displayMode = mode
     RefreshTracker()
+
+    if self.window and self.window:IsShown() then
+        self:Refresh()
+    end
+end
+
+local function AddToGroup(group, ...)
+    for i = 1, select("#", ...) do
+        local widget = select(i, ...)
+        if widget then
+            table.insert(Options.widgetGroups[group], widget)
+        end
+    end
 end
 
 function Options:BuildWindow()
@@ -183,9 +203,12 @@ function Options:BuildWindow()
 
     self.inputs = {}
     self.checkboxes = {}
+    self.widgetGroups = { both = {}, bar = {}, number = {} }
+    self.modeButtons = {}
+    self.colorGroups = { flat = {}, stack = {} }
 
     local window = CreateFrame("Frame", "DuncedmaxxingOptionsWindow", UIParent)
-    window:SetSize(386, 484)
+    window:SetSize(386, 370)
     window:SetFrameStrata("DIALOG")
     window:SetFrameLevel(90)
     window:SetClampedToScreen(true)
@@ -244,19 +267,17 @@ function Options:BuildWindow()
         window:Hide()
     end)
 
-    self.modeText = CreateText(window, "Display: Bar", 16, -48, "GameFontNormal")
-    CreateButton(window, "Bar", 108, -43, 62, 22, function() self:SetMode("bar") end)
-    CreateButton(window, "Number", 244, -43, 72, 22, function() self:SetMode("number") end)
+    self.modeButtons.bar = CreateButton(window, "Bar", 16, -43, 62, 22, function() self:SetMode("bar") end)
+    self.modeButtons.number = CreateButton(window, "Number", 82, -43, 72, 22, function() self:SetMode("number") end)
 
-    CreateCheckbox(window, "Enabled", 14, -80,
-        function() return GetCfg().enabled end,
-        function(value) GetCfg().enabled = value end)
-    CreateCheckbox(window, "Hide empty", 260, -80,
+    local hideEmptyCheck, hideEmptyLabel = CreateCheckbox(window, "Hide empty", RIGHT_X, -80,
         function() return GetCfg().hideWhenEmpty end,
         function(value) GetCfg().hideWhenEmpty = value end)
+    AddToGroup("both", hideEmptyCheck, hideEmptyLabel)
 
-    CreateText(window, "Position", 16, -120, "GameFontNormal")
-    CreateInput(window, "X", 16, -148, 62,
+    local positionHeader = CreateText(window, "Position", LEFT_X, -80, "GameFontNormal")
+    AddToGroup("both", positionHeader)
+    local xInput, xLabel = CreateInput(window, "X", LEFT_X, -108, 62,
         function() return GetCfg().x end,
         function(value)
             local x = Clamp(value, -4000, 4000)
@@ -264,7 +285,8 @@ function Options:BuildWindow()
             GetCfg().x = x
             return true
         end)
-    CreateInput(window, "Y", 16, -178, 62,
+    AddToGroup("both", xInput, xLabel)
+    local yInput, yLabel = CreateInput(window, "Y", LEFT_X, -136, 62,
         function() return GetCfg().y end,
         function(value)
             local y = Clamp(value, -4000, 4000)
@@ -272,7 +294,17 @@ function Options:BuildWindow()
             GetCfg().y = y
             return true
         end)
-    CreateInput(window, "Scale", 16, -208, 62,
+    AddToGroup("both", yInput, yLabel)
+
+    -- Bar and Number sections occupy the same rows in the left column since
+    -- only one is ever shown at a time — this keeps whichever mode is active
+    -- compact instead of leaving the other mode's rows empty.
+    local barHeader = CreateText(window, "Bar", LEFT_X, -164, "GameFontNormal")
+    AddToGroup("bar", barHeader)
+    local numberHeader = CreateText(window, "Number", LEFT_X, -164, "GameFontNormal")
+    AddToGroup("number", numberHeader)
+
+    local scaleInput, scaleLabel = CreateInput(window, "Scale", LEFT_X, -192, 62,
         function() return GetCfg().scale end,
         function(value)
             local scale = Clamp(value, 0.5, 2)
@@ -280,35 +312,8 @@ function Options:BuildWindow()
             GetCfg().scale = scale
             return true
         end)
-
-    CreateText(window, "Bar", 16, -248, "GameFontNormal")
-    CreateInput(window, "Width", 16, -276, 62,
-        function() return GetCfg().width end,
-        function(value)
-            local width = Clamp(value, 20, 2000)
-            if not width then return false end
-            GetCfg().width = width
-            return true
-        end)
-    CreateInput(window, "Height", 16, -306, 62,
-        function() return GetCfg().height end,
-        function(value)
-            local height = Clamp(value, 4, 200)
-            if not height then return false end
-            GetCfg().height = height
-            return true
-        end)
-    CreateInput(window, "Border", 16, -336, 62,
-        function() return GetCfg().borderSize end,
-        function(value)
-            local size = Clamp(value, 0, 10)
-            if not size then return false end
-            GetCfg().borderSize = size
-            return true
-        end)
-
-    CreateText(window, "Other Modes", 204, -120, "GameFontNormal")
-    CreateInput(window, "Text size", 204, -148, 62,
+    AddToGroup("bar", scaleInput, scaleLabel)
+    local fontSizeInput, fontSizeLabel = CreateInput(window, "Text size", LEFT_X, -192, 62,
         function() return GetCfg().numberFontSize end,
         function(value)
             local size = Clamp(value, 8, 96)
@@ -316,17 +321,48 @@ function Options:BuildWindow()
             GetCfg().numberFontSize = size
             return true
         end)
+    AddToGroup("number", fontSizeInput, fontSizeLabel)
 
-    CreateText(window, "Colors", 204, -248, "GameFontNormal")
-    CreateInput(window, "Fill", 204, -276, 78,
-        function() return ColorToHex(GetCfg().fillColor) end,
+    local widthInput, widthLabel = CreateInput(window, "Width", LEFT_X, -220, 62,
+        function() return GetCfg().width end,
         function(value)
-            local color = ParseHexColor(value)
-            if not color then return false end
-            GetCfg().fillColor = color
+            local width = Clamp(value, 20, 2000)
+            if not width then return false end
+            GetCfg().width = width
             return true
         end)
-    CreateInput(window, "Border", 204, -306, 78,
+    AddToGroup("bar", widthInput, widthLabel)
+    local colorByStackCheck, colorByStackLabel = CreateCheckbox(window, "Color by stack", LEFT_X, -220,
+        function() return GetCfg().colorByStack end,
+        function(value) GetCfg().colorByStack = value end)
+    AddToGroup("number", colorByStackCheck, colorByStackLabel)
+
+    local heightInput, heightLabel = CreateInput(window, "Height", LEFT_X, -248, 62,
+        function() return GetCfg().height end,
+        function(value)
+            local height = Clamp(value, 4, 200)
+            if not height then return false end
+            GetCfg().height = height
+            return true
+        end)
+    AddToGroup("bar", heightInput, heightLabel)
+    local borderSizeInput, borderSizeLabel = CreateInput(window, "Border", LEFT_X, -276, 62,
+        function() return GetCfg().borderSize end,
+        function(value)
+            local size = Clamp(value, 0, 10)
+            if not size then return false end
+            GetCfg().borderSize = size
+            return true
+        end)
+    AddToGroup("bar", borderSizeInput, borderSizeLabel)
+
+    -- Colors section: header shown for both modes (it always follows
+    -- whichever mode-specific section is active), fields below it overlap
+    -- rows the same way (bar color fields vs. number text/stack fields).
+    local colorsHeader = CreateText(window, "Colors", RIGHT_X, -108, "GameFontNormal")
+    AddToGroup("bar", colorsHeader)
+    AddToGroup("number", colorsHeader)
+    local borderColorInput, borderColorLabel = CreateInput(window, "Border", RIGHT_X, -136, 78,
         function() return ColorToHex(GetCfg().borderColor) end,
         function(value)
             local color = ParseHexColor(value)
@@ -334,15 +370,17 @@ function Options:BuildWindow()
             GetCfg().borderColor = color
             return true
         end)
-    CreateInput(window, "Text", 204, -336, 78,
-        function() return ColorToHex(GetCfg().textColor) end,
+    AddToGroup("bar", borderColorInput, borderColorLabel)
+    local fillInput, fillLabel = CreateInput(window, "Fill", RIGHT_X, -164, 78,
+        function() return ColorToHex(GetCfg().fillColor) end,
         function(value)
             local color = ParseHexColor(value)
             if not color then return false end
-            GetCfg().textColor = color
+            GetCfg().fillColor = color
             return true
         end)
-    CreateInput(window, "Empty %", 204, -366, 62,
+    AddToGroup("bar", fillInput, fillLabel)
+    local emptyPctInput, emptyPctLabel = CreateInput(window, "Empty %", RIGHT_X, -192, 62,
         function() return math.floor((GetCfg().emptyColor.a or 0) * 100 + 0.5) end,
         function(value)
             local alpha = Clamp(value, 0, 100)
@@ -350,45 +388,105 @@ function Options:BuildWindow()
             GetCfg().emptyColor.a = alpha / 100
             return true
         end)
+    AddToGroup("bar", emptyPctInput, emptyPctLabel)
 
-    CreateButton(window, "Unlock Bar", 16, -414, 86, 24, function()
+    local textInput, textLabel = CreateInput(window, "Text", RIGHT_X, -136, 78,
+        function() return ColorToHex(GetCfg().textColor) end,
+        function(value)
+            local color = ParseHexColor(value)
+            if not color then return false end
+            GetCfg().textColor = color
+            return true
+        end)
+    AddToGroup("number", textInput, textLabel)
+    table.insert(self.colorGroups.flat, { widget = textInput, label = textLabel })
+
+    local stackLabels = { [0] = "0 stacks", [1] = "1 stack", [2] = "2 stacks", [3] = "3 stacks" }
+    for stack = 0, 3 do
+        local stackInput, stackLabel = CreateInput(window, stackLabels[stack], RIGHT_X, -164 - (stack * 28), 78,
+            function() return ColorToHex(GetCfg().stackColors[stack]) end,
+            function(value)
+                local color = ParseHexColor(value)
+                if not color then return false end
+                GetCfg().stackColors[stack] = color
+                return true
+            end)
+        AddToGroup("number", stackInput, stackLabel)
+        table.insert(self.colorGroups.stack, { widget = stackInput, label = stackLabel })
+    end
+
+    CreateButton(window, "Unlock Bar", LEFT_X, -324, 86, 24, function()
         DMX:GetDB().locked = false
         DMX:ForEachModule("ApplyLock")
         RefreshTracker()
     end)
-    CreateButton(window, "Lock Bar", 108, -414, 76, 24, function()
+    CreateButton(window, "Lock Bar", 108, -324, 76, 24, function()
         DMX:GetDB().locked = true
         DMX:ForEachModule("ApplyLock")
         RefreshTracker()
     end)
-    CreateButton(window, "Preview", 190, -414, 74, 24, function()
+    CreateButton(window, "Preview", 190, -324, 74, 24, function()
         local tip = DMX:GetModule("tip")
         if tip and tip.SetTestStacks then
             tip:SetTestStacks(3)
-        end
-    end)
-    CreateButton(window, "Reset", 270, -414, 70, 24, function()
-        local tip = DMX:GetModule("tip")
-        if tip and tip.ResetPosition then
-            tip:ResetPosition()
-        end
-    end)
-    CreateButton(window, "Reset Style", 16, -444, 96, 24, function()
-        if DMX.ResetTipStyle then
-            DMX:ResetTipStyle()
         end
     end)
 
     window:Hide()
 end
 
+local function SetWidgetShown(widget, shown)
+    if not widget then return end
+    if shown then
+        widget:Show()
+    else
+        widget:Hide()
+    end
+end
+
+local function SetColorGroupEnabled(items, enabled)
+    for _, item in ipairs(items or {}) do
+        local widget = item.widget
+        local label = item.label
+        if widget then
+            if widget.Disable and widget.Enable then
+                if enabled then
+                    widget:Enable()
+                else
+                    widget:Disable()
+                end
+            end
+            widget:SetAlpha(enabled and 1 or 0.4)
+        end
+        if label then
+            label:SetAlpha(enabled and 1 or 0.4)
+        end
+    end
+end
+
+local function HighlightModeButton(button, active)
+    if not button then return end
+
+    if active then
+        if button.LockHighlight then
+            button:LockHighlight()
+        end
+        if button.SetAlpha then
+            button:SetAlpha(1)
+        end
+    else
+        if button.UnlockHighlight then
+            button:UnlockHighlight()
+        end
+        if button.SetAlpha then
+            button:SetAlpha(0.75)
+        end
+    end
+end
+
 function Options:Refresh()
     local cfg = GetCfg()
     if not cfg then return end
-
-    if self.modeText then
-        self.modeText:SetText("Display: " .. (MODE_LABELS[cfg.displayMode] or "Bar"))
-    end
 
     for _, item in ipairs(self.checkboxes or {}) do
         item.check:SetChecked(item.get() and true or false)
@@ -396,6 +494,33 @@ function Options:Refresh()
 
     for _, item in ipairs(self.inputs or {}) do
         item.editBox:SetText(tostring(item.get()))
+    end
+
+    local mode = cfg.displayMode
+    if mode ~= "bar" and mode ~= "number" then
+        mode = "bar"
+    end
+
+    local groups = self.widgetGroups or {}
+    for _, widget in ipairs(groups.both or {}) do
+        SetWidgetShown(widget, true)
+    end
+    for _, widget in ipairs(groups.bar or {}) do
+        SetWidgetShown(widget, mode == "bar")
+    end
+    for _, widget in ipairs(groups.number or {}) do
+        SetWidgetShown(widget, mode == "number")
+    end
+
+    if self.modeButtons then
+        HighlightModeButton(self.modeButtons.bar, mode == "bar")
+        HighlightModeButton(self.modeButtons.number, mode == "number")
+    end
+
+    if mode == "number" and self.colorGroups then
+        local colorByStack = cfg.colorByStack ~= false
+        SetColorGroupEnabled(self.colorGroups.stack, colorByStack)
+        SetColorGroupEnabled(self.colorGroups.flat, not colorByStack)
     end
 end
 
