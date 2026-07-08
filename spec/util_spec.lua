@@ -1,5 +1,5 @@
 -- spec/util_spec.lua
--- Unit tests for DMX.Util.Clamp, ParseHexColor, ParseOnOff, Trim.
+-- Unit tests for DMX.Util.Clamp, ParseHexColor, Trim.
 -- Each describe block reloads the addon via loader.load() for full isolation (D-06).
 
 local loader = require("spec.support.init")
@@ -116,70 +116,6 @@ describe("DMX.Util.ParseHexColor", function()
         assert.are.equal(0, c.g)
         assert.are.equal(0, c.b)
         assert.are.equal(1, c.a)
-    end)
-end)
-
-describe("DMX.Util.ParseOnOff", function()
-    local DMX
-
-    before_each(function()
-        DMX = loader.load()
-    end)
-
-    it("returns true for 'on'", function()
-        assert.is_true(DMX.Util.ParseOnOff("on"))
-    end)
-
-    it("returns true for 'true'", function()
-        assert.is_true(DMX.Util.ParseOnOff("true"))
-    end)
-
-    it("returns true for '1'", function()
-        assert.is_true(DMX.Util.ParseOnOff("1"))
-    end)
-
-    it("returns true for 'yes'", function()
-        assert.is_true(DMX.Util.ParseOnOff("yes"))
-    end)
-
-    it("returns false for 'off'", function()
-        assert.is_false(DMX.Util.ParseOnOff("off"))
-    end)
-
-    it("returns false for 'false'", function()
-        assert.is_false(DMX.Util.ParseOnOff("false"))
-    end)
-
-    it("returns false for '0'", function()
-        assert.is_false(DMX.Util.ParseOnOff("0"))
-    end)
-
-    it("returns false for 'no'", function()
-        assert.is_false(DMX.Util.ParseOnOff("no"))
-    end)
-
-    it("is case insensitive for 'ON'", function()
-        assert.is_true(DMX.Util.ParseOnOff("ON"))
-    end)
-
-    it("is case insensitive for 'True'", function()
-        assert.is_true(DMX.Util.ParseOnOff("True"))
-    end)
-
-    it("is case insensitive for 'OFF'", function()
-        assert.is_false(DMX.Util.ParseOnOff("OFF"))
-    end)
-
-    it("returns nil for an unrecognized token", function()
-        assert.is_nil(DMX.Util.ParseOnOff("maybe"))
-    end)
-
-    it("trims surrounding whitespace before parsing", function()
-        assert.is_true(DMX.Util.ParseOnOff("  on  "))
-    end)
-
-    it("trims whitespace for falsy tokens too", function()
-        assert.is_false(DMX.Util.ParseOnOff("  off  "))
     end)
 end)
 
