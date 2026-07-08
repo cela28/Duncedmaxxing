@@ -67,6 +67,8 @@ Accurate, instant stack display during combat. If the stack count is wrong or la
 | Extract utils to Duncedmaxxing/Util.lua | Eliminates duplicated code between Duncedmaxxing/Core.lua and Duncedmaxxing/Options.lua | — Pending |
 | Cache spec/texture at event boundaries | Avoid per-update WoW API calls during combat | ✓ Phase 4 |
 | GitHub Actions release workflow | Automate lint+test gate and zip packaging on release | ✓ Phase 4 |
+| Per-mode option visibility + button-only mode switching | Options window shows only controls relevant to active display mode; Enabled checkbox removed, Border color/Scale bar-only, no `/dmax mode` subcommand (user-accepted overrides) | ✓ Phase 6 |
+| Named-key `stackColors` + targeted migration re-seed | Fix stack-color picker defaults and avoid settings wipe on token bump under real MergeDefaults→NormalizeDB order | ✓ Phase 6 |
 
 ## Evolution
 
@@ -86,4 +88,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-18 after Phase 4 completion*
+*Last updated: 2026-07-08 after Phase 6 completion (milestone v1.0 100% complete)*
