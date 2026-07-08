@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: "tech debt: remove dead code"
-current_phase: 06
+current_phase: 07
+current_phase_name: address-v1-0-tech-debt-remove-dead-code-tip-spelltexture-dmx
 status: executing
-stopped_at: Phase 7 context gathered
-last_updated: "2026-07-08T20:56:40.916Z"
+stopped_at: Completed 07-01-PLAN.md
+last_updated: "2026-07-08T21:29:02.803Z"
 last_activity: 2026-07-08
-last_activity_desc: Phase 06 complete
+last_activity_desc: Phase 07 execution started
 progress:
   total_phases: 8
   completed_phases: 7
-  total_plans: 22
-  completed_plans: 22
+  total_plans: 25
+  completed_plans: 23
   percent: 88
-current_phase_name: options-panel-v2-per-mode-visibility-configurable-stack-colo
 ---
 
 # Project State
@@ -24,14 +24,14 @@ current_phase_name: options-panel-v2-per-mode-visibility-configurable-stack-colo
 See: .planning/PROJECT.md (updated 2026-07-08)
 
 **Core value:** Accurate, instant stack display during combat
-**Current focus:** Milestone v1.0 complete — all 7 phases finished
+**Current focus:** Phase 07 — address-v1-0-tech-debt-remove-dead-code-tip-spelltexture-dmx
 
 ## Current Position
 
-Phase: 06
-Plan: Not started
+Phase: 07 (address-v1-0-tech-debt-remove-dead-code-tip-spelltexture-dmx) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-07-08 — Phase 06 complete
+Last activity: 2026-07-08 — Phase 07 execution started
 
 Progress: [██████████] 100%
 
@@ -72,6 +72,7 @@ Progress: [██████████] 100%
 | Phase 06 P06 | 10min | 1 tasks | 1 files |
 | Phase 06 P07 | 5min | 2 tasks | 2 files |
 | Phase 06 P08 | 5min | 2 tasks | 3 files |
+| Phase 07 P01 | 10min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -106,6 +107,9 @@ Recent decisions affecting current work:
 - [Phase ?]: 06-06: Shrunk options-panel window height 484 -> 400 (width unchanged) after collapsing mutually-exclusive mode sections onto shared row coordinates
 - [Phase ?]: 06-07: NormalizeDB migration branch re-seeds only stackColors (via StackColorsAreLegacyFormat) instead of blanket CopyDefaults(DEFAULTS.tip) overwrite, fixing SC-6 settings wipe on token bump
 - [Phase ?]: 06-08: Recorded formal overrides for SC-1/SC-2 in 06-VERIFICATION.md (Enabled checkbox removal + Border color bar-only regrouping; button-only mode switching) and aligned ROADMAP/REQUIREMENTS wording
+- [Phase ?]: Added Tip._test escape hatch mirroring DMX._test to expose ClassifySpellID for D-06 hardened consumer regression tests (265189, 1262293, 1262343)
+- [Phase ?]: Removed hasPrimalSurge dead field and rewrote generator-branch comment to state the Kill Command grant is always 2 stacks, permanently
+- [Phase ?]: Removed Tip.spellTexture, CacheSpellTexture, and FALLBACK_ICON along with both call sites (PLAYER_LOGIN/PLAYER_ENTERING_WORLD branch and Tip:Initialize)
 
 ### Roadmap Evolution
 
@@ -149,6 +153,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-07-08T20:56:40.905Z
-Stopped at: Phase 7 context gathered
-Resume file: .planning/phases/07-address-v1-0-tech-debt-remove-dead-code-tip-spelltexture-dmx/07-CONTEXT.md
+Last session: 2026-07-08T21:29:02.795Z
+Stopped at: Completed 07-01-PLAN.md
+Resume file: None
