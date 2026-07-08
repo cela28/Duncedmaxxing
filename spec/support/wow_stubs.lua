@@ -172,12 +172,6 @@ local function install(DMX)
 
     _G.IsPlayerSpell = function(spellID) return false end
 
-    _G.C_Spell = {
-        GetSpellTexture = function(id) return 132275 end,
-    }
-
-    _G.GetSpellTexture = function(id) return 132275 end
-
     _G.UnitClass = function(unit) return "Hunter", "HUNTER" end
 
     _G.InCombatLockdown = function() return false end
