@@ -27,7 +27,7 @@ requirements:
 | **Config file** | `spec/run.cjs` (runner) + `spec/support/init.lua` (loader) |
 | **Quick run command** | `npx -y -p fengari@0.1.5 node spec/run.cjs` |
 | **Full suite command** | `npx -y -p fengari@0.1.5 node spec/run.cjs` |
-| **Estimated runtime** | ~3 seconds (125 specs) |
+| **Estimated runtime** | ~5–15 seconds (111 specs, post-Phase-7 re-baseline 2026-07-09) |
 
 **Harness constraint (material to this phase):** the loader intentionally **skips `Options.lua`** — it loads `Util.lua`, `Core.lua`, `Modules/TipOfTheSpear.lua` only (`spec/support/init.lua:30-33`). No `CreateFrame` widget Show/Hide/SetPoint/SetSize surface is modelled. Consequently the Options-panel UI behaviors (widget-group visibility and layout) cannot be exercised by this harness without a substantial expansion, and are recorded here as manual-only.
 
@@ -85,3 +85,12 @@ Existing infrastructure covers all automatable phase requirements. DISP-06 is fu
 - [ ] `nyquist_compliant: true` — **not set.** DISP-05 and DISP-07 are manual-only (Options.lua UI/layout, outside the fengari harness). Verified by human 06-UAT tests 1–2. Full automation deferred as disproportionate for a 2-user addon.
 
 **Approval:** partial — validated 2026-07-08 (DISP-06 automated & green; DISP-05/DISP-07 manual-only, human-UAT confirmed)
+
+---
+
+## Re-confirmation 2026-07-09
+
+Re-audited during the batch validation sweep, after the concurrent Phase 7 cleanup landed. Re-verified against current source:
+- **DISP-06** — still fully automated & green: `core_spec.lua` MergeDefaults `colorByStack`/`stackColors` (byte-for-byte defaults, no-overwrite, edited-entry preserve) + NormalizeDB no-wipe migration; `tip_spec.lua` colorByStack ON/OFF number-color behavior. Survived Phase 7 intact.
+- **DISP-05 / DISP-07** — remain manual-only. The fengari loader still deliberately skips `Options.lua` (`spec/support/init.lua`), so no widget Show/Hide/SetPoint surface is reachable. The `/dmax mode` subcommand removal (DISP-07 structural) re-confirmed absent by grep. Human 06-UAT tests 1–2 stand as evidence. Building an Options.lua widget harness remains disproportionate for a 2-user addon — **partial is the honest ceiling**, unchanged.
+- Suite: **111 passed, 0 failed**. Verdict unchanged: `nyquist_compliant: false` (partial), `status: validated`.
