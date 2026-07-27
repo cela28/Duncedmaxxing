@@ -211,6 +211,53 @@ describe("Tip:ApplySpell", function()
         Tip:ApplySpell("consumer", 1262343)  -- Aspect-of-the-Eagle ranged Raptor Swipe
         assert.equals(1, Tip.stacks)
     end)
+
+    it("Moonlight Chakram (1264902) decrements 1 stack instantly", function()
+        assert.equals("consumer", Tip._test.ClassifySpellID(1264902))
+        Tip.stacks = 2
+        Tip:ApplySpell("consumer", 1264902)
+        assert.equals(1, Tip.stacks)
+    end)
+
+    it("Hatchet Toss (193265) decrements 1 stack instantly", function()
+        assert.equals("consumer", Tip._test.ClassifySpellID(193265))
+        Tip.stacks = 2
+        Tip:ApplySpell("consumer", 193265)
+        assert.equals(1, Tip.stacks)
+    end)
+end)
+
+-- ---------------------------------------------------------------------------
+-- Tip:OnEvent UNIT_SPELLCAST_SUCCEEDED -- full production dispatch path
+-- ---------------------------------------------------------------------------
+describe("Tip:OnEvent UNIT_SPELLCAST_SUCCEEDED -- full dispatch path", function()
+    local DMX, Tip, clock
+
+    before_each(function()
+        DMX, Tip, clock = loader.load()
+        loader.resetTipState(Tip, clock)
+    end)
+
+    it("UNIT_SPELLCAST_SUCCEEDED with Moonlight Chakram spellID decrements stacks via full dispatch", function()
+        Tip.isSurvival = true
+        Tip.stacks = 2
+        Tip:OnEvent("UNIT_SPELLCAST_SUCCEEDED", "player", "cast-guid", 1264902)
+        assert.equals(1, Tip.stacks)
+    end)
+
+    it("UNIT_SPELLCAST_SUCCEEDED with Hatchet Toss spellID decrements stacks via full dispatch", function()
+        Tip.isSurvival = true
+        Tip.stacks = 2
+        Tip:OnEvent("UNIT_SPELLCAST_SUCCEEDED", "player", "cast-guid", 193265)
+        assert.equals(1, Tip.stacks)
+    end)
+
+    it("UNIT_SPELLCAST_SUCCEEDED does not dispatch when isSurvival is false", function()
+        Tip.isSurvival = false
+        Tip.stacks = 2
+        Tip:OnEvent("UNIT_SPELLCAST_SUCCEEDED", "player", "cast-guid", 1264902)
+        assert.equals(2, Tip.stacks)
+    end)
 end)
 
 -- ---------------------------------------------------------------------------

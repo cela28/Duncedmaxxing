@@ -24,6 +24,8 @@ local CONSUMERS = {
     [265189] = true,  -- Raptor Strike (Aspect of the Eagle ranged variant)
     [1262293] = true, -- Raptor Swipe
     [1262343] = true, -- Raptor Swipe (Aspect of the Eagle ranged variant)
+    [1264902] = true, -- Moonlight Chakram
+    [193265]  = true, -- Hatchet Toss
 }
 
 local TIP_COLOR = { 0.72, 0.55, 0.02, 1 }
